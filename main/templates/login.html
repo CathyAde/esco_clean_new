@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+
+{% block title %}Connexion - ESCO{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: center; align-items: center; min-height: 70vh;">
+    <div class="card" style="width: 100%; max-width: 400px; text-align: center;">
+        <div class="card-body" style="padding: 3rem 2rem;">
+            <!-- Icône de connexion -->
+            <div style="font-size: 3rem; color: #007bff; margin-bottom: 1.5rem;">
+                <i class="fas fa-users"></i>
+            </div>
+            
+            <h1 style="color: #495057; margin-bottom: 0.5rem; font-weight: 600; font-size: 1.8rem;">
+                Connexion
+            </h1>
+            
+            <p style="color: #6c757d; margin-bottom: 2rem; font-size: 0.95rem;">
+                Accédez à votre espace ESCO
+            </p>
+            
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="form-group" style="text-align: left;">
+                    <label for="username" class="form-label">
+                        <i class="fas fa-user"></i> Nom d'utilisateur
+                    </label>
+                    <input type="text" 
+                           name="username" 
+                           id="username" 
+                           class="form-control" 
+                           required>
+                </div>
+                
+                <div class="form-group" style="text-align: left;">
+                    <label for="password" class="form-label">
+                        <i class="fas fa-lock"></i> Mot de passe
+                    </label>
+                    <input type="password" 
+                           name="password" 
+                           id="password" 
+                           class="form-control" 
+                           required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%; font-size: 1rem; padding: 0.875rem;">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Se connecter
+                </button>
+            </form>
+            
+            <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #e9ecef;">
+                <p style="color: #6c757d; margin-bottom: 0.5rem;">
+                    Pas encore de compte ?
+                </p>
+                <a href="/inscription/" style="color: #007bff; text-decoration: none; font-weight: 500;">
+                    <i class="fas fa-user-plus"></i> S'inscrire
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{% comment %} {% extends 'base.html' %}
+
+{% block title %}Connexion - ESCO{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: center; align-items: center; min-height: 70vh;">
+    <div class="card" style="width: 100%; max-width: 400px; text-align: center;">
+        <div class="card-body" style="padding: 3rem 2rem;">
+            <!-- Icône de connexion -->
+            <div style="font-size: 3rem; color: #007bff; margin-bottom: 1.5rem;">
+                <i class="fas fa-users"></i>
+            </div>
+            
+            <h1 style="color: #495057; margin-bottom: 0.5rem; font-weight: 600; font-size: 1.8rem;">
+                Connexion
+            </h1>
+            
+            <p style="color: #6c757d; margin-bottom: 2rem; font-size: 0.95rem;">
+                Accédez à votre espace ESCO
+            </p>
+            
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="form-group" style="text-align: left;">
+                    <label for="username" class="form-label">
+                        <i class="fas fa-user"></i> Nom d'utilisateur
+                    </label>
+                    <input type="text" 
+                           name="username" 
+                           id="username" 
+                           class="form-control" 
+                           required>
+                </div>
+                
+                <div class="form-group" style="text-align: left;">
+                    <label for="password" class="form-label">
+                        <i class="fas fa-lock"></i> Mot de passe
+                    </label>
+                    <input type="password" 
+                           name="password" 
+                           id="password" 
+                           class="form-control" 
+                           required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%; font-size: 1rem; padding: 0.875rem;">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Se connecter
+                </button>
+            </form>
+            
+            <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #e9ecef;">
+                <p style="color: #6c757d; margin-bottom: 0.5rem;">
+                    Pas encore de compte ?
+                </p>
+                <a href="{% url 'inscription' %}" style="color: #007bff; text-decoration: none; font-weight: 500;">
+                    <i class="fas fa-user-plus"></i> S'inscrire
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} {% endcomment %}

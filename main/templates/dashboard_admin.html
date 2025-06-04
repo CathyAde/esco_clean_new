@@ -1,0 +1,581 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard Administrateur - ESCO{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-header {
+        background: linear-gradient(135deg, #1f2937 0%, #374151 50%, #4b5563 100%);
+        color: white;
+        padding: 2rem 0;
+        margin: -2rem -2rem 2rem -2rem;
+    }
+
+    .stats-overview {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+    }
+
+    .stat-card-admin {
+        background: white;
+        border-radius: var(--border-radius);
+        padding: 2rem;
+        box-shadow: var(--shadow-sm);
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .stat-card-admin:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .stat-card-admin::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--primary-gradient);
+    }
+
+    .stat-icon-admin {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: var(--primary-gradient);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin: 0 auto 1rem;
+    }
+
+    .stat-number-admin {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label-admin {
+        color: var(--text-secondary);
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-change {
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .stat-change.positive {
+        color: #10b981;
+    }
+
+    .stat-change.negative {
+        color: #ef4444;
+    }
+
+    .management-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .management-card {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .management-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .management-header {
+        background: var(--bg-light);
+        padding: 1.5rem;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .management-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        background: var(--primary-gradient);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .management-title {
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 0;
+    }
+
+    .management-content {
+        padding: 1.5rem;
+    }
+
+    .management-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .management-item:last-child {
+        border-bottom: none;
+    }
+
+    .item-info {
+        flex: 1;
+    }
+
+    .item-label {
+        font-weight: 500;
+        color: var(--text-primary);
+        margin-bottom: 0.25rem;
+    }
+
+    .item-detail {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+
+    .item-action {
+        color: #667eea;
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+        border: 1px solid #667eea;
+        border-radius: 6px;
+        transition: all 0.3s ease;
+    }
+
+    .item-action:hover {
+        background: #667eea;
+        color: white;
+    }
+
+    .system-monitoring {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+
+    .monitoring-header {
+        background: var(--bg-light);
+        padding: 1.5rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .monitoring-content {
+        padding: 1.5rem;
+    }
+
+    .monitoring-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .monitoring-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .monitoring-label {
+        font-weight: 500;
+        color: var(--text-primary);
+    }
+
+    .monitoring-status {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .status-indicator {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+    }
+
+    .status-indicator.good { background: #10b981; }
+    .status-indicator.warning { background: #f59e0b; }
+    .status-indicator.error { background: #ef4444; }
+
+    .progress-bar {
+        width: 100px;
+        height: 6px;
+        background: var(--border-color);
+        border-radius: 3px;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: var(--primary-gradient);
+        transition: width 0.3s ease;
+    }
+
+    .admin-actions {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+
+    .admin-action-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 1.5rem;
+        background: white;
+        border: 2px solid var(--border-color);
+        border-radius: var(--border-radius);
+        text-decoration: none;
+        color: var(--text-secondary);
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .admin-action-btn:hover {
+        border-color: #667eea;
+        color: #667eea;
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .admin-action-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: var(--bg-light);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .admin-action-btn:hover .admin-action-icon {
+        background: #667eea;
+        color: white;
+    }
+
+    @media (max-width: 768px) {
+        .stats-overview {
+            grid-template-columns: 1fr;
+        }
+        
+        .management-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .admin-actions {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-header">
+    <div class="container">
+        <div style="display: flex; align-items: center; gap: 2rem;">
+            <div style="width: 80px; height: 80px; border-radius: 50%; background: rgba(255, 255, 255, 0.2); display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 700;">
+                <i class="fas fa-user-shield"></i>
+            </div>
+            <div>
+                <h1 style="font-size: 2rem; margin-bottom: 0.5rem;">Panneau d'Administration</h1>
+                <div style="opacity: 0.9; display: flex; gap: 2rem; flex-wrap: wrap;">
+                    <span><i class="fas fa-crown"></i> Administrateur Système</span>
+                    <span><i class="fas fa-user"></i> {{ user.username }}</span>
+                    <span><i class="fas fa-calendar"></i> Aujourd'hui</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Vue d'ensemble statistiques -->
+    <div class="stats-overview fade-in-up">
+        <div class="stat-card-admin">
+            <div class="stat-icon-admin">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-number-admin">{{ total_users|default:"0" }}</div>
+            <div class="stat-label-admin">Utilisateurs Total</div>
+            <div class="stat-change positive">+12 ce mois</div>
+        </div>
+        
+        <div class="stat-card-admin">
+            <div class="stat-icon-admin">
+                <i class="fas fa-user-injured"></i>
+            </div>
+            <div class="stat-number-admin">{{ total_patients|default:"0" }}</div>
+            <div class="stat-label-admin">Patients Actifs</div>
+            <div class="stat-change positive">+8 cette semaine</div>
+        </div>
+        
+        <div class="stat-card-admin">
+            <div class="stat-icon-admin">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <div class="stat-number-admin">{{ total_rdv|default:"0" }}</div>
+            <div class="stat-label-admin">RDV ce mois</div>
+            <div class="stat-change positive">+15%</div>
+        </div>
+        
+        <div class="stat-card-admin">
+            <div class="stat-icon-admin">
+                <i class="fas fa-stethoscope"></i>
+            </div>
+            <div class="stat-number-admin">{{ total_consultations|default:"0" }}</div>
+            <div class="stat-label-admin">Consultations</div>
+            <div class="stat-change positive">+22%</div>
+        </div>
+    </div>
+
+    <!-- Gestion par catégorie -->
+    <div class="management-grid fade-in-up">
+        <div class="management-card">
+            <div class="management-header">
+                <div class="management-icon">
+                    <i class="fas fa-user-md"></i>
+                </div>
+                <h3 class="management-title">Gestion Médecins</h3>
+            </div>
+            <div class="management-content">
+                <div class="management-item">
+                    <div class="item-info">
+                        <div class="item-label">Médecins actifs</div>
+                        <div class="item-detail">5 médecins en service</div>
+                    </div>
+                    <a href="/admin/main/customuser/?role=docteur" class="item-action">Gérer</a>
+                </div>
+                <div class="management-item">
+                    <div class="item-info">
+                        <div class="item-label">Plannings</div>
+                        <div class="item-detail">Disponibilités semaine</div>
+                    </div>
+                    <a href="/admin/main/planning/" class="item-action">Voir</a>
+                </div>
+                <div class="management-item">
+                    <div class="item-info">
+                        <div class="item-label">Nouveau médecin</div>
+                        <div class="item-detail">Ajouter au système</div>
+                    </div>
+                    <a href="/admin/main/customuser/add/" class="item-action">Créer</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="management-card">
+            <div class="management-header">
+                <div class="management-icon">
+                    <i class="fas fa-user-nurse"></i>
+                </div>
+                <h3 class="management-title">Gestion Infirmiers</h3>
+            </div>
+            <div class="management-content">
+                <div class="management-item">
+                    <div class="item-info">
+                        <div class="item-label">Infirmiers actifs</div>
+                        <div class="item-detail">8 infirmiers en service</div>
+                    </div>
+                    <a href="/admin/main/customuser/?role=infirmier" class="item-action">Gérer</a>
+                </div>
+                <div class="management-item">
+                    <div class="item-info">
+                        <div class="item-label">Soins programmés</div>
+                        <div class="item-detail">24 soins aujourd'hui</div>
+                    </div>
+                    <a href="/admin/main/soinsinfirmier/" class="item-action">Voir</a>
+                </div>
+                <div class="management-item">
+                    <div class="item-info">
+                        <div class="item-label">Nouveau infirmier</div>
+                        <div class="item-detail">Ajouter au système</div>
+                    </div>
+                    <a href="/admin/main/customuser/add/" class="item-action">Créer</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="management-card">
+            <div class="management-header">
+                <div class="management-icon">
+                    <i class="fas fa-database"></i>
+                </div>
+                <h3 class="management-title">Base de Données</h3>
+            </div>
+            <div class="management-content">
+                <div class="management-item">
+                    <div class="item-info">
+                        <div class="item-label">Patients</div>
+                        <div class="item-detail">{{ total_patients|default:"0" }} dossiers</div>
+                    </div>
+                    <a href="/admin/main/patient/" class="item-action">Gérer</a>
+                </div>
+                <div class="management-item">
+                    <div class="item-info">
+                        <div class="item-label">Consultations</div>
+                        <div class="item-detail">{{ total_consultations|default:"0" }} fiches</div>
+                    </div>
+                    <a href="/admin/main/consultation/" class="item-action">Voir</a>
+                </div>
+                <div class="management-item">
+                    <div class="item-info">
+                        <div class="item-label">Sauvegarde</div>
+                        <div class="item-detail">Dernière: Hier 23:00</div>
+                    </div>
+                    <a href="#" class="item-action">Backup</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Monitoring système -->
+    <div class="system-monitoring fade-in-up">
+        <div class="monitoring-header">
+            <h3 style="margin: 0;">Monitoring Système</h3>
+        </div>
+        <div class="monitoring-content">
+            <div class="monitoring-item">
+                <div class="monitoring-label">État du serveur</div>
+                <div class="monitoring-status">
+                    <div class="status-indicator good"></div>
+                    <span style="color: #10b981; font-weight: 600;">Opérationnel</span>
+                </div>
+            </div>
+            
+            <div class="monitoring-item">
+                <div class="monitoring-label">Base de données</div>
+                <div class="monitoring-status">
+                    <div class="status-indicator good"></div>
+                    <span style="color: #10b981; font-weight: 600;">Connectée</span>
+                </div>
+            </div>
+            
+            <div class="monitoring-item">
+                <div class="monitoring-label">Utilisation mémoire</div>
+                <div class="monitoring-status">
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 45%;"></div>
+                    </div>
+                    <span style="color: var(--text-secondary);">45%</span>
+                </div>
+            </div>
+            
+            <div class="monitoring-item">
+                <div class="monitoring-label">Espace disque</div>
+                <div class="monitoring-status">
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 67%;"></div>
+                    </div>
+                    <span style="color: var(--text-secondary);">67%</span>
+                </div>
+            </div>
+            
+            <div class="monitoring-item">
+                <div class="monitoring-label">Dernière sauvegarde</div>
+                <div class="monitoring-status">
+                    <div class="status-indicator good"></div>
+                    <span style="color: #10b981; font-weight: 600;">Hier 23:00</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions administratives -->
+    <div class="fade-in-up">
+        <h2 class="section-title">
+            <i class="fas fa-tools"></i>
+            Actions Administratives
+        </h2>
+        
+        <div class="admin-actions">
+            <a href="/admin/" class="admin-action-btn">
+                <div class="admin-action-icon">
+                    <i class="fas fa-cog"></i>
+                </div>
+                <span>Administration Django</span>
+            </a>
+            
+            <a href="/admin/main/customuser/" class="admin-action-btn">
+                <div class="admin-action-icon">
+                    <i class="fas fa-users-cog"></i>
+                </div>
+                <span>Gestion Utilisateurs</span>
+            </a>
+            
+            <a href="/admin/main/patient/" class="admin-action-btn">
+                <div class="admin-action-icon">
+                    <i class="fas fa-folder-open"></i>
+                </div>
+                <span>Dossiers Patients</span>
+            </a>
+            
+            <a href="/admin/main/rendezvous/" class="admin-action-btn">
+                <div class="admin-action-icon">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <span>Planning Global</span>
+            </a>
+            
+            <a href="#" class="admin-action-btn">
+                <div class="admin-action-icon">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+                <span>Rapports</span>
+            </a>
+            
+            <a href="#" class="admin-action-btn">
+                <div class="admin-action-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <span>Sécurité</span>
+            </a>
+            
+            <a href="#" class="admin-action-btn">
+                <div class="admin-action-icon">
+                    <i class="fas fa-download"></i>
+                </div>
+                <span>Sauvegardes</span>
+            </a>
+            
+            <a href="#" class="admin-action-btn">
+                <div class="admin-action-icon">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <span>Notifications</span>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+
+{% block title %}Espace Patient - ESCO{% endblock %}
+
+{% block content %}
+<!-- Header Patient -->
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <div style="display: flex; align-items: center; gap: 1rem;">
+        <div style="font-size: 2rem; color: #007bff;">
+            <i class="fas fa-user-injured"></i>
+        </div>
+        <div>
+            <h1 style="color: #495057; margin: 0;">Espace Patient</h1>
+            <p style="color: #6c757d; margin: 0;">Bienvenue {{ user.first_name|default:user.username }} !</p>
+        </div>
+    </div>
+    <div>
+        <span class="btn btn-light" style="background-color: #007bff; color: white;">Patient</span>
+    </div>
+</div>
+
+<!-- Actions principales -->
+<div class="row">
+    <div class="col-4">
+        <div class="card text-center">
+            <div class="card-body" style="padding: 2rem;">
+                <div style="font-size: 3rem; color: #007bff; margin-bottom: 1rem;">
+                    <i class="fas fa-calendar-plus"></i>
+                </div>
+                <h3 style="color: #495057; margin-bottom: 1rem; font-size: 1.2rem;">Prendre RDV</h3>
+                <p style="color: #6c757d; margin-bottom: 1.5rem; font-size: 0.9rem;">
+                    Planifiez un rendez-vous avec un médecin
+                </p>
+                <a href="/admin/main/rendezvous/add/" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Nouveau RDV
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-4">
+        <div class="card text-center">
+            <div class="card-body" style="padding: 2rem;">
+                <div style="font-size: 3rem; color: #007bff; margin-bottom: 1rem;">
+                    <i class="fas fa-folder-plus"></i>
+                </div>
+                <h3 style="color: #495057; margin-bottom: 1rem; font-size: 1.2rem;">Mes Dossiers</h3>
+                <p style="color: #6c757d; margin-bottom: 1.5rem; font-size: 0.9rem;">
+                    Consultez vos dossiers médicaux
+                </p>
+                <a href="/admin/main/consultation/" class="btn btn-primary">
+                    <i class="fas fa-folder-open"></i> Voir dossiers
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-4">
+        <div class="card text-center">
+            <div class="card-body" style="padding: 2rem;">
+                <div style="font-size: 3rem; color: #007bff; margin-bottom: 1rem;">
+                    <i class="fas fa-comments"></i>
+                </div>
+                <h3 style="color: #495057; margin-bottom: 1rem; font-size: 1.2rem;">Messages</h3>
+                <p style="color: #6c757d; margin-bottom: 1.5rem; font-size: 0.9rem;">
+                    Communiquez avec votre équipe médicale
+                </p>
+                <a href="/admin/" class="btn btn-primary">
+                    <i class="fas fa-envelope"></i> Messagerie
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Informations et RDV -->
+<div class="row" style="margin-top: 2rem;">
+    <!-- Mes Informations -->
+    <div class="col-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-user"></i> Mes Informations
+                </h3>
+            </div>
+            <div class="card-body">
+                <div style="margin-bottom: 1rem;">
+                    <strong>Nom :</strong> {{ user.last_name|default:"Non renseigné" }}
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <strong>Email :</strong> {{ user.email }}
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <strong>Téléphone :</strong> {{ user.telephone|default:"Non renseigné" }}
+                </div>
+                <div>
+                    <a href="/admin/auth/user/{{ user.id }}/change/" class="btn btn-outline">
+                        <i class="fas fa-edit"></i> Modifier
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Prochains RDV -->
+    <div class="col-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-calendar"></i> Prochains RDV
+                </h3>
+            </div>
+            <div class="card-body">
+                <div style="text-align: center; padding: 2rem; color: #6c757d;">
+                    <i class="fas fa-calendar-times" style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                    <p>Aucun rendez-vous programmé</p>
+                    <a href="/admin/main/rendezvous/add/" class="btn btn-primary">
+                        Prendre un RDV
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Actions rapides -->
+<div class="card" style="margin-top: 2rem;">
+    <div class="card-header">
+        <h3 class="card-title">Actions Rapides</h3>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-3">
+                <a href="/mon-dossier-pdf/" class="btn btn-outline" style="width: 100%;">
+                    <i class="fas fa-download"></i>
+                    Télécharger mon dossier
+                </a>
+            </div>
+            <div class="col-3">
+                <a href="/admin/main/rendezvous/" class="btn btn-outline" style="width: 100%;">
+                    <i class="fas fa-list"></i>
+                    Historique RDV
+                </a>
+            </div>
+            <div class="col-3">
+                <a href="/admin/" class="btn btn-outline" style="width: 100%;">
+                    <i class="fas fa-cog"></i>
+                    Paramètres
+                </a>
+            </div>
+            <div class="col-3">
+                <a href="/admin/main/consultation/" class="btn btn-outline" style="width: 100%;">
+                    <i class="fas fa-history"></i>
+                    Consultations
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

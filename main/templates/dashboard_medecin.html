@@ -1,0 +1,240 @@
+{% extends 'base.html' %}
+
+{% block title %}Espace Médecin - ESCO{% endblock %}
+
+{% block content %}
+<!-- Header Médecin -->
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <div style="display: flex; align-items: center; gap: 1rem;">
+        <div style="font-size: 2rem; color: #6c5ce7;">
+            <i class="fas fa-user-md"></i>
+        </div>
+        <div>
+            <h1 style="color: #495057; margin: 0;">Espace Médecin</h1>
+            <p style="color: #6c757d; margin: 0;">Dr. {{ user.first_name|default:user.username }} {{ user.last_name|default:"" }}</p>
+        </div>
+    </div>
+    <div>
+        <span class="btn btn-light" style="background-color: #6c5ce7; color: white;">Médecin</span>
+    </div>
+</div>
+
+<!-- Statistiques rapides -->
+<div class="row">
+    <div class="col-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <div style="font-size: 2rem; color: #6c5ce7; margin-bottom: 0.5rem;">8</div>
+                <div style="color: #6c757d; font-size: 0.9rem;">RDV Aujourd'hui</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <div style="font-size: 2rem; color: #6c5ce7; margin-bottom: 0.5rem;">42</div>
+                <div style="color: #6c757d; font-size: 0.9rem;">Patients Suivis</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <div style="font-size: 2rem; color: #6c5ce7; margin-bottom: 0.5rem;">156</div>
+                <div style="color: #6c757d; font-size: 0.9rem;">Consultations ce mois</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <div style="font-size: 2rem; color: #6c5ce7; margin-bottom: 0.5rem;">5.2</div>
+                <div style="color: #6c757d; font-size: 0.9rem;">Moyenne/jour</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Actions principales -->
+<div class="row" style="margin-top: 2rem;">
+    <div class="col-4">
+        <div class="card text-center">
+            <div class="card-body" style="padding: 2rem;">
+                <div style="font-size: 3rem; color: #6c5ce7; margin-bottom: 1rem;">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <h3 style="color: #495057; margin-bottom: 1rem; font-size: 1.2rem;">Planning</h3>
+                <p style="color: #6c757d; margin-bottom: 1.5rem; font-size: 0.9rem;">
+                    Gérez votre planning et vos disponibilités
+                </p>
+                <a href="/admin/main/planning/" class="btn btn-primary">
+                    <i class="fas fa-calendar"></i> Voir planning
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-4">
+        <div class="card text-center">
+            <div class="card-body" style="padding: 2rem;">
+                <div style="font-size: 3rem; color: #6c5ce7; margin-bottom: 1rem;">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h3 style="color: #495057; margin-bottom: 1rem; font-size: 1.2rem;">Patients</h3>
+                <p style="color: #6c757d; margin-bottom: 1.5rem; font-size: 0.9rem;">
+                    Consultez la liste de vos patients
+                </p>
+                <a href="/admin/main/patient/" class="btn btn-primary">
+                    <i class="fas fa-list"></i> Liste patients
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-4">
+        <div class="card text-center">
+            <div class="card-body" style="padding: 2rem;">
+                <div style="font-size: 3rem; color: #6c5ce7; margin-bottom: 1rem;">
+                    <i class="fas fa-stethoscope"></i>
+                </div>
+                <h3 style="color: #495057; margin-bottom: 1rem; font-size: 1.2rem;">Consultations</h3>
+                <p style="color: #6c757d; margin-bottom: 1.5rem; font-size: 0.9rem;">
+                    Gérez vos consultations et dossiers
+                </p>
+                <a href="/admin/main/consultation/" class="btn btn-primary">
+                    <i class="fas fa-notes-medical"></i> Consultations
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Planning d'aujourd'hui et patients -->
+<div class="row" style="margin-top: 2rem;">
+    <!-- Planning du jour -->
+    <div class="col-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-clock"></i> Planning d'Aujourd'hui - Mardi 4 Juin 2025
+                </h3>
+            </div>
+            <div class="card-body">
+                <!-- RDV 1 -->
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-bottom: 1px solid #e9ecef;">
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <div style="background-color: #6c5ce7; color: white; padding: 0.5rem; border-radius: 6px; font-weight: 600; min-width: 70px; text-align: center; font-size: 0.9rem;">
+                            09:00
+                        </div>
+                        <div>
+                            <div style="font-weight: 600; color: #495057;">Jean Martin</div>
+                            <div style="color: #6c757d; font-size: 0.9rem;">Consultation de contrôle</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <a href="#" class="btn btn-outline" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;">
+                            <i class="fas fa-eye"></i> Voir
+                        </a>
+                        <a href="#" class="btn btn-primary" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;">
+                            <i class="fas fa-play"></i> Commencer
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- RDV 2 -->
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-bottom: 1px solid #e9ecef;">
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <div style="background-color: #6c5ce7; color: white; padding: 0.5rem; border-radius: 6px; font-weight: 600; min-width: 70px; text-align: center; font-size: 0.9rem;">
+                            10:30
+                        </div>
+                        <div>
+                            <div style="font-weight: 600; color: #495057;">Marie Dubois</div>
+                            <div style="color: #6c757d; font-size: 0.9rem;">Première consultation</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <a href="#" class="btn btn-outline" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;">
+                            <i class="fas fa-eye"></i> Voir
+                        </a>
+                        <a href="#" class="btn btn-light" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;">
+                            <i class="fas fa-clock"></i> En attente
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- RDV 3 -->
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-bottom: 1px solid #e9ecef;">
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <div style="background-color: #6c5ce7; color: white; padding: 0.5rem; border-radius: 6px; font-weight: 600; min-width: 70px; text-align: center; font-size: 0.9rem;">
+                            14:00
+                        </div>
+                        <div>
+                            <div style="font-weight: 600; color: #495057;">Pierre Laurent</div>
+                            <div style="color: #6c757d; font-size: 0.9rem;">Suivi post-opératoire</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <a href="#" class="btn btn-outline" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;">
+                            <i class="fas fa-eye"></i> Voir
+                        </a>
+                        <a href="#" class="btn btn-light" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;">
+                            <i class="fas fa-clock"></i> Programmé
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- RDV 4 -->
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem;">
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <div style="background-color: #6c5ce7; color: white; padding: 0.5rem; border-radius: 6px; font-weight: 600; min-width: 70px; text-align: center; font-size: 0.9rem;">
+                            16:30
+                        </div>
+                        <div>
+                            <div style="font-weight: 600; color: #495057;">Sophie Bernard</div>
+                            <div style="color: #6c757d; font-size: 0.9rem;">Consultation spécialisée</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <a href="#" class="btn btn-outline" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;">
+                            <i class="fas fa-eye"></i> Voir
+                        </a>
+                        <a href="#" class="btn btn-light" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;">
+                            <i class="fas fa-clock"></i> Programmé
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Actions rapides -->
+    <div class="col-4">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Actions Rapides</h3>
+            </div>
+            <div class="card-body">
+                <a href="/admin/main/consultation/add/" class="btn btn-primary" style="width: 100%; margin-bottom: 0.75rem;">
+                    <i class="fas fa-plus"></i> Nouvelle consultation
+                </a>
+                
+                <a href="/admin/main/rendezvous/" class="btn btn-outline" style="width: 100%; margin-bottom: 0.75rem;">
+                    <i class="fas fa-calendar-alt"></i> Tous les RDV
+                </a>
+                
+                <a href="/admin/main/prescription/add/" class="btn btn-outline" style="width: 100%; margin-bottom: 0.75rem;">
+                    <i class="fas fa-prescription"></i> Nouvelle ordonnance
+                </a>
+                
+                <a href="/admin/" class="btn btn-outline" style="width: 100%; margin-bottom: 0.75rem;">
+                    <i class="fas fa-cog"></i> Administration
+                </a>
+                
+                <a href="/prescription-pdf/" class="btn btn-light" style="width: 100%;">
+                    <i class="fas fa-download"></i> Export PDF
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

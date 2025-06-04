@@ -1,0 +1,216 @@
+{% extends 'base.html' %}
+
+{% block title %}Accueil - ESCO{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Texte principal -->
+    <div class="col-6">
+        <div style="padding: 3rem 0;">
+            <h1 style="font-size: 3rem; font-weight: 700; color: #495057; margin-bottom: 1rem;">
+                Bienvenue sur<br>
+                <span style="color: #6c5ce7;">ESCO</span>
+            </h1>
+            
+            <p style="font-size: 1.1rem; color: #6c757d; line-height: 1.6; margin-bottom: 2rem;">
+                Votre plateforme de gestion hospitalière moderne. Gérez 
+                facilement vos rendez-vous, consultations et dossiers 
+                médicaux.
+            </p>
+            
+            <div style="display: flex; gap: 1rem;">
+                {% if not user.is_authenticated %}
+                <a href="/inscription/" class="btn btn-primary" style="font-size: 1rem; padding: 1rem 2rem;">
+                    <i class="fas fa-user-plus"></i>
+                    S'inscrire
+                </a>
+                
+                <a href="/login/" class="btn btn-outline" style="font-size: 1rem; padding: 1rem 2rem;">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Se connecter
+                </a>
+                {% else %}
+                <a href="/dashboard/" class="btn btn-primary" style="font-size: 1rem; padding: 1rem 2rem;">
+                    <i class="fas fa-tachometer-alt"></i>
+                    Accéder au Dashboard
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Card Système Intégré -->
+    <div class="col-6">
+        <div style="padding: 2rem;">
+            <div class="card" style="text-align: center; padding: 3rem 2rem;">
+                <div style="font-size: 4rem; color: #6c5ce7; margin-bottom: 2rem;">
+                    <i class="fas fa-hospital"></i>
+                </div>
+                
+                <h2 style="color: #495057; margin-bottom: 1rem; font-weight: 600;">
+                    Système Intégré
+                </h2>
+                
+                <p style="color: #6c757d; font-size: 1rem; line-height: 1.5;">
+                    Une solution complète pour la gestion de votre établissement de 
+                    santé.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Section fonctionnalités -->
+<div class="row" style="margin-top: 3rem;">
+    <div class="col-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <div style="font-size: 2.5rem; color: #6c5ce7; margin-bottom: 1rem;">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <h3 style="color: #495057; margin-bottom: 1rem;">Rendez-vous</h3>
+                <p style="color: #6c757d;">
+                    Planifiez et gérez facilement tous vos rendez-vous médicaux
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <div style="font-size: 2.5rem; color: #6c5ce7; margin-bottom: 1rem;">
+                    <i class="fas fa-file-medical"></i>
+                </div>
+                <h3 style="color: #495057; margin-bottom: 1rem;">Dossiers</h3>
+                <p style="color: #6c757d;">
+                    Consultez et gérez les dossiers médicaux en toute sécurité
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <div style="font-size: 2.5rem; color: #6c5ce7; margin-bottom: 1rem;">
+                    <i class="fas fa-stethoscope"></i>
+                </div>
+                <h3 style="color: #495057; margin-bottom: 1rem;">Consultations</h3>
+                <p style="color: #6c757d;">
+                    Suivez l'historique et les détails de toutes les consultations
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{% comment %} {% extends 'base.html' %}
+
+{% block title %}Accueil - ESCO{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Texte principal -->
+    <div class="col-6">
+        <div style="padding: 3rem 0;">
+            <h1 style="font-size: 3rem; font-weight: 700; color: #495057; margin-bottom: 1rem;">
+                Bienvenue sur<br>
+                <span style="color: #6c5ce7;">ESCO</span>
+            </h1>
+            
+            <p style="font-size: 1.1rem; color: #6c757d; line-height: 1.6; margin-bottom: 2rem;">
+                Votre plateforme de gestion hospitalière moderne. Gérez 
+                facilement vos rendez-vous, consultations et dossiers 
+                médicaux.
+            </p>
+            
+            <div style="display: flex; gap: 1rem;">
+                {% if not user.is_authenticated %}
+                <a href="{% url 'inscription' %}" class="btn btn-primary" style="font-size: 1rem; padding: 1rem 2rem;">
+                    <i class="fas fa-user-plus"></i>
+                    S'inscrire
+                </a>
+                
+                <a href="{% url 'login' %}" class="btn btn-outline" style="font-size: 1rem; padding: 1rem 2rem;">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Se connecter
+                </a>
+                {% else %}
+                <a href="{% url 'dashboard' %}" class="btn btn-primary" style="font-size: 1rem; padding: 1rem 2rem;">
+                    <i class="fas fa-tachometer-alt"></i>
+                    Accéder au Dashboard
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Card Système Intégré -->
+    <div class="col-6">
+        <div style="padding: 2rem;">
+            <div class="card" style="text-align: center; padding: 3rem 2rem;">
+                <div style="font-size: 4rem; color: #6c5ce7; margin-bottom: 2rem;">
+                    <i class="fas fa-hospital"></i>
+                </div>
+                
+                <h2 style="color: #495057; margin-bottom: 1rem; font-weight: 600;">
+                    Système Intégré
+                </h2>
+                
+                <p style="color: #6c757d; font-size: 1rem; line-height: 1.5;">
+                    Une solution complète pour la gestion de votre établissement de 
+                    santé.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Section fonctionnalités -->
+<div class="row" style="margin-top: 3rem;">
+    <div class="col-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <div style="font-size: 2.5rem; color: #6c5ce7; margin-bottom: 1rem;">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <h3 style="color: #495057; margin-bottom: 1rem;">Rendez-vous</h3>
+                <p style="color: #6c757d;">
+                    Planifiez et gérez facilement tous vos rendez-vous médicaux
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <div style="font-size: 2.5rem; color: #6c5ce7; margin-bottom: 1rem;">
+                    <i class="fas fa-file-medical"></i>
+                </div>
+                <h3 style="color: #495057; margin-bottom: 1rem;">Dossiers</h3>
+                <p style="color: #6c757d;">
+                    Consultez et gérez les dossiers médicaux en toute sécurité
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <div style="font-size: 2.5rem; color: #6c5ce7; margin-bottom: 1rem;">
+                    <i class="fas fa-stethoscope"></i>
+                </div>
+                <h3 style="color: #495057; margin-bottom: 1rem;">Consultations</h3>
+                <p style="color: #6c757d;">
+                    Suivez l'historique et les détails de toutes les consultations
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} {% endcomment %}
