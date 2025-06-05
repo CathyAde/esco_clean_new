@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}Modifier mon Profil - ESCO{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 0 auto;">
+    <!-- Header -->
+    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
+        <a href="{% url 'dashboard_patient' %}" class="btn btn-outline">
+            <i class="fas fa-arrow-left"></i> Retour
+        </a>
+        <div>
+            <h1 style="color: #495057; margin: 0;">Modifier mon Profil</h1>
+            <p style="color: #6c757d; margin: 0;">Mettez à jour vos informations personnelles</p>
+        </div>
+    </div>
+
+    <form method="post" class="card">
+        {% csrf_token %}
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-user-edit"></i> Informations Personnelles
+            </h3>
+        </div>
+        <div class="card-body">
+            <!-- Prénom -->
+            <div style="margin-bottom: 1.5rem;">
+                <label style="font-weight: 600; margin-bottom: 0.5rem; display: block;">Prénom :</label>
+                <input type="text" name="first_name" value="{{ user.first_name }}" class="form-control">
+            </div>
+
+            <!-- Nom -->
+            <div style="margin-bottom: 1.5rem;">
+                <label style="font-weight: 600; margin-bottom: 0.5rem; display: block;">Nom :</label>
+                <input type="text" name="last_name" value="{{ user.last_name }}" class="form-control">
+            </div>
+
+            <!-- Email -->
+            <div style="margin-bottom: 1.5rem;">
+                <label style="font-weight: 600; margin-bottom: 0.5rem; display: block;">Email :</label>
+                <input type="email" name="email" value="{{ user.email }}" required class="form-control">
+            </div>
+
+            <!-- Téléphone -->
+            <div style="margin-bottom: 1.5rem;">
+                <label style="font-weight: 600; margin-bottom: 0.5rem; display: block;">Téléphone :</label>
+                <input type="tel" name="telephone" value="{{ user.telephone }}" class="form-control">
+            </div>
+
+            <!-- Adresse -->
+            <div style="margin-bottom: 1.5rem;">
+                <label style="font-weight: 600; margin-bottom: 0.5rem; display: block;">Adresse :</label>
+                <textarea name="adresse" rows="3" class="form-control">{{ user.adresse }}</textarea>
+            </div>
+        </div>
+
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Enregistrer les modifications
+            </button>
+            <a href="{% url 'dashboard_patient' %}" class="btn btn-light">
+                <i class="fas fa-times"></i> Annuler
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

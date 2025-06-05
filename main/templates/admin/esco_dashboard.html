@@ -1,0 +1,196 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block title %}{{ title }} | {{ site_title|default:_('ESCO Admin') }}{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">
+    <a href="{% url 'admin:index' %}" style="color: #fff; text-decoration: none;">
+        🏥 ESCO - Administration Médicale
+    </a>
+</h1>
+{% endblock %}
+
+{% block nav-global %}{% endblock %}
+
+{% block content %}
+<style>
+    .esco-dashboard {
+        padding: 20px;
+    }
+    .esco-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    .esco-stat-card {
+        background: white;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: transform 0.2s;
+    }
+    .esco-stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    .esco-stat-number {
+        font-size: 2.5rem;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+    .esco-stat-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+    .esco-section {
+        background: white;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        overflow: hidden;
+    }
+    .esco-section-header {
+        background-color: #f8f9fa;
+        padding: 15px 20px;
+        border-bottom: 1px solid #e9ecef;
+        font-weight: bold;
+        color: #495057;
+    }
+    .esco-section-content {
+        padding: 20px;
+    }
+    .esco-recent-item {
+        padding: 10px 0;
+        border-bottom: 1px solid #f8f9fa;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .esco-recent-item:last-child {
+        border-bottom: none;
+    }
+    .esco-grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+</style>
+
+<div class="esco-dashboard">
+    <h1 style="color: #495057; margin-bottom: 30px;">
+        <i class="fas fa-tachometer-alt"></i> Tableau de bord ESCO
+    </h1>
+    
+    <!-- Statistiques principales -->
+    <div class="esco-stats-grid">
+        <div class="esco-stat-card">
+            <div class="esco-stat-number" style="color: #007bff;">{{ stats.total_patients }}</div>
+            <div class="esco-stat-label"><i class="fas fa-user-injured"></i> Patients</div>
+        </div>
+        <div class="esco-stat-card">
+            <div class="esco-stat-number" style="color: #28a745;">{{ stats.total_medecins }}</div>
+            <div class="esco-stat-label"><i class="fas fa-user-md"></i> Médecins</div>
+        </div>
+        <div class="esco-stat-card">
+            <div class="esco-stat-number" style="color: #e91e63;">{{ stats.total_infirmiers }}</div>
+            <div class="esco-stat-label"><i class="fas fa-user-nurse"></i> Infirmiers</div>
+        </div>
+        <div class="esco-stat-card">
+            <div class="esco-stat-number" style="color: #17a2b8;">{{ stats.total_secretaires }}</div>
+            <div class="esco-stat-label"><i class="fas fa-user-tie"></i> Secrétaires</div>
+        </div>
+        <div class="esco-stat-card">
+            <div class="esco-stat-number" style="color: #ffc107;">{{ stats.rdv_aujourdhui }}</div>
+            <div class="esco-stat-label"><i class="fas fa-calendar-day"></i> RDV Aujourd'hui</div>
+        </div>
+        <div class="esco-stat-card">
+            <div class="esco-stat-number" style="color: #6c5ce7;">{{ stats.consultations_total }}</div>
+            <div class="esco-stat-label"><i class="fas fa-stethoscope"></i> Consultations</div>
+        </div>
+    </div>
+
+    <div class="esco-grid-2">
+        <!-- Derniers rendez-vous -->
+        <div class="esco-section">
+            <div class="esco-section-header">
+                <i class="fas fa-calendar-alt"></i> Derniers Rendez-vous
+            </div>
+            <div class="esco-section-content">
+                {% for rdv in recent_rdv %}
+                    <div class="esco-recent-item">
+                        <div>
+                            <strong>{{ rdv.patient.get_full_name|default:rdv.patient.username }}</strong><br>
+                            <small style="color: #6c757d;">Dr. {{ rdv.medecin.get_full_name|default:rdv.medecin.username }}</small>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 0.9rem; color: #6c757d;">{{ rdv.date_rdv|date:"d/m/Y H:i" }}</div>
+                            <span style="background-color: 
+                                {% if rdv.status == 'confirme' %}#28a745
+                                {% elif rdv.status == 'programme' %}#ffc107
+                                {% elif rdv.status == 'en_cours' %}#007bff
+                                {% elif rdv.status == 'termine' %}#6c757d
+                                {% else %}#dc3545{% endif %};
+                                color: white; padding: 0.2rem 0.5rem; border-radius: 3px; font-size: 0.7rem;">
+                                {{ rdv.get_status_display }}
+                            </span>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p style="text-align: center; color: #6c757d;">Aucun rendez-vous récent</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Nouveaux utilisateurs -->
+        <div class="esco-section">
+            <div class="esco-section-header">
+                <i class="fas fa-users"></i> Nouveaux Utilisateurs
+            </div>
+            <div class="esco-section-content">
+                {% for user in recent_users %}
+                    <div class="esco-recent-item">
+                        <div>
+                            <strong>{{ user.get_full_name|default:user.username }}</strong><br>
+                            <small style="color: #6c757d;">{{ user.get_role_display }}</small>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 0.9rem; color: #6c757d;">{{ user.date_joined|date:"d/m/Y" }}</div>
+                            <small style="color: #6c757d;">{{ user.user_id }}</small>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p style="text-align: center; color: #6c757d;">Aucun nouvel utilisateur</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions rapides -->
+    <div class="esco-section">
+        <div class="esco-section-header">
+            <i class="fas fa-bolt"></i> Actions Rapides
+        </div>
+        <div class="esco-section-content">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                <a href="{% url 'admin:main_customuser_add' %}" class="button default" style="text-decoration: none; text-align: center; padding: 15px;">
+                    <i class="fas fa-user-plus"></i><br>Nouvel Utilisateur
+                </a>
+                <a href="{% url 'admin:main_rendezvous_add' %}" class="button default" style="text-decoration: none; text-align: center; padding: 15px;">
+                    <i class="fas fa-calendar-plus"></i><br>Nouveau RDV
+                </a>
+                <a href="{% url 'admin:main_patient_changelist' %}" class="button default" style="text-decoration: none; text-align: center; padding: 15px;">
+                    <i class="fas fa-users"></i><br>Gérer Patients
+                </a>
+                <a href="{% url 'admin:main_consultation_changelist' %}" class="button default" style="text-decoration: none; text-align: center; padding: 15px;">
+                    <i class="fas fa-stethoscope"></i><br>Consultations
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

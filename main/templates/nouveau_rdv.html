@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Nouveau Rendez-vous - ESCO{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg border-0 rounded-3">
+                <div class="card-header text-white" style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);">
+                    <h4 class="mb-0">
+                        <i class="fas fa-calendar-plus me-2"></i>Nouveau Rendez-vous
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.medecin.id_for_label }}" class="form-label fw-bold">{{ form.medecin.label }}</label>
+                                {{ form.medecin }}
+                                {% if form.medecin.errors %}
+                                    <div class="text-danger">{{ form.medecin.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.date_rdv.id_for_label }}" class="form-label fw-bold">{{ form.date_rdv.label }}</label>
+                                {{ form.date_rdv }}
+                                {% if form.date_rdv.errors %}
+                                    <div class="text-danger">{{ form.date_rdv.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.heure_rdv.id_for_label }}" class="form-label fw-bold">{{ form.heure_rdv.label }}</label>
+                                {{ form.heure_rdv }}
+                                {% if form.heure_rdv.errors %}
+                                    <div class="text-danger">{{ form.heure_rdv.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="{{ form.motif.id_for_label }}" class="form-label fw-bold">{{ form.motif.label }}</label>
+                            {{ form.motif }}
+                            {% if form.motif.errors %}
+                                <div class="text-danger">{{ form.motif.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Prendre rendez-vous
+                            </button>
+                            <a href="{% url 'dashboard_patient' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Retour au dashboard
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

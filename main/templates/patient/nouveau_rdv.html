@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block title %}Nouveau Rendez-vous - ESCO{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 0 auto;">
+    <!-- Header -->
+    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
+        <a href="{% url 'dashboard_patient' %}" class="btn btn-outline">
+            <i class="fas fa-arrow-left"></i> Retour
+        </a>
+        <div>
+            <h1 style="color: #495057; margin: 0;">Prendre un Rendez-vous</h1>
+            <p style="color: #6c757d; margin: 0;">Planifiez votre consultation médicale</p>
+        </div>
+    </div>
+
+    <form method="post" class="card">
+        {% csrf_token %}
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-calendar-plus"></i> Informations du Rendez-vous
+            </h3>
+        </div>
+        <div class="card-body">
+            <!-- Médecin -->
+            <div style="margin-bottom: 1.5rem;">
+                <label style="font-weight: 600; margin-bottom: 0.5rem; display: block;">Médecin :</label>
+                <select name="medecin" required class="form-control">
+                    <option value="">Choisir un médecin...</option>
+                    {% for medecin in medecins %}
+                        <option value="{{ medecin.id }}">
+                            Dr. {{ medecin.get_full_name|default:medecin.username }}
+                            {% if medecin.specialite %} - {{ medecin.specialite }}{% endif %}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Date -->
+            <div style="margin-bottom: 1.5rem;">
+                <label style="font-weight: 600; margin-bottom: 0.5rem; display: block;">Date :</label>
+                <input type="date" name="date_rdv" min="{{ today|date:'Y-m-d' }}" required class="form-control">
+            </div>
+
+            <!-- Heure -->
+            <div style="margin-bottom: 1.5rem;">
+                <label style="font-weight: 600; margin-bottom: 0.5rem; display: block;">Heure :</label>
+                <select name="heure_rdv" required class="form-control">
+                    <option value="">Choisir un créneau...</option>
+                    <option value="08:00">08:00</option>
+                    <option value="08:30">08:30</option>
+                    <option value="09:00">09:00</option>
+                    <option value="09:30">09:30</option>
+                    <option value="10:00">10:00</option>
+                    <option value="10:30">10:30</option>
+                    <option value="11:00">11:00</option>
+                    <option value="11:30">11:30</option>
+                    <option value="14:00">14:00</option>
+                    <option value="14:30">14:30</option>
+                    <option value="15:00">15:00</option>
+                    <option value="15:30">15:30</option>
+                    <option value="16:00">16:00</option>
+                    <option value="16:30">16:30</option>
+                    <option value="17:00">17:00</option>
+                    <option value="17:30">17:30</option>
+                </select>
+            </div>
+
+            <!-- Motif -->
+            <div style="margin-bottom: 1.5rem;">
+                <label style="font-weight: 600; margin-bottom: 0.5rem; display: block;">Motif de consultation :</label>
+                <textarea name="motif" rows="3" required class="form-control" placeholder="Décrivez brièvement le motif de votre consultation..."></textarea>
+            </div>
+        </div>
+
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-check"></i> Prendre ce Rendez-vous
+            </button>
+            <a href="{% url 'dashboard_patient' %}" class="btn btn-light">
+                <i class="fas fa-times"></i> Annuler
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

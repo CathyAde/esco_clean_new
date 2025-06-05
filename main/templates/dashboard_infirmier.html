@@ -1,241 +1,230 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Espace Infirmier - ESCO{% endblock %}
 
 {% block content %}
-<!-- Header Infirmier -->
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-    <div style="display: flex; align-items: center; gap: 1rem;">
-        <div style="font-size: 2rem; color: #e91e63;">
-            <i class="fas fa-user-nurse"></i>
-        </div>
-        <div>
-            <h1 style="color: #495057; margin: 0;">Espace Infirmier</h1>
-            <p style="color: #6c757d; margin: 0;">{{ user.first_name|default:user.username }} {{ user.last_name|default:"" }}</p>
+<div class="container-fluid py-4">
+    <!-- Header simple -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-user-nurse fa-2x text-danger me-3"></i>
+                    <div>
+                        <h3 class="mb-0">Espace Infirmier</h3>
+                        <p class="text-muted mb-0">{{ user.first_name|default:user.username }} {{ user.last_name|default:"" }}</p>
+                    </div>
+                </div>
+                <span class="badge bg-danger fs-6 px-3 py-2">Infirmier</span>
+            </div>
         </div>
     </div>
-    <div>
-        <span class="btn btn-light" style="background-color: #e91e63; color: white;">Infirmier</span>
-    </div>
-</div>
 
-<!-- Soins urgents -->
-<div class="card" style="margin-bottom: 2rem; border-left: 4px solid #dc3545;">
-    <div class="card-header" style="background-color: #f8d7da; color: #721c24;">
-        <h3 class="card-title">
-            <i class="fas fa-exclamation-triangle"></i> Soins Urgents - Action Immédiate
-        </h3>
-    </div>
-    <div class="card-body">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-            <div>
-                <strong>Chambre 205 - Marie Dubois</strong><br>
-                <span style="color: #6c757d;">Pansement post-opératoire - Contrôle toutes les 2h</span>
+    <!-- Soins urgents - plus discret -->
+    {% if soins_urgents %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="alert alert-danger border-0 shadow-sm">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-exclamation-triangle me-3"></i>
+                    <div class="flex-grow-1">
+                        <h6 class="mb-1">Soins Urgents</h6>
+                        <small>{{ soins_urgents.count }} soins nécessitent une attention immédiate</small>
+                    </div>
+                    <a href="#" class="btn btn-danger btn-sm">Voir détails</a>
+                </div>
             </div>
-            <a href="#" class="btn" style="background-color: #dc3545; color: white;">
-                <i class="fas fa-play"></i> Prendre en charge
-            </a>
-        </div>
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <strong>Chambre 312 - Pierre Martin</strong><br>
-                <span style="color: #6c757d;">Administration médicament - Retard de 30 min</span>
-            </div>
-            <a href="#" class="btn" style="background-color: #dc3545; color: white;">
-                <i class="fas fa-pills"></i> Administrer
-            </a>
         </div>
     </div>
-</div>
+    {% endif %}
 
-<!-- Actions principales -->
-<div class="row">
-    <div class="col-4">
-        <div class="card text-center">
-            <div class="card-body" style="padding: 2rem;">
-                <div style="font-size: 3rem; color: #e91e63; margin-bottom: 1rem;">
-                    <i class="fas fa-clipboard-list"></i>
-                </div>
-                <h3 style="color: #495057; margin-bottom: 1rem; font-size: 1.2rem;">Planning Soins</h3>
-                <p style="color: #6c757d; margin-bottom: 1.5rem; font-size: 0.9rem;">
-                    Consultez votre planning des soins
-                </p>
-                <a href="/admin/main/soinsinfirmier/" class="btn btn-primary">
-                    <i class="fas fa-list"></i> Voir planning
-                </a>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-4">
-        <div class="card text-center">
-            <div class="card-body" style="padding: 2rem;">
-                <div style="font-size: 3rem; color: #e91e63; margin-bottom: 1rem;">
-                    <i class="fas fa-user-injured"></i>
-                </div>
-                <h3 style="color: #495057; margin-bottom: 1rem; font-size: 1.2rem;">Patients</h3>
-                <p style="color: #6c757d; margin-bottom: 1.5rem; font-size: 0.9rem;">
-                    Liste des patients sous surveillance
-                </p>
-                <a href="/admin/main/patient/" class="btn btn-primary">
-                    <i class="fas fa-users"></i> Liste patients
-                </a>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-4">
-        <div class="card text-center">
-            <div class="card-body" style="padding: 2rem;">
-                <div style="font-size: 3rem; color: #e91e63; margin-bottom: 1rem;">
-                    <i class="fas fa-syringe"></i>
-                </div>
-                <h3 style="color: #495057; margin-bottom: 1rem; font-size: 1.2rem;">Soins</h3>
-                <p style="color: #6c757d; margin-bottom: 1.5rem; font-size: 0.9rem;">
-                    Enregistrer un nouveau soin
-                </p>
-                <a href="/admin/main/soinsinfirmier/add/" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> Nouveau soin
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Planning du jour et patients -->
-<div class="row" style="margin-top: 2rem;">
-    <!-- Planning des soins -->
-    <div class="col-8">
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">
-                    <i class="fas fa-clock"></i> Planning des Soins - Aujourd'hui
-                </h3>
-            </div>
-            <div class="card-body">
-                <!-- Soin 1 -->
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-bottom: 1px solid #e9ecef;">
-                    <div style="display: flex; align-items: center; gap: 1rem;">
-                        <div style="background-color: #28a745; color: white; padding: 0.5rem; border-radius: 6px; font-weight: 600; min-width: 70px; text-align: center; font-size: 0.9rem;">
-                            08:00
-                        </div>
-                        <div>
-                            <div style="font-weight: 600; color: #495057;">Prise constantes - Jean Dupont</div>
-                            <div style="color: #6c757d; font-size: 0.9rem;">Chambre 102 - Tension, température</div>
-                        </div>
-                    </div>
-                    <div style="display: flex; gap: 0.5rem;">
-                        <span style="background-color: #28a745; color: white; padding: 0.3rem 0.6rem; border-radius: 4px; font-size: 0.8rem;">
-                            <i class="fas fa-check"></i> Terminé
-                        </span>
-                    </div>
-                </div>
-                
-                <!-- Soin 2 -->
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-bottom: 1px solid #e9ecef;">
-                    <div style="display: flex; align-items: center; gap: 1rem;">
-                        <div style="background-color: #007bff; color: white; padding: 0.5rem; border-radius: 6px; font-weight: 600; min-width: 70px; text-align: center; font-size: 0.9rem;">
-                            09:30
-                        </div>
-                        <div>
-                            <div style="font-weight: 600; color: #495057;">Administration médicaments - Marie Dubois</div>
-                            <div style="color: #6c757d; font-size: 0.9rem;">Chambre 205 - Antibiotiques + Antalgiques</div>
-                        </div>
-                    </div>
-                    <div style="display: flex; gap: 0.5rem;">
-                        <a href="#" class="btn btn-primary" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;">
-                            <i class="fas fa-check"></i> Terminer
-                        </a>
-                    </div>
-                </div>
-                
-                <!-- Soin 3 -->
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-bottom: 1px solid #e9ecef;">
-                    <div style="display: flex; align-items: center; gap: 1rem;">
-                        <div style="background-color: #ffc107; color: white; padding: 0.5rem; border-radius: 6px; font-weight: 600; min-width: 70px; text-align: center; font-size: 0.9rem;">
-                            11:00
-                        </div>
-                        <div>
-                            <div style="font-weight: 600; color: #495057;">Pansement chirurgical - Pierre Martin</div>
-                            <div style="color: #6c757d; font-size: 0.9rem;">Chambre 312 - Renouvellement post-op</div>
-                        </div>
-                    </div>
-                    <div style="display: flex; gap: 0.5rem;">
-                        <a href="#" class="btn btn-primary" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;">
-                            <i class="fas fa-play"></i> Commencer
-                        </a>
-                    </div>
-                </div>
-                
-                <!-- Soin 4 -->
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem;">
-                    <div style="display: flex; align-items: center; gap: 1rem;">
-                        <div style="background-color: #ffc107; color: white; padding: 0.5rem; border-radius: 6px; font-weight: 600; min-width: 70px; text-align: center; font-size: 0.9rem;">
-                            14:00
-                        </div>
-                        <div>
-                            <div style="font-weight: 600; color: #495057;">Injection IM - Sophie Laurent</div>
-                            <div style="color: #6c757d; font-size: 0.9rem;">Chambre 108 - Vaccination grippe</div>
-                        </div>
-                    </div>
-                    <div style="display: flex; gap: 0.5rem;">
-                        <a href="#" class="btn btn-light" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;">
-                            <i class="fas fa-clock"></i> Programmé
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Patients sous surveillance -->
-    <div class="col-4">
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Patients Surveillance</h3>
-            </div>
-            <div class="card-body">
-                <!-- Patient 1 -->
-                <div style="border: 1px solid #e9ecef; border-radius: 6px; padding: 1rem; margin-bottom: 1rem;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                        <strong style="color: #495057;">Marie Dubois</strong>
-                        <span style="background-color: #e91e63; color: white; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.8rem;">Ch. 205</span>
-                    </div>
-                    <div style="color: #6c757d; font-size: 0.9rem; margin-bottom: 0.5rem;">
-                        Post-opératoire - Surveillance rapprochée
-                    </div>
-                    <div style="font-size: 0.8rem; color: #6c757d;">
-                        • Pansement: Toutes les 4h<br>
-                        • Constantes: Toutes les 2h
-                    </div>
-                </div>
-                
-                <!-- Patient 2 -->
-                <div style="border: 1px solid #e9ecef; border-radius: 6px; padding: 1rem; margin-bottom: 1rem;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                        <strong style="color: #495057;">Pierre Martin</strong>
-                        <span style="background-color: #e91e63; color: white; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.8rem;">Ch. 312</span>
-                    </div>
-                    <div style="color: #6c757d; font-size: 0.9rem; margin-bottom: 0.5rem;">
-                        Traitement antibiotique
-                    </div>
-                    <div style="font-size: 0.8rem; color: #6c757d;">
-                        • Antibiotiques: Matin - Soir<br>
-                        • Prélèvements: Quotidien
-                    </div>
-                </div>
-                
-                <!-- Actions rapides -->
-                <div style="border-top: 1px solid #e9ecef; padding-top: 1rem;">
-                    <a href="/admin/main/soinsinfirmier/add/" class="btn btn-primary" style="width: 100%; margin-bottom: 0.5rem;">
-                        <i class="fas fa-plus"></i> Nouveau soin
+    <!-- Actions principales - simplifiées -->
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center p-4">
+                    <i class="fas fa-clipboard-list fa-2x text-danger mb-3"></i>
+                    <h5 class="mb-2">Planning Soins</h5>
+                    <p class="text-muted small mb-3">Consultez votre planning du jour</p>
+                    <a href="/admin/main/soinsinfirmier/" class="btn btn-danger">
+                        <i class="fas fa-list me-1"></i>Voir planning
                     </a>
-                    <a href="/admin/" class="btn btn-outline" style="width: 100%;">
-                        <i class="fas fa-cog"></i> Administration
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center p-4">
+                    <i class="fas fa-user-injured fa-2x text-danger mb-3"></i>
+                    <h5 class="mb-2">Patients</h5>
+                    <p class="text-muted small mb-3">Liste des patients sous surveillance</p>
+                    <a href="/admin/main/patient/" class="btn btn-danger">
+                        <i class="fas fa-users me-1"></i>Liste patients
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center p-4">
+                    <i class="fas fa-syringe fa-2x text-danger mb-3"></i>
+                    <h5 class="mb-2">Nouveau Soin</h5>
+                    <p class="text-muted small mb-3">Enregistrer un nouveau soin</p>
+                    <a href="/admin/main/soinsinfirmier/add/" class="btn btn-danger">
+                        <i class="fas fa-plus me-1"></i>Nouveau soin
                     </a>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Planning et patients - layout amélioré -->
+    <div class="row">
+        <!-- Planning des soins -->
+        <div class="col-lg-8 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0">
+                    <h6 class="mb-0"><i class="fas fa-clock me-2"></i>Planning du Jour</h6>
+                </div>
+                <div class="card-body p-0">
+                    <!-- Soin en cours -->
+                    <div class="p-3 border-bottom">
+                        <div class="d-flex align-items-center">
+                            <div class="badge bg-success me-3" style="min-width: 60px;">08:00</div>
+                            <div class="flex-grow-1">
+                                <div class="fw-500">Prise constantes - Jean Dupont</div>
+                                <small class="text-muted">Chambre 102 - Tension, température</small>
+                            </div>
+                            <span class="badge bg-success">
+                                <i class="fas fa-check me-1"></i>Terminé
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Soin suivant -->
+                    <div class="p-3 border-bottom">
+                        <div class="d-flex align-items-center">
+                            <div class="badge bg-primary me-3" style="min-width: 60px;">09:30</div>
+                            <div class="flex-grow-1">
+                                <div class="fw-500">Administration médicaments - Marie Dubois</div>
+                                <small class="text-muted">Chambre 205 - Antibiotiques + Antalgiques</small>
+                            </div>
+                            <a href="#" class="btn btn-primary btn-sm">
+                                <i class="fas fa-check me-1"></i>Terminer
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Soin programmé -->
+                    <div class="p-3 border-bottom">
+                        <div class="d-flex align-items-center">
+                            <div class="badge bg-warning me-3" style="min-width: 60px;">11:00</div>
+                            <div class="flex-grow-1">
+                                <div class="fw-500">Pansement chirurgical - Pierre Martin</div>
+                                <small class="text-muted">Chambre 312 - Renouvellement post-op</small>
+                            </div>
+                            <a href="#" class="btn btn-warning btn-sm">
+                                <i class="fas fa-play me-1"></i>Commencer
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Soin à venir -->
+                    <div class="p-3">
+                        <div class="d-flex align-items-center">
+                            <div class="badge bg-secondary me-3" style="min-width: 60px;">14:00</div>
+                            <div class="flex-grow-1">
+                                <div class="fw-500">Injection IM - Sophie Laurent</div>
+                                <small class="text-muted">Chambre 108 - Vaccination grippe</small>
+                            </div>
+                            <span class="badge bg-light text-dark">
+                                <i class="fas fa-clock me-1"></i>Programmé
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Patients sous surveillance -->
+        <div class="col-lg-4 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0">
+                    <h6 class="mb-0"><i class="fas fa-heart-pulse me-2"></i>Patients Surveillance</h6>
+                </div>
+                <div class="card-body">
+                    <!-- Patient 1 -->
+                    <div class="border rounded p-3 mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="fw-500">Marie Dubois</div>
+                            <span class="badge bg-danger">Ch. 205</span>
+                        </div>
+                        <div class="text-muted small mb-2">Post-opératoire - Surveillance rapprochée</div>
+                        <div class="small text-muted">
+                            • Pansement: Toutes les 4h<br>
+                            • Constantes: Toutes les 2h
+                        </div>
+                    </div>
+
+                    <!-- Patient 2 -->
+                    <div class="border rounded p-3 mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="fw-500">Pierre Martin</div>
+                            <span class="badge bg-danger">Ch. 312</span>
+                        </div>
+                        <div class="text-muted small mb-2">Traitement antibiotique</div>
+                        <div class="small text-muted">
+                            • Antibiotiques: Matin - Soir<br>
+                            • Prélèvements: Quotidien
+                        </div>
+                    </div>
+
+                    <!-- Actions rapides -->
+                    <div class="border-top pt-3 mt-3">
+                        <a href="/admin/main/soinsinfirmier/add/" class="btn btn-danger w-100 mb-2">
+                            <i class="fas fa-plus me-1"></i>Nouveau soin
+                        </a>
+                        <a href="/admin/" class="btn btn-outline-secondary w-100">
+                            <i class="fas fa-cog me-1"></i>Administration
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<style>
+.card {
+    transition: transform 0.1s ease;
+    border-radius: 12px;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #e91e63 0%, #f06292 100%);
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+.btn-danger:hover {
+    background: linear-gradient(135deg, #d81159 0%, #e91e63 100%);
+    transform: translateY(-1px);
+}
+
+.fw-500 {
+    font-weight: 500;
+}
+
+.badge {
+    font-size: 0.75rem;
+}
+</style>
 {% endblock %}

@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+{% block title %}Mes Rendez-vous - ESCO{% endblock %}
+
+{% block content %}
+<div>
+    <!-- Header -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <a href="{% url 'dashboard_patient' %}" class="btn btn-outline">
+                <i class="fas fa-arrow-left"></i> Retour
+            </a>
+            <div>
+                <h1 style="color: #495057; margin: 0;">Mes Rendez-vous</h1>
+                <p style="color: #6c757d; margin: 0;">Gérez vos consultations médicales</p>
+            </div>
+        </div>
+        <a href="{% url 'nouveau_rdv' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Nouveau RDV
+        </a>
+    </div>
+
+    <!-- RDV à venir -->
+    <div class="card" style="margin-bottom: 2rem;">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-calendar-alt"></i> Rendez-vous à venir ({{ rdv_futurs.count }})
+            </h3>
+        </div>
+        <div class="card-body">
+            {% if rdv_futurs %}
+                {% for rdv in rdv_futurs %}
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-bottom: 1px solid #e9ecef;">
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <div style="background-color: #007bff; color: white; padding: 0.5rem; border-radius: 6px; font-weight: 600; min-width: 120px; text-align: center; font-size: 0.9rem;">
+                                {{ rdv.date_rdv|date:"d/m/Y" }}<br>
+                                {{ rdv.date_rdv|date:"H:i" }}
+                            </div>
+                            <div>
+                                <div style="font-weight: 600; color: #495057;">Dr. {{ rdv.medecin.get_full_name|default:rdv.medecin.username }}</div>
+                                <div style="color: #6c757d; font-size: 0.9rem;">{{ rdv.motif }}</div>
+                                <div style="color: #6c757d; font-size: 0.8rem;">
+                                    <i class="fas fa-circle" style="color: 
+                                        {% if rdv.status == 'programme' %}#ffc107
+                                        {% elif rdv.status == 'confirme' %}#28a745
+                                        {% elif rdv.status == 'en_cours' %}#007bff
+                                        {% elif rdv.status == 'termine' %}#6c757d
+                                        {% else %}#dc3545{% endif %};"></i>
+                                    {{ rdv.get_status_display }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div style="text-align: center; padding: 3rem; color: #6c757d;">
+                    <i class="fas fa-calendar-times" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                    <p>Aucun rendez-vous programmé</p>
+                    <a href="{% url 'nouveau_rdv' %}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Prendre un RDV
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Historique -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-history"></i> Historique des consultations
+            </h3>
+        </div>
+        <div class="card-body">
+            {% if rdv_passes %}
+                {% for rdv in rdv_passes %}
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-bottom: 1px solid #e9ecef; opacity: 0.8;">
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <div style="background-color: #6c757d; color: white; padding: 0.5rem; border-radius: 6px; font-weight: 600; min-width: 120px; text-align: center; font-size: 0.9rem;">
+                                {{ rdv.date_rdv|date:"d/m/Y" }}<br>
+                                {{ rdv.date_rdv|date:"H:i" }}
+                            </div>
+                            <div>
+                                <div style="font-weight: 600; color: #495057;">Dr. {{ rdv.medecin.get_full_name|default:rdv.medecin.username }}</div>
+                                <div style="color: #6c757d; font-size: 0.9rem;">{{ rdv.motif }}</div>
+                            </div>
+                        </div>
+                        <div>
+                            {% if rdv.consultation %}
+                                <span style="background-color: #28a745; color: white; padding: 0.3rem 0.6rem; border-radius: 4px; font-size: 0.8rem;">
+                                    <i class="fas fa-check"></i> Consultation faite
+                                </span>
+                            {% else %}
+                                <span style="background-color: #6c757d; color: white; padding: 0.3rem 0.6rem; border-radius: 4px; font-size: 0.8rem;">
+                                    Terminé
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div style="text-align: center; padding: 2rem; color: #6c757d;">
+                    <i class="fas fa-clock" style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                    <p>Aucun historique pour le moment</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+
+{% block title %}Mes Informations - ESCO{% endblock %}
+
+{% block content %}
+<div>
+    <!-- Header -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <a href="{% url 'dashboard_patient' %}" class="btn btn-outline">
+                <i class="fas fa-arrow-left"></i> Retour
+            </a>
+            <div>
+                <h1 style="color: #495057; margin: 0;">Mes Informations</h1>
+                <p style="color: #6c757d; margin: 0;">Consultez vos informations personnelles et médicales</p>
+            </div>
+        </div>
+        <a href="{% url 'modifier_profil' %}" class="btn btn-primary">
+            <i class="fas fa-edit"></i> Modifier
+        </a>
+    </div>
+
+    <div class="row">
+        <!-- Informations personnelles -->
+        <div class="col-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-user"></i> Informations Personnelles
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div style="margin-bottom: 1rem;">
+                        <strong>ID Utilisateur :</strong>
+                        <div style="color: #6c757d;">{{ user.user_id }}</div>
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <strong>Nom complet :</strong>
+                        <div style="color: #6c757d;">{{ user.get_full_name|default:"Non renseigné" }}</div>
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <strong>Nom d'utilisateur :</strong>
+                        <div style="color: #6c757d;">{{ user.username }}</div>
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <strong>Email :</strong>
+                        <div style="color: #6c757d;">{{ user.email }}</div>
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <strong>Téléphone :</strong>
+                        <div style="color: #6c757d;">{{ user.telephone|default:"Non renseigné" }}</div>
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <strong>Adresse :</strong>
+                        <div style="color: #6c757d;">{{ user.adresse|default:"Non renseignée" }}</div>
+                    </div>
+                    <div>
+                        <strong>Date d'inscription :</strong>
+                        <div style="color: #6c757d;">{{ user.date_joined|date:"d/m/Y" }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Informations médicales -->
+        <div class="col-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-heartbeat"></i> Informations Médicales
+                    </h3>
+                </div>
+                <div class="card-body">
+                    {% if patient %}
+                        <div style="margin-bottom: 1rem;">
+                            <strong>Numéro patient :</strong>
+                            <div style="color: #6c757d;">{{ patient.numero_patient }}</div>
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <strong>Groupe sanguin :</strong>
+                            <div style="color: #6c757d;">{{ patient.groupe_sanguin|default:"Non renseigné" }}</div>
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <strong>Allergies :</strong>
+                            <div style="color: #6c757d;">{{ patient.allergies|default:"Aucune allergie connue" }}</div>
+                        </div>
+                        <div>
+                            <strong>Antécédents :</strong>
+                            <div style="color: #6c757d;">{{ patient.antecedents|default:"Aucun antécédent signalé" }}</div>
+                        </div>
+                    {% else %}
+                        <div style="text-align: center; padding: 2rem; color: #6c757d;">
+                            <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                            <p>Dossier médical non trouvé</p>
+                            <small>Contactez l'administration pour créer votre dossier</small>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions rapides -->
+    <div class="card" style="margin-top: 2rem;">
+        <div class="card-header">
+            <h3 class="card-title">Actions Rapides</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-3">
+                    <a href="{% url 'download_my_dossier_pdf' %}" class="btn btn-outline" style="width: 100%;">
+                        <i class="fas fa-download"></i>
+                        Télécharger mon dossier
+                    </a>
+                </div>
+                <div class="col-3">
+                    <a href="{% url 'mes_rdv' %}" class="btn btn-outline" style="width: 100%;">
+                        <i class="fas fa-calendar"></i>
+                        Mes rendez-vous
+                    </a>
+                </div>
+                <div class="col-3">
+                    <a href="{% url 'mes_consultations' %}" class="btn btn-outline" style="width: 100%;">
+                        <i class="fas fa-history"></i>
+                        Mes consultations
+                    </a>
+                </div>
+                <div class="col-3">
+                    <a href="{% url 'modifier_profil' %}" class="btn btn-outline" style="width: 100%;">
+                        <i class="fas fa-edit"></i>
+                        Modifier profil
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

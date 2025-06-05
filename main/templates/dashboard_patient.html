@@ -1,159 +1,202 @@
 {% extends 'base.html' %}
 
-{% block title %}Espace Patient - ESCO{% endblock %}
+{% block title %}Dashboard Patient - ESCO{% endblock %}
 
 {% block content %}
-<!-- Header Patient -->
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-    <div style="display: flex; align-items: center; gap: 1rem;">
-        <div style="font-size: 2rem; color: #007bff;">
+<!-- Header Dashboard avec fond violet mais texte blanc lisible -->
+<div class="dashboard-header">
+    <div class="d-flex align-items-center">
+        <div class="stats-icon me-3" style="background: rgba(255,255,255,0.2);">
             <i class="fas fa-user-injured"></i>
         </div>
         <div>
-            <h1 style="color: #495057; margin: 0;">Espace Patient</h1>
-            <p style="color: #6c757d; margin: 0;">Bienvenue {{ user.first_name|default:user.username }} !</p>
+            <h1>Bonjour {{ user.get_full_name|default:user.username }} !</h1>
+            <p>Bienvenue sur votre espace patient ESCO</p>
         </div>
-    </div>
-    <div>
-        <span class="btn btn-light" style="background-color: #007bff; color: white;">Patient</span>
     </div>
 </div>
 
-<!-- Actions principales -->
-<div class="row">
-    <div class="col-4">
-        <div class="card text-center">
-            <div class="card-body" style="padding: 2rem;">
-                <div style="font-size: 3rem; color: #007bff; margin-bottom: 1rem;">
+<!-- Informations Patient sur fond blanc -->
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="content-section">
+            <h2 class="section-title">
+                <i class="fas fa-id-card section-icon"></i>
+                Mes Informations
+            </h2>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="stats-card">
+                        <div class="stats-icon">
+                            <i class="fas fa-hashtag"></i>
+                        </div>
+                        <div class="stats-value">{{ user.user_id|default:"Non défini" }}</div>
+                        <div class="stats-label">Numéro Patient</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="stats-card">
+                        <div class="stats-icon">
+                            <i class="fas fa-tint"></i>
+                        </div>
+                        <div class="stats-value">{{ patient.groupe_sanguin|default:"Non défini" }}</div>
+                        <div class="stats-label">Groupe Sanguin</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="content-section">
+            <h2 class="section-title">
+                <i class="fas fa-chart-line section-icon"></i>
+                Statistiques
+            </h2>
+            <div class="stats-card">
+                <div class="stats-icon">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="stats-value">{{ rdv_count|default:"0" }}</div>
+                <div class="stats-label">Rendez-vous totaux</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Actions Rapides sur fond blanc -->
+<div class="content-section">
+    <h2 class="section-title">
+        <i class="fas fa-bolt section-icon"></i>
+        Actions rapides
+    </h2>
+    <div class="row">
+        <div class="col-md-3 col-sm-6 mb-3">
+            <a href="#" class="action-card d-block">
+                <div class="action-icon">
                     <i class="fas fa-calendar-plus"></i>
                 </div>
-                <h3 style="color: #495057; margin-bottom: 1rem; font-size: 1.2rem;">Prendre RDV</h3>
-                <p style="color: #6c757d; margin-bottom: 1.5rem; font-size: 0.9rem;">
-                    Planifiez un rendez-vous avec un médecin
-                </p>
-                <a href="/admin/main/rendezvous/add/" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> Nouveau RDV
-                </a>
-            </div>
+                <div class="action-title">Nouveau RDV</div>
+                <div class="action-desc">Prendre un rendez-vous</div>
+            </a>
         </div>
-    </div>
-    
-    <div class="col-4">
-        <div class="card text-center">
-            <div class="card-body" style="padding: 2rem;">
-                <div style="font-size: 3rem; color: #007bff; margin-bottom: 1rem;">
-                    <i class="fas fa-folder-plus"></i>
+        
+        <div class="col-md-3 col-sm-6 mb-3">
+            <a href="#" class="action-card d-block">
+                <div class="action-icon">
+                    <i class="fas fa-calendar-alt"></i>
                 </div>
-                <h3 style="color: #495057; margin-bottom: 1rem; font-size: 1.2rem;">Mes Dossiers</h3>
-                <p style="color: #6c757d; margin-bottom: 1.5rem; font-size: 0.9rem;">
-                    Consultez vos dossiers médicaux
-                </p>
-                <a href="/admin/main/consultation/" class="btn btn-primary">
-                    <i class="fas fa-folder-open"></i> Voir dossiers
-                </a>
-            </div>
+                <div class="action-title">Mes RDV</div>
+                <div class="action-desc">Voir mes rendez-vous</div>
+            </a>
         </div>
-    </div>
-    
-    <div class="col-4">
-        <div class="card text-center">
-            <div class="card-body" style="padding: 2rem;">
-                <div style="font-size: 3rem; color: #007bff; margin-bottom: 1rem;">
-                    <i class="fas fa-comments"></i>
+        
+        <div class="col-md-3 col-sm-6 mb-3">
+            <a href="#" class="action-card d-block">
+                <div class="action-icon">
+                    <i class="fas fa-stethoscope"></i>
                 </div>
-                <h3 style="color: #495057; margin-bottom: 1rem; font-size: 1.2rem;">Messages</h3>
-                <p style="color: #6c757d; margin-bottom: 1.5rem; font-size: 0.9rem;">
-                    Communiquez avec votre équipe médicale
-                </p>
-                <a href="/admin/" class="btn btn-primary">
-                    <i class="fas fa-envelope"></i> Messagerie
-                </a>
-            </div>
+                <div class="action-title">Consultations</div>
+                <div class="action-desc">Historique médical</div>
+            </a>
+        </div>
+        
+        <div class="col-md-3 col-sm-6 mb-3">
+            <a href="#" class="action-card d-block">
+                <div class="action-icon">
+                    <i class="fas fa-folder-open"></i>
+                </div>
+                <div class="action-title">Mon Dossier</div>
+                <div class="action-desc">Dossier médical</div>
+            </a>
         </div>
     </div>
 </div>
 
-<!-- Informations et RDV -->
-<div class="row" style="margin-top: 2rem;">
-    <!-- Mes Informations -->
-    <div class="col-6">
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">
-                    <i class="fas fa-user"></i> Mes Informations
-                </h3>
-            </div>
-            <div class="card-body">
-                <div style="margin-bottom: 1rem;">
-                    <strong>Nom :</strong> {{ user.last_name|default:"Non renseigné" }}
+<!-- Prochains Rendez-vous -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="content-section">
+            <h2 class="section-title">
+                <i class="fas fa-calendar section-icon"></i>
+                Prochains rendez-vous
+            </h2>
+            {% if prochains_rdv %}
+                <div class="table-responsive">
+                    <table class="table table-custom">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Médecin</th>
+                                <th>Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for rdv in prochains_rdv %}
+                            <tr>
+                                <td>{{ rdv.date_rdv|date:"d/m/Y H:i" }}</td>
+                                <td>Dr. {{ rdv.medecin.get_full_name }}</td>
+                                <td>
+                                    <span class="badge bg-primary">{{ rdv.get_status_display }}</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
-                <div style="margin-bottom: 1rem;">
-                    <strong>Email :</strong> {{ user.email }}
+            {% else %}
+                <div class="text-center py-4">
+                    <div class="stats-icon mb-3" style="background: #e2e8f0; color: var(--text-light);">
+                        <i class="fas fa-calendar-times"></i>
+                    </div>
+                    <p class="text-muted">Aucun rendez-vous programmé</p>
+                    <button class="btn btn-purple">
+                        <i class="fas fa-plus me-2"></i>Prendre un rendez-vous
+                    </button>
                 </div>
-                <div style="margin-bottom: 1rem;">
-                    <strong>Téléphone :</strong> {{ user.telephone|default:"Non renseigné" }}
-                </div>
-                <div>
-                    <a href="/admin/auth/user/{{ user.id }}/change/" class="btn btn-outline">
-                        <i class="fas fa-edit"></i> Modifier
-                    </a>
-                </div>
-            </div>
+            {% endif %}
         </div>
     </div>
     
-    <!-- Prochains RDV -->
-    <div class="col-6">
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">
-                    <i class="fas fa-calendar"></i> Prochains RDV
-                </h3>
-            </div>
-            <div class="card-body">
-                <div style="text-align: center; padding: 2rem; color: #6c757d;">
-                    <i class="fas fa-calendar-times" style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.5;"></i>
-                    <p>Aucun rendez-vous programmé</p>
-                    <a href="/admin/main/rendezvous/add/" class="btn btn-primary">
-                        Prendre un RDV
-                    </a>
+    <div class="col-md-6">
+        <div class="content-section">
+            <h2 class="section-title">
+                <i class="fas fa-notes-medical section-icon"></i>
+                Dernières consultations
+            </h2>
+            {% if dernieres_consultations %}
+                <div class="table-responsive">
+                    <table class="table table-custom">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Médecin</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for consultation in dernieres_consultations %}
+                            <tr>
+                                <td>{{ consultation.created_at|date:"d/m/Y" }}</td>
+                                <td>Dr. {{ consultation.rdv.medecin.get_full_name }}</td>
+                                <td>
+                                    <button class="btn btn-outline-purple btn-sm">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Actions rapides -->
-<div class="card" style="margin-top: 2rem;">
-    <div class="card-header">
-        <h3 class="card-title">Actions Rapides</h3>
-    </div>
-    <div class="card-body">
-        <div class="row">
-            <div class="col-3">
-                <a href="/mon-dossier-pdf/" class="btn btn-outline" style="width: 100%;">
-                    <i class="fas fa-download"></i>
-                    Télécharger mon dossier
-                </a>
-            </div>
-            <div class="col-3">
-                <a href="/admin/main/rendezvous/" class="btn btn-outline" style="width: 100%;">
-                    <i class="fas fa-list"></i>
-                    Historique RDV
-                </a>
-            </div>
-            <div class="col-3">
-                <a href="/admin/" class="btn btn-outline" style="width: 100%;">
-                    <i class="fas fa-cog"></i>
-                    Paramètres
-                </a>
-            </div>
-            <div class="col-3">
-                <a href="/admin/main/consultation/" class="btn btn-outline" style="width: 100%;">
-                    <i class="fas fa-history"></i>
-                    Consultations
-                </a>
-            </div>
+            {% else %}
+                <div class="text-center py-4">
+                    <div class="stats-icon mb-3" style="background: #e2e8f0; color: var(--text-light);">
+                        <i class="fas fa-stethoscope"></i>
+                    </div>
+                    <p class="text-muted">Aucune consultation récente</p>
+                </div>
+            {% endif %}
         </div>
     </div>
 </div>

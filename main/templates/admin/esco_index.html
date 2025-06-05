@@ -1,0 +1,372 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block title %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">
+    <a href="{% url 'admin:index' %}" style="color: #fff; text-decoration: none;">
+        🏥 ESCO - Administration Médicale
+    </a>
+</h1>
+{% endblock %}
+
+{% block nav-global %}{% endblock %}
+
+{% block content %}
+<style>
+    .esco-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    .esco-stat-card {
+        background: white;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 1.5rem;
+        text-align: center;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .esco-stat-number {
+        font-size: 2rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+    .esco-stat-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+    .esco-recent {
+        background: white;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+    }
+    .esco-recent-header {
+        background-color: #f8f9fa;
+        padding: 1rem;
+        border-bottom: 1px solid #e9ecef;
+        font-weight: bold;
+    }
+    .esco-recent-content {
+        padding: 1rem;
+    }
+    .esco-recent-item {
+        padding: 0.5rem;
+        border-bottom: 1px solid #f8f9fa;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .esco-recent-item:last-child {
+        border-bottom: none;
+    }
+</style>
+
+<div class="dashboard">
+    <h1 style="color: #495057; margin-bottom: 2rem;">
+        <i class="fas fa-tachometer-alt"></i> Tableau de bord ESCO
+    </h1>
+    
+    <!-- Statistiques principales -->
+    <div class="esco-stats">
+        <div class="esco-stat-card">
+            <div class="esco-stat-number" style="color: #007bff;">{{ stats.total_patients }}</div>
+            <div class="esco-stat-label"><i class="fas fa-user-injured"></i> Patients</div>
+        </div>
+        <div class="esco-stat-card">
+            <div class="esco-stat-number" style="color: #28a745;">{{ stats.total_medecins }}</div>
+            <div class="esco-stat-label"><i class="fas fa-user-md"></i> Médecins</div>
+        </div>
+        <div class="esco-stat-card">
+            <div class="esco-stat-number" style="color: #e91e63;">{{ stats.total_infirmiers }}</div>
+            <div class="esco-stat-label"><i class="fas fa-user-nurse"></i> Infirmiers</div>
+        </div>
+        <div class="esco-stat-card">
+            <div class="esco-stat-number" style="color: #17a2b8;">{{ stats.total_secretaires }}</div>
+            <div class="esco-stat-label"><i class="fas fa-user-tie"></i> Secrétaires</div>
+        </div>
+        <div class="esco-stat-card">
+            <div class="esco-stat-number" style="color: #ffc107;">{{ stats.rdv_aujourdhui }}</div>
+            <div class="esco-stat-label"><i class="fas fa-calendar-day"></i> RDV Aujourd'hui</div>
+        </div>
+        <div class="esco-stat-card">
+            <div class="esco-stat-number" style="color: #6c5ce7;">{{ stats.consultations_total }}</div>
+            <div class="esco-stat-label"><i class="fas fa-stethoscope"></i> Consultations</div>
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+        <!-- Derniers rendez-vous -->
+        <div class="esco-recent">
+            <div class="esco-recent-header">
+                <i class="fas fa-calendar-alt"></i> Derniers Rendez-vous
+            </div>
+            <div class="esco-recent-content">
+                {% for rdv in recent_rdv %}
+                    <div class="esco-recent-item">
+                        <div>
+                            <strong>{{ rdv.patient.get_full_name|default:rdv.patient.username }}</strong><br>
+                            <small style="color: #6c757d;">Dr. {{ rdv.medecin.get_full_name|default:rdv.medecin.username }}</small>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 0.9rem; color: #6c757d;">{{ rdv.date_rdv|date:"d/m/Y H:i" }}</div>
+                            <span style="background-color: 
+                                {% if rdv.status == 'confirme' %}#28a745
+                                {% elif rdv.status == 'programme' %}#ffc107
+                                {% elif rdv.status == 'en_cours' %}#007bff
+                                {% else %}#6c757d{% endif %}; 
+                                color: white; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.8rem;">
+                                {{ rdv.get_status_display }}
+                            </span>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div style="text-align: center; color: #6c757d; padding: 2rem;">
+                        Aucun rendez-vous récent
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Nouveaux utilisateurs -->
+        <div class="esco-recent">
+            <div class="esco-recent-header">
+                <i class="fas fa-user-plus"></i> Nouveaux Utilisateurs
+            </div>
+            <div class="esco-recent-content">
+                {% for user in recent_users %}
+                    <div class="esco-recent-item">
+                        <div>
+                            <strong>{{ user.get_full_name|default:user.username }}</strong><br>
+                            <small style="color: 
+                                {% if user.role == 'patient' %}#007bff
+                                {% elif user.role == 'docteur' %}#28a745
+                                {% elif user.role == 'infirmier' %}#e91e63
+                                {% elif user.role == 'secretaire' %}#17a2b8
+                                {% else %}#6c757d{% endif %};">
+                                {{ user.get_role_display }}
+                            </small>
+                        </div>
+                        <div style="text-align: right; color: #6c757d; font-size: 0.9rem;">
+                            {{ user.date_joined|date:"d/m/Y" }}
+                        </div>
+                    </div>
+                {% empty %}
+                    <div style="text-align: center; color: #6c757d; padding: 2rem;">
+                        Aucun nouvel utilisateur
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Applications -->
+    <div style="margin-top: 2rem;">
+        <h2 style="color: #495057; margin-bottom: 1rem;">
+            <i class="fas fa-cogs"></i> Administration des Modules
+        </h2>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem;">
+            {% for app in app_list %}
+                <div class="esco-recent">
+                    <div class="esco-recent-header">
+                        <i class="fas fa-cube"></i> {{ app.name }}
+                    </div>
+                    <div class="esco-recent-content">
+                        {% for model in app.models %}
+                            <div class="esco-recent-item">
+                                <div>
+                                    <a href="{{ model.admin_url }}" style="text-decoration: none; color: #007bff; font-weight: bold;">
+                                        {{ model.name }}
+                                    </a>
+                                </div>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    {% if model.add_url %}
+                                        <a href="{{ model.add_url }}" style="background-color: #28a745; color: white; padding: 0.2rem 0.5rem; border-radius: 4px; text-decoration: none; font-size: 0.8rem;">
+                                            <i class="fas fa-plus"></i> Ajouter
+                                        </a>
+                                    {% endif %}
+                                    {% if model.admin_url %}
+                                        <a href="{{ model.admin_url }}" style="background-color: #007bff; color: white; padding: 0.2rem 0.5rem; border-radius: 4px; text-decoration: none; font-size: 0.8rem;">
+                                            <i class="fas fa-list"></i> Voir tous
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+// Ajouter Font Awesome si pas déjà inclus
+if (!document.querySelector('link[href*="font-awesome"]')) {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css';
+    document.head.appendChild(link);
+}
+</script>
+{% endblock %}
+
+
+
+{% comment %} {% extends "admin/base_site.html" %}
+{% load i18n static admin_urls %}
+
+{% block title %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+    .dashboard-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin: 1rem 0;
+    }
+    .stat-card {
+        background: linear-gradient(135deg, #007bff, #0056b3);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 8px;
+        text-align: center;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .stat-number {
+        font-size: 2rem;
+        font-weight: bold;
+        display: block;
+    }
+    .stat-label {
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+    .recent-activity {
+        background: white;
+        border-radius: 8px;
+        padding: 1rem;
+        margin: 1rem 0;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1>🏥 Tableau de bord ESCO - Administration</h1>
+<p style="color: #6c757d; margin-bottom: 2rem;">Système de Gestion Hospitalière - Vue d'ensemble</p>
+
+<!-- Statistiques -->
+<div class="dashboard-stats">
+    <div class="stat-card" style="background: linear-gradient(135deg, #007bff, #0056b3);">
+        <span class="stat-number">{{ stats.total_patients }}</span>
+        <span class="stat-label">👤 Patients</span>
+    </div>
+    <div class="stat-card" style="background: linear-gradient(135deg, #28a745, #1e7e34);">
+        <span class="stat-number">{{ stats.total_medecins }}</span>
+        <span class="stat-label">👨‍⚕️ Médecins</span>
+    </div>
+    <div class="stat-card" style="background: linear-gradient(135deg, #e91e63, #ad1457);">
+        <span class="stat-number">{{ stats.total_infirmiers }}</span>
+        <span class="stat-label">👩‍⚕️ Infirmiers</span>
+    </div>
+    <div class="stat-card" style="background: linear-gradient(135deg, #17a2b8, #138496);">
+        <span class="stat-number">{{ stats.total_secretaires }}</span>
+        <span class="stat-label">👔 Secrétaires</span>
+    </div>
+    <div class="stat-card" style="background: linear-gradient(135deg, #ffc107, #e0a800);">
+        <span class="stat-number">{{ stats.rdv_aujourdhui }}</span>
+        <span class="stat-label">📅 RDV Aujourd'hui</span>
+    </div>
+    <div class="stat-card" style="background: linear-gradient(135deg, #6c5ce7, #5a4fcf);">
+        <span class="stat-number">{{ stats.consultations_total }}</span>
+        <span class="stat-label">🩺 Consultations</span>
+    </div>
+</div>
+
+<!-- Activités récentes -->
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin: 2rem 0;">
+    <div class="recent-activity">
+        <h3 style="color: #495057; border-bottom: 2px solid #007bff; padding-bottom: 0.5rem;">📅 Derniers Rendez-vous</h3>
+        {% for rdv in recent_rdv %}
+            <div style="padding: 0.5rem 0; border-bottom: 1px solid #e9ecef;">
+                <strong>{{ rdv.patient.get_full_name|default:rdv.patient.username }}</strong>
+                - Dr. {{ rdv.medecin.get_full_name|default:rdv.medecin.username }}
+                <br><small style="color: #6c757d;">{{ rdv.date_rdv|date:"d/m/Y H:i" }} - {{ rdv.motif|truncatechars:40 }}</small>
+            </div>
+        {% empty %}
+            <p style="color: #6c757d;">Aucun rendez-vous récent</p>
+        {% endfor %}
+    </div>
+
+    <div class="recent-activity">
+        <h3 style="color: #495057; border-bottom: 2px solid #28a745; padding-bottom: 0.5rem;">👥 Nouveaux Utilisateurs</h3>
+        {% for user in recent_users %}
+            <div style="padding: 0.5rem 0; border-bottom: 1px solid #e9ecef;">
+                <strong>{{ user.get_full_name|default:user.username }}</strong>
+                <span style="background-color: 
+                    {% if user.role == 'patient' %}#007bff
+                    {% elif user.role == 'docteur' %}#28a745
+                    {% elif user.role == 'infirmier' %}#e91e63
+                    {% elif user.role == 'secretaire' %}#17a2b8
+                    {% else %}#6c5ce7{% endif %}; 
+                    color: white; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.8rem;">
+                    {{ user.get_role_display }}
+                </span>
+                <br><small style="color: #6c757d;">{{ user.date_joined|date:"d/m/Y H:i" }}</small>
+            </div>
+        {% empty %}
+            <p style="color: #6c757d;">Aucun nouvel utilisateur</p>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Apps list par défaut -->
+{% if app_list %}
+    <div style="margin-top: 3rem;">
+        <h2 style="color: #495057; border-bottom: 3px solid #007bff; padding-bottom: 0.5rem;">🛠️ Gestion des Modules</h2>
+        {% for app in app_list %}
+            <div class="app-{{ app.app_label }} module" style="margin: 1rem 0; background: white; border-radius: 8px; padding: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <table>
+                    <caption>
+                        <a href="{{ app.app_url }}" class="section" title="{% blocktrans with name=app.name %}Models in the {{ name }} application{% endblocktrans %}" style="color: #007bff; font-weight: bold; font-size: 1.1rem;">{{ app.name }}</a>
+                    </caption>
+                    {% for model in app.models %}
+                        <tr class="model-{{ model.object_name|lower }}">
+                            {% if model.admin_url %}
+                                <th scope="row"><a href="{{ model.admin_url }}" style="color: #495057;">{{ model.name }}</a></th>
+                            {% else %}
+                                <th scope="row">{{ model.name }}</th>
+                            {% endif %}
+
+                            {% if model.add_url %}
+                                <td><a href="{{ model.add_url }}" class="addlink" style="color: #28a745;">{% trans 'Add' %}</a></td>
+                            {% else %}
+                                <td>&nbsp;</td>
+                            {% endif %}
+
+                            {% if model.admin_url %}
+                                {% if model.view_only %}
+                                    <td><a href="{{ model.admin_url }}" class="viewlink" style="color: #007bff;">{% trans 'View' %}</a></td>
+                                {% else %}
+                                    <td><a href="{{ model.admin_url }}" class="changelink" style="color: #007bff;">{% trans 'Change' %}</a></td>
+                                {% endif %}
+                            {% else %}
+                                <td>&nbsp;</td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <p>{% trans "You don't have permission to view or edit anything." %}</p>
+{% endif %}
+{% endblock %} {% endcomment %}

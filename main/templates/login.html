@@ -8,40 +8,47 @@
         <div class="card-body" style="padding: 3rem 2rem;">
             <!-- Icône de connexion -->
             <div style="font-size: 3rem; color: #007bff; margin-bottom: 1.5rem;">
-                <i class="fas fa-users"></i>
+                <i class="fas fa-sign-in-alt"></i>
             </div>
             
             <h1 style="color: #495057; margin-bottom: 0.5rem; font-weight: 600; font-size: 1.8rem;">
-                Connexion
+                Connexion ESCO
             </h1>
             
             <p style="color: #6c757d; margin-bottom: 2rem; font-size: 0.95rem;">
-                Accédez à votre espace ESCO
+                Accédez à votre espace selon votre rôle
             </p>
+            
+            <!-- Affichage des messages -->
+            {% if messages %}
+                <div style="margin-bottom: 1.5rem;">
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}" style="padding: 0.75rem; margin-bottom: 0.5rem; border-radius: 6px; 
+                             background-color: {% if message.tags == 'success' %}#d4edda{% elif message.tags == 'error' or message.tags == 'danger' %}#f8d7da{% elif message.tags == 'warning' %}#fff3cd{% else %}#d1ecf1{% endif %};
+                             color: {% if message.tags == 'success' %}#155724{% elif message.tags == 'error' or message.tags == 'danger' %}#721c24{% elif message.tags == 'warning' %}#856404{% else %}#0c5460{% endif %};
+                             border: 1px solid {% if message.tags == 'success' %}#c3e6cb{% elif message.tags == 'error' or message.tags == 'danger' %}#f5c6cb{% elif message.tags == 'warning' %}#ffeaa7{% else %}#bee5eb{% endif %};">
+                            <i class="fas {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'error' or message.tags == 'danger' %}fa-exclamation-circle{% elif message.tags == 'warning' %}fa-exclamation-triangle{% else %}fa-info-circle{% endif %}"></i>
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
             
             <form method="post">
                 {% csrf_token %}
                 
-                <div class="form-group" style="text-align: left;">
+                <div class="form-group" style="text-align: left; margin-bottom: 1.5rem;">
                     <label for="username" class="form-label">
                         <i class="fas fa-user"></i> Nom d'utilisateur
                     </label>
-                    <input type="text" 
-                           name="username" 
-                           id="username" 
-                           class="form-control" 
-                           required>
+                    <input type="text" name="username" id="username" class="form-control" required>
                 </div>
                 
-                <div class="form-group" style="text-align: left;">
+                <div class="form-group" style="text-align: left; margin-bottom: 2rem;">
                     <label for="password" class="form-label">
                         <i class="fas fa-lock"></i> Mot de passe
                     </label>
-                    <input type="password" 
-                           name="password" 
-                           id="password" 
-                           class="form-control" 
-                           required>
+                    <input type="password" name="password" id="password" class="form-control" required>
                 </div>
                 
                 <button type="submit" class="btn btn-primary" style="width: 100%; font-size: 1rem; padding: 0.875rem;">
@@ -62,7 +69,6 @@
     </div>
 </div>
 {% endblock %}
-
 
 {% comment %} {% extends 'base.html' %}
 

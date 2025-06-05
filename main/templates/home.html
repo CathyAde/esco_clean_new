@@ -3,109 +3,114 @@
 {% block title %}Accueil - ESCO{% endblock %}
 
 {% block content %}
+<div class="dashboard-header">
+    <div class="text-center">
+        <h1><i class="fas fa-heartbeat me-3"></i>Bienvenue sur ESCO</h1>
+        <p>Système de Gestion Hospitalière - Votre santé, notre priorité</p>
+    </div>
+</div>
+
 <div class="row">
-    <!-- Texte principal -->
-    <div class="col-6">
-        <div style="padding: 3rem 0;">
-            <h1 style="font-size: 3rem; font-weight: 700; color: #495057; margin-bottom: 1rem;">
-                Bienvenue sur<br>
-                <span style="color: #6c5ce7;">ESCO</span>
-            </h1>
+    <div class="col-md-6">
+        <div class="content-section">
+            <h2><i class="fas fa-info-circle me-2" style="color: var(--primary-purple);"></i>À propos d'ESCO</h2>
+            <p>ESCO est une plateforme moderne de gestion hospitalière qui permet aux patients, médecins, infirmiers et personnels administratifs de gérer efficacement leurs activités médicales.</p>
             
-            <p style="font-size: 1.1rem; color: #6c757d; line-height: 1.6; margin-bottom: 2rem;">
-                Votre plateforme de gestion hospitalière moderne. Gérez 
-                facilement vos rendez-vous, consultations et dossiers 
-                médicaux.
-            </p>
-            
-            <div style="display: flex; gap: 1rem;">
-                {% if not user.is_authenticated %}
-                <a href="/inscription/" class="btn btn-primary" style="font-size: 1rem; padding: 1rem 2rem;">
-                    <i class="fas fa-user-plus"></i>
-                    S'inscrire
-                </a>
-                
-                <a href="/login/" class="btn btn-outline" style="font-size: 1rem; padding: 1rem 2rem;">
-                    <i class="fas fa-sign-in-alt"></i>
-                    Se connecter
-                </a>
-                {% else %}
-                <a href="/dashboard/" class="btn btn-primary" style="font-size: 1rem; padding: 1rem 2rem;">
-                    <i class="fas fa-tachometer-alt"></i>
-                    Accéder au Dashboard
-                </a>
-                {% endif %}
-            </div>
+            <h4>Fonctionnalités principales :</h4>
+            <ul>
+                <li><i class="fas fa-check text-success me-2"></i>Gestion des rendez-vous</li>
+                <li><i class="fas fa-check text-success me-2"></i>Consultations médicales</li>
+                <li><i class="fas fa-check text-success me-2"></i>Soins infirmiers</li>
+                <li><i class="fas fa-check text-success me-2"></i>Dossiers patients</li>
+                <li><i class="fas fa-check text-success me-2"></i>Interface d'administration</li>
+            </ul>
         </div>
     </div>
     
-    <!-- Card Système Intégré -->
-    <div class="col-6">
-        <div style="padding: 2rem;">
-            <div class="card" style="text-align: center; padding: 3rem 2rem;">
-                <div style="font-size: 4rem; color: #6c5ce7; margin-bottom: 2rem;">
-                    <i class="fas fa-hospital"></i>
+    <div class="col-md-6">
+        <div class="content-section">
+            <h2><i class="fas fa-users me-2" style="color: var(--primary-purple);"></i>Accès par rôle</h2>
+            
+            {% if not user.is_authenticated %}
+                <div class="text-center">
+                    <p>Connectez-vous selon votre rôle :</p>
+                    
+                    <div class="d-grid gap-2">
+                        <a href="/login/" class="btn btn-purple">
+                            <i class="fas fa-sign-in-alt me-2"></i>Se connecter
+                        </a>
+                        <a href="/inscription/" class="btn btn-outline-primary">
+                            <i class="fas fa-user-plus me-2"></i>Créer un compte
+                        </a>
+                    </div>
                 </div>
-                
-                <h2 style="color: #495057; margin-bottom: 1rem; font-weight: 600;">
-                    Système Intégré
-                </h2>
-                
-                <p style="color: #6c757d; font-size: 1rem; line-height: 1.5;">
-                    Une solution complète pour la gestion de votre établissement de 
-                    santé.
-                </p>
-            </div>
+            {% else %}
+                <div class="text-center">
+                    <h4>Connecté en tant que : {{ user.get_role_display }}</h4>
+                    <p>Bonjour {{ user.get_full_name|default:user.username }} !</p>
+                    
+                    <div class="d-grid gap-2">
+                        <a href="/dashboard/" class="btn btn-purple">
+                            <i class="fas fa-tachometer-alt me-2"></i>Accéder au Dashboard
+                        </a>
+                        {% if user.is_staff %}
+                        <a href="/admin/" class="btn btn-outline-primary">
+                            <i class="fas fa-cogs me-2"></i>Interface Admin
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
         </div>
     </div>
 </div>
 
-<!-- Section fonctionnalités -->
-<div class="row" style="margin-top: 3rem;">
-    <div class="col-4">
-        <div class="card text-center">
-            <div class="card-body">
-                <div style="font-size: 2.5rem; color: #6c5ce7; margin-bottom: 1rem;">
-                    <i class="fas fa-calendar-alt"></i>
+<div class="content-section">
+    <h2 class="text-center mb-4"><i class="fas fa-user-friends me-2" style="color: var(--primary-purple);"></i>Types d'utilisateurs</h2>
+    
+    <div class="row">
+        <div class="col-md-3 text-center mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <i class="fas fa-user-injured fa-3x mb-3" style="color: var(--primary-purple);"></i>
+                    <h5>Patients</h5>
+                    <p class="text-muted">Prise de rendez-vous, consultation du dossier médical</p>
                 </div>
-                <h3 style="color: #495057; margin-bottom: 1rem;">Rendez-vous</h3>
-                <p style="color: #6c757d;">
-                    Planifiez et gérez facilement tous vos rendez-vous médicaux
-                </p>
             </div>
         </div>
-    </div>
-    
-    <div class="col-4">
-        <div class="card text-center">
-            <div class="card-body">
-                <div style="font-size: 2.5rem; color: #6c5ce7; margin-bottom: 1rem;">
-                    <i class="fas fa-file-medical"></i>
+        
+        <div class="col-md-3 text-center mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <i class="fas fa-user-md fa-3x mb-3" style="color: var(--primary-purple);"></i>
+                    <h5>Médecins</h5>
+                    <p class="text-muted">Gestion des consultations, planning médical</p>
                 </div>
-                <h3 style="color: #495057; margin-bottom: 1rem;">Dossiers</h3>
-                <p style="color: #6c757d;">
-                    Consultez et gérez les dossiers médicaux en toute sécurité
-                </p>
             </div>
         </div>
-    </div>
-    
-    <div class="col-4">
-        <div class="card text-center">
-            <div class="card-body">
-                <div style="font-size: 2.5rem; color: #6c5ce7; margin-bottom: 1rem;">
-                    <i class="fas fa-stethoscope"></i>
+        
+        <div class="col-md-3 text-center mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <i class="fas fa-user-nurse fa-3x mb-3" style="color: var(--primary-purple);"></i>
+                    <h5>Infirmiers</h5>
+                    <p class="text-muted">Soins infirmiers, suivi des patients</p>
                 </div>
-                <h3 style="color: #495057; margin-bottom: 1rem;">Consultations</h3>
-                <p style="color: #6c757d;">
-                    Suivez l'historique et les détails de toutes les consultations
-                </p>
+            </div>
+        </div>
+        
+        <div class="col-md-3 text-center mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <i class="fas fa-user-tie fa-3x mb-3" style="color: var(--primary-purple);"></i>
+                    <h5>Secrétaires</h5>
+                    <p class="text-muted">Gestion administrative, planification</p>
+                </div>
             </div>
         </div>
     </div>
 </div>
 {% endblock %}
-
 
 {% comment %} {% extends 'base.html' %}
 

@@ -1,0 +1,172 @@
+{% extends "admin/base.html" %}
+
+{% block title %}{{ title }} | ESCO Admin{% endblock %}
+
+{% block branding %}
+<div class="premium-branding">
+    <div class="logo-container">
+        <div class="logo-icon">
+            <i class="fas fa-hospital-alt"></i>
+        </div>
+        <div class="logo-text">
+            <h1><a href="{% url 'admin:index' %}">ESCO</a></h1>
+            <span class="subtitle">Administration Médicale</span>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --secondary: #8b5cf6;
+            --accent: #06b6d4;
+            --info: #3b82f6;
+            --danger: #ef4444;
+            --success: #10b981;
+
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-700: #374151;
+            --gray-900: #111827;
+
+            --white: #ffffff;
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        body, input, button, select, textarea {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Brand Header */
+        .premium-branding {
+            background: linear-gradient(to right, var(--primary), var(--accent));
+            padding: 1rem;
+            border-radius: 0 0 10px 10px;
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-icon i {
+            font-size: 2rem;
+        }
+
+        .logo-text h1 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .logo-text .subtitle {
+            font-size: 0.875rem;
+            opacity: 0.8;
+        }
+
+        /* Search Button */
+        .search-button {
+            background: linear-gradient(to right, var(--info), var(--primary));
+            color: var(--white);
+            padding: 0.6rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            border: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .search-button:hover {
+            background: linear-gradient(to right, var(--primary), var(--info));
+            transform: scale(1.03);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+        }
+
+        /* Inputs */
+        input[type="text"],
+        input[type="email"],
+        input[type="password"],
+        select,
+        textarea {
+            border: 1px solid var(--gray-200);
+            border-radius: 6px;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.9rem;
+            transition: border 0.2s ease;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+
+        /* Tables */
+        .module table {
+            border-collapse: collapse;
+            width: 100%;
+            font-size: 0.9rem;
+        }
+
+        .module th {
+            background: var(--gray-100);
+            font-weight: 600;
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .module td {
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--gray-100);
+        }
+
+        /* Messages */
+        .messagelist li {
+            border-left: 4px solid var(--success);
+            padding: 0.75rem 1rem;
+            margin-bottom: 1rem;
+            background: #f0fdf4;
+            color: var(--gray-900);
+            border-radius: 6px;
+        }
+
+        /* Pagination */
+        .paginator {
+            margin-top: 1.5rem;
+        }
+
+        .paginator a,
+        .paginator span {
+            margin: 0 0.25rem;
+            padding: 0.4rem 0.75rem;
+            border-radius: 4px;
+            background: var(--gray-100);
+            color: var(--gray-700);
+            text-decoration: none;
+        }
+
+        .paginator .current {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Accessibility */
+        button:focus,
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+    </style>
+{% endblock %}
