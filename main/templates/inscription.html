@@ -19,6 +19,336 @@
                 Créez votre compte selon votre rôle
             </p>
 
+            <!-- Messages d'erreur -->
+            {% if messages %}
+                <div style="margin-bottom: 1.5rem;">
+                    {% for message in messages %}
+                        <div style="padding: 0.75rem; margin-bottom: 0.5rem; border-radius: 6px; 
+                             background-color: {% if message.tags == 'success' %}#d4edda{% elif message.tags == 'error' or message.tags == 'danger' %}#f8d7da{% elif message.tags == 'warning' %}#fff3cd{% else %}#d1ecf1{% endif %};
+                             color: {% if message.tags == 'success' %}#155724{% elif message.tags == 'error' or message.tags == 'danger' %}#721c24{% elif message.tags == 'warning' %}#856404{% else %}#0c5460{% endif %};
+                             border: 1px solid {% if message.tags == 'success' %}#c3e6cb{% elif message.tags == 'error' or message.tags == 'danger' %}#f5c6cb{% elif message.tags == 'warning' %}#ffeaa7{% else %}#bee5eb{% endif %};">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <!-- Erreurs du formulaire -->
+            {% if form.errors %}
+                <div style="margin-bottom: 1.5rem;">
+                    {% for field, errors in form.errors.items %}
+                        {% for error in errors %}
+                            <div style="padding: 0.75rem; margin-bottom: 0.5rem; border-radius: 6px; background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;">
+                                <strong>{{ field }}:</strong> {{ error }}
+                            </div>
+                        {% endfor %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+            <form method="post" style="text-align: left;" id="inscriptionForm">
+                {% csrf_token %}
+                
+                <div class="row">
+                    <div class="col-6">
+                        <div class="form-group" style="margin-bottom: 1.25rem;">
+                            <label for="username" class="form-label">
+                                <i class="fas fa-user"></i> Nom d'utilisateur *
+                            </label>
+                            <input type="text" name="username" id="username" class="form-control" 
+                                   value="{{ form.username.value|default:'' }}" required>
+                        </div>
+                    </div>
+                    
+                    <div class="col-6">
+                        <div class="form-group" style="margin-bottom: 1.25rem;">
+                            <label for="email" class="form-label">
+                                <i class="fas fa-envelope"></i> Email *
+                            </label>
+                            <input type="email" name="email" id="email" class="form-control" 
+                                   value="{{ form.email.value|default:'' }}" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-6">
+                        <div class="form-group" style="margin-bottom: 1.25rem;">
+                            <label for="first_name" class="form-label">
+                                <i class="fas fa-user"></i> Prénom *
+                            </label>
+                            <input type="text" name="first_name" id="first_name" class="form-control" 
+                                   value="{{ form.first_name.value|default:'' }}" required
+                                   pattern="[A-Za-zÀ-ÿ\s\-']+" title="Seules les lettres, espaces, tirets et apostrophes sont autorisés">
+                            <div class="invalid-feedback" id="first_name_error" style="display: none;">
+                                Le prénom ne peut contenir que des lettres, espaces, tirets et apostrophes.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-6">
+                        <div class="form-group" style="margin-bottom: 1.25rem;">
+                            <label for="last_name" class="form-label">
+                                <i class="fas fa-user"></i> Nom *
+                            </label>
+                            <input type="text" name="last_name" id="last_name" class="form-control" 
+                                   value="{{ form.last_name.value|default:'' }}" required
+                                   pattern="[A-Za-zÀ-ÿ\s\-']+" title="Seules les lettres, espaces, tirets et apostrophes sont autorisés">
+                            <div class="invalid-feedback" id="last_name_error" style="display: none;">
+                                Le nom ne peut contenir que des lettres, espaces, tirets et apostrophes.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-6">
+                        <div class="form-group" style="margin-bottom: 1.25rem;">
+                            <label for="role" class="form-label">
+                                <i class="fas fa-user-tag"></i> Rôle *
+                            </label>
+                            <select name="role" id="role" class="form-control" required onchange="toggleRoleFields()">
+                                <option value="">Sélectionner un rôle</option>
+                                <option value="patient" {% if form.role.value == 'patient' %}selected{% endif %}>Patient</option>
+                                <option value="docteur" {% if form.role.value == 'docteur' %}selected{% endif %}>Médecin</option>
+                                <option value="infirmier" {% if form.role.value == 'infirmier' %}selected{% endif %}>Infirmier</option>
+                                <option value="secretaire" {% if form.role.value == 'secretaire' %}selected{% endif %}>Secrétaire</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="col-6">
+                        <div class="form-group" style="margin-bottom: 1.25rem;">
+                            <label for="telephone" class="form-label">
+                                <i class="fas fa-phone"></i> Téléphone
+                            </label>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <select name="country_code" id="country_code" class="form-select">
+    <option value="+242" data-flag="🇨🇬" selected>🇨🇬 +242 (Congo-Brazzaville)</option>
+    <option value="+213" data-flag="🇩🇿">🇩🇿 +213 (Algérie)</option>
+    <option value="+244" data-flag="🇦🇴">🇦🇴 +244 (Angola)</option>
+    <option value="+229" data-flag="🇧🇯">🇧🇯 +229 (Bénin)</option>
+    <option value="+226" data-flag="🇧🇫">🇧🇫 +226 (Burkina Faso)</option>
+    <option value="+257" data-flag="🇧🇮">🇧🇮 +257 (Burundi)</option>
+    <option value="+237" data-flag="🇨🇲">🇨🇲 +237 (Cameroun)</option>
+    <option value="+238" data-flag="🇨🇻">🇨🇻 +238 (Cap-Vert)</option>
+    <option value="+236" data-flag="🇨🇫">🇨🇫 +236 (Centrafrique)</option>
+    <option value="+235" data-flag="🇹🇩">🇹🇩 +235 (Tchad)</option>
+    <option value="+269" data-flag="🇰🇲">🇰🇲 +269 (Comores)</option>
+    <option value="+243" data-flag="🇨🇩">🇨🇩 +243 (Congo-Kinshasa / RDC)</option>
+    <option value="+225" data-flag="🇨🇮">🇨🇮 +225 (Côte d’Ivoire)</option>
+    <option value="+253" data-flag="🇩🇯">🇩🇯 +253 (Djibouti)</option>
+    <option value="+20" data-flag="🇪🇬">🇪🇬 +20 (Égypte)</option>
+    <option value="+240" data-flag="🇬🇶">🇬🇶 +240 (Guinée Équatoriale)</option>
+    <option value="+291" data-flag="🇪🇷">🇪🇷 +291 (Érythrée)</option>
+    <option value="+268" data-flag="🇸🇿">🇸🇿 +268 (Eswatini)</option>
+    <option value="+251" data-flag="🇪🇹">🇪🇹 +251 (Éthiopie)</option>
+    <option value="+241" data-flag="🇬🇦">🇬🇦 +241 (Gabon)</option>
+    <option value="+220" data-flag="🇬🇲">🇬🇲 +220 (Gambie)</option>
+    <option value="+233" data-flag="🇬🇭">🇬🇭 +233 (Ghana)</option>
+    <option value="+224" data-flag="🇬🇳">🇬🇳 +224 (Guinée)</option>
+    <option value="+245" data-flag="🇬🇼">🇬🇼 +245 (Guinée-Bissau)</option>
+    <option value="+254" data-flag="🇰🇪">🇰🇪 +254 (Kenya)</option>
+    <option value="+266" data-flag="🇱🇸">🇱🇸 +266 (Lesotho)</option>
+    <option value="+231" data-flag="🇱🇷">🇱🇷 +231 (Libéria)</option>
+    <option value="+218" data-flag="🇱🇾">🇱🇾 +218 (Libye)</option>
+    <option value="+261" data-flag="🇲🇬">🇲🇬 +261 (Madagascar)</option>
+    <option value="+265" data-flag="🇲🇼">🇲🇼 +265 (Malawi)</option>
+    <option value="+223" data-flag="🇲🇱">🇲🇱 +223 (Mali)</option>
+    <option value="+222" data-flag="🇲🇷">🇲🇷 +222 (Mauritanie)</option>
+    <option value="+230" data-flag="🇲🇺">🇲🇺 +230 (Maurice)</option>
+    <option value="+212" data-flag="🇲🇦">🇲🇦 +212 (Maroc)</option>
+    <option value="+258" data-flag="🇲🇿">🇲🇿 +258 (Mozambique)</option>
+    <option value="+264" data-flag="🇳🇦">🇳🇦 +264 (Namibie)</option>
+    <option value="+227" data-flag="🇳🇪">🇳🇪 +227 (Niger)</option>
+    <option value="+234" data-flag="🇳🇬">🇳🇬 +234 (Nigéria)</option>
+    <option value="+250" data-flag="🇷🇼">🇷🇼 +250 (Rwanda)</option>
+    <option value="+239" data-flag="🇸🇹">🇸🇹 +239 (Sao Tomé-et-Principe)</option>
+    <option value="+221" data-flag="🇸🇳">🇸🇳 +221 (Sénégal)</option>
+    <option value="+248" data-flag="🇸🇨">🇸🇨 +248 (Seychelles)</option>
+    <option value="+232" data-flag="🇸🇱">🇸🇱 +232 (Sierra Leone)</option>
+    <option value="+252" data-flag="🇸🇴">🇸🇴 +252 (Somalie)</option>
+    <option value="+27" data-flag="🇿🇦">🇿🇦 +27 (Afrique du Sud)</option>
+    <option value="+211" data-flag="🇸🇸">🇸🇸 +211 (Soudan du Sud)</option>
+    <option value="+249" data-flag="🇸🇩">🇸🇩 +249 (Soudan)</option>
+    <option value="+255" data-flag="🇹🇿">🇹🇿 +255 (Tanzanie)</option>
+    <option value="+228" data-flag="🇹🇬">🇹🇬 +228 (Togo)</option>
+    <option value="+216" data-flag="🇹🇳">🇹🇳 +216 (Tunisie)</option>
+    <option value="+256" data-flag="🇺🇬">🇺🇬 +256 (Ouganda)</option>
+    <option value="+260" data-flag="🇿🇲">🇿🇲 +260 (Zambie)</option>
+    <option value="+263" data-flag="🇿🇼">🇿🇼 +263 (Zimbabwe)</option>
+</select>
+
+                                <input type="tel" name="telephone" id="telephone" class="form-control" 
+                                       value="{{ form.telephone.value|default:'' }}" placeholder="123456789"
+                                       pattern="[0-9]{8,15}" title="Seulement des chiffres, 8 à 15 caractères">
+                            </div>
+                            <input type="hidden" name="full_telephone" id="full_telephone">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Champs conditionnels selon le rôle -->
+                <div id="specialiteField" class="form-group" style="display: none; margin-bottom: 1.25rem;">
+                    <label for="specialite" class="form-label">
+                        <i class="fas fa-stethoscope"></i> Spécialité
+                    </label>
+                    <input type="text" name="specialite" id="specialite" class="form-control" 
+                           value="{{ form.specialite.value|default:'' }}">
+                </div>
+                
+                <div id="serviceField" class="form-group" style="display: none; margin-bottom: 1.25rem;">
+                    <label for="service" class="form-label">
+                        <i class="fas fa-building"></i> Service
+                    </label>
+                    <input type="text" name="service" id="service" class="form-control" 
+                           value="{{ form.service.value|default:'' }}">
+                </div>
+                
+                <div class="row">
+                    <div class="col-6">
+                        <div class="form-group" style="margin-bottom: 1.25rem;">
+                            <label for="password1" class="form-label">
+                                <i class="fas fa-lock"></i> Mot de passe *
+                            </label>
+                            <input type="password" name="password1" id="password1" class="form-control" required>
+                        </div>
+                    </div>
+                    
+                    <div class="col-6">
+                        <div class="form-group" style="margin-bottom: 1.25rem;">
+                            <label for="password2" class="form-label">
+                                <i class="fas fa-lock"></i> Confirmer le mot de passe *
+                            </label>
+                            <input type="password" name="password2" id="password2" class="form-control" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Espacement CORRIGÉ entre les mots de passe et le bouton -->
+                <div style="margin-top: 2rem;">
+                    <button type="submit" class="btn btn-primary" style="width: 100%; font-size: 1rem; padding: 0.875rem;">
+                        <i class="fas fa-user-plus"></i>
+                        Créer mon compte
+                    </button>
+                </div>
+            </form>
+            
+            <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #e9ecef;">
+                <p style="color: #6c757d; margin-bottom: 0.5rem;">
+                    Déjà un compte ?
+                </p>
+                <a href="/login/" style="color: #007bff; text-decoration: none; font-weight: 500;">
+                    <i class="fas fa-sign-in-alt"></i> Se connecter
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Validation en temps réel des noms et prénoms
+function validateName(input, errorElement) {
+    const nameRegex = /^[A-Za-zÀ-ÿ\s\-']+$/;
+    const value = input.value.trim();
+    
+    if (value && !nameRegex.test(value)) {
+        input.classList.add('is-invalid');
+        errorElement.style.display = 'block';
+        return false;
+    } else {
+        input.classList.remove('is-invalid');
+        errorElement.style.display = 'none';
+        return true;
+    }
+}
+
+// Combinaison indicatif + numéro
+function updateFullTelephone() {
+    const countryCode = document.getElementById('country_code').value;
+    const telephone = document.getElementById('telephone').value;
+    const fullTelephone = telephone ? countryCode + telephone : '';
+    document.getElementById('full_telephone').value = fullTelephone;
+}
+
+function toggleRoleFields() {
+    const role = document.getElementById('role').value;
+    const specialiteField = document.getElementById('specialiteField');
+    const serviceField = document.getElementById('serviceField');
+    
+    // Masquer tous les champs
+    specialiteField.style.display = 'none';
+    serviceField.style.display = 'none';
+    
+    // Afficher selon le rôle
+    if (role === 'docteur') {
+        specialiteField.style.display = 'block';
+    } else if (role === 'infirmier' || role === 'secretaire') {
+        serviceField.style.display = 'block';
+    }
+}
+
+// Événements
+document.addEventListener('DOMContentLoaded', function() {
+    toggleRoleFields();
+    
+    // Validation noms/prénoms en temps réel
+    const firstNameInput = document.getElementById('first_name');
+    const lastNameInput = document.getElementById('last_name');
+    const firstNameError = document.getElementById('first_name_error');
+    const lastNameError = document.getElementById('last_name_error');
+    
+    firstNameInput.addEventListener('input', function() {
+        validateName(this, firstNameError);
+    });
+    
+    lastNameInput.addEventListener('input', function() {
+        validateName(this, lastNameError);
+    });
+    
+    // Téléphone complet
+    document.getElementById('country_code').addEventListener('change', updateFullTelephone);
+    document.getElementById('telephone').addEventListener('input', updateFullTelephone);
+    
+    // Validation avant soumission
+    document.getElementById('inscriptionForm').addEventListener('submit', function(e) {
+        const firstNameValid = validateName(firstNameInput, firstNameError);
+        const lastNameValid = validateName(lastNameInput, lastNameError);
+        
+        if (!firstNameValid || !lastNameValid) {
+            e.preventDefault();
+            alert('Veuillez corriger les erreurs dans le formulaire.');
+        }
+        
+        updateFullTelephone();
+    });
+});
+</script>
+{% endblock %}
+
+
+
+{% comment %} {% extends 'base.html' %}
+
+{% block title %}Inscription - ESCO{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: center; align-items: center; min-height: 80vh;">
+    <div class="card" style="width: 100%; max-width: 600px; text-align: center;">
+        <div class="card-body" style="padding: 2.5rem 2rem;">
+            <!-- Icône inscription -->
+            <div style="font-size: 3rem; color: #007bff; margin-bottom: 1.5rem;">
+                <i class="fas fa-user-plus"></i>
+            </div>
+            
+            <h1 style="color: #495057; margin-bottom: 0.5rem; font-weight: 600; font-size: 1.8rem;">
+                Inscription ESCO
+            </h1>
+            
+            <p style="color: #6c757d; margin-bottom: 2rem; font-size: 0.95rem;">
+                Créez votre compte selon votre rôle
+            </p>
+
             <!-- Affichage des messages d'erreur -->
             {% if messages %}
                 <div style="margin-bottom: 1.5rem;">
@@ -198,4 +528,4 @@ document.addEventListener('DOMContentLoaded', function() {
     toggleRoleFields();
 });
 </script>
-{% endblock %}
+{% endblock %} {% endcomment %}

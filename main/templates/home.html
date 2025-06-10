@@ -3,219 +3,725 @@
 {% block title %}Accueil - ESCO{% endblock %}
 
 {% block content %}
-<div class="dashboard-header">
-    <div class="text-center">
-        <h1><i class="fas fa-heartbeat me-3"></i>Bienvenue sur ESCO</h1>
-        <p>Système de Gestion Hospitalière - Votre santé, notre priorité</p>
+<!-- Hero Section amélioré -->
+<div class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <div class="hero-content">
+                    <h1 class="hero-title">
+                        <i class="fas fa-heartbeat me-3"></i>
+                        Bienvenue sur <span class="text-gradient">ESCO</span>
+                    </h1>
+                    <p class="hero-subtitle">Système de Gestion Hospitalière Moderne</p>
+                    <p class="hero-description">
+                        Votre santé, notre priorité. Une plateforme innovante qui connecte patients, médecins et personnel soignant pour une expérience médicale optimale.
+                    </p>
+                    
+                    {% if not user.is_authenticated %}
+                        <div class="hero-buttons">
+                            <a href="/inscription/" class="btn btn-hero-primary me-3">
+                                <i class="fas fa-user-plus me-2"></i>Créer un compte
+                            </a>
+                            <a href="/login/" class="btn btn-hero-secondary">
+                                <i class="fas fa-sign-in-alt me-2"></i>Se connecter
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="user-welcome">
+                            <div class="welcome-card">
+                                <div class="d-flex align-items-center">
+                                    <div class="user-avatar">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                    <div class="welcome-info">
+                                        <h5>Bonjour {{ user.get_full_name|default:user.username }} !</h5>
+                                        <span class="role-badge">{{ user.get_role_display|default:"Utilisateur" }}</span>
+                                    </div>
+                                </div>
+                                <a href="/dashboard/" class="btn btn-dashboard">
+                                    <i class="fas fa-tachometer-alt me-2"></i>Mon Dashboard
+                                </a>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="hero-illustration">
+                    <div class="floating-cards">
+                        <div class="float-card card-1">
+                            <i class="fas fa-calendar-check"></i>
+                            <span>Rendez-vous</span>
+                        </div>
+                        <div class="float-card card-2">
+                            <i class="fas fa-stethoscope"></i>
+                            <span>Consultations</span>
+                        </div>
+                        <div class="float-card card-3">
+                            <i class="fas fa-heartbeat"></i>
+                            <span>Suivi médical</span>
+                        </div>
+                        <div class="float-card card-4">
+                            <i class="fas fa-user-md"></i>
+                            <span>Médecins</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
-<div class="row">
-    <div class="col-md-6">
-        <div class="content-section">
-            <h2><i class="fas fa-info-circle me-2" style="color: var(--primary-purple);"></i>À propos d'ESCO</h2>
-            <p>ESCO est une plateforme moderne de gestion hospitalière qui permet aux patients, médecins, infirmiers et personnels administratifs de gérer efficacement leurs activités médicales.</p>
-            
-            <h4>Fonctionnalités principales :</h4>
-            <ul>
-                <li><i class="fas fa-check text-success me-2"></i>Gestion des rendez-vous</li>
-                <li><i class="fas fa-check text-success me-2"></i>Consultations médicales</li>
-                <li><i class="fas fa-check text-success me-2"></i>Soins infirmiers</li>
-                <li><i class="fas fa-check text-success me-2"></i>Dossiers patients</li>
-                <li><i class="fas fa-check text-success me-2"></i>Interface d'administration</li>
-            </ul>
+<!-- Statistiques en temps réel -->
+<div class="stats-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3 col-sm-6 mb-4">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>1,250+</h3>
+                        <p>Patients actifs</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6 mb-4">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-user-md"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>45+</h3>
+                        <p>Médecins experts</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6 mb-4">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>3,400+</h3>
+                        <p>RDV cette année</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6 mb-4">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>24/7</h3>
+                        <p>Support disponible</p>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-    
-    <div class="col-md-6">
-        <div class="content-section">
-            <h2><i class="fas fa-users me-2" style="color: var(--primary-purple);"></i>Accès par rôle</h2>
+</div>
+
+<!-- Fonctionnalités principales -->
+<div class="features-section">
+    <div class="container">
+        <div class="section-header text-center mb-5">
+            <h2 class="section-title">
+                <i class="fas fa-star me-3"></i>Fonctionnalités principales
+            </h2>
+            <p class="section-subtitle">Une solution complète pour la gestion hospitalière moderne</p>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-calendar-plus"></i>
+                    </div>
+                    <h4>Gestion des rendez-vous</h4>
+                    <p>Planifiez et gérez vos consultations en ligne avec un système intuitif et automatisé.</p>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-check"></i> Prise de RDV en ligne</li>
+                        <li><i class="fas fa-check"></i> Rappels automatiques</li>
+                        <li><i class="fas fa-check"></i> Annulation/modification</li>
+                    </ul>
+                </div>
+            </div>
             
-            {% if not user.is_authenticated %}
-                <div class="text-center">
-                    <p>Connectez-vous selon votre rôle :</p>
-                    
-                    <div class="d-grid gap-2">
-                        <a href="/login/" class="btn btn-purple">
-                            <i class="fas fa-sign-in-alt me-2"></i>Se connecter
-                        </a>
-                        <a href="/inscription/" class="btn btn-outline-primary">
-                            <i class="fas fa-user-plus me-2"></i>Créer un compte
-                        </a>
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-folder-open"></i>
                     </div>
+                    <h4>Dossiers patients</h4>
+                    <p>Accès sécurisé à vos informations médicales, historique et documents importants.</p>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-check"></i> Historique complet</li>
+                        <li><i class="fas fa-check"></i> Documents PDF</li>
+                        <li><i class="fas fa-check"></i> Sécurité maximale</li>
+                    </ul>
                 </div>
-            {% else %}
-                <div class="text-center">
-                    <h4>Connecté en tant que : {{ user.get_role_display }}</h4>
-                    <p>Bonjour {{ user.get_full_name|default:user.username }} !</p>
-                    
-                    <div class="d-grid gap-2">
-                        <a href="/dashboard/" class="btn btn-purple">
-                            <i class="fas fa-tachometer-alt me-2"></i>Accéder au Dashboard
-                        </a>
-                        {% if user.is_staff %}
-                        <a href="/admin/" class="btn btn-outline-primary">
-                            <i class="fas fa-cogs me-2"></i>Interface Admin
-                        </a>
-                        {% endif %}
+            </div>
+            
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-stethoscope"></i>
                     </div>
+                    <h4>Consultations médicales</h4>
+                    <p>Interface dédiée pour les professionnels de santé avec outils de diagnostic avancés.</p>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-check"></i> Interface médecin</li>
+                        <li><i class="fas fa-check"></i> Outils diagnostic</li>
+                        <li><i class="fas fa-check"></i> Prescriptions</li>
+                    </ul>
                 </div>
-            {% endif %}
+            </div>
+            
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-user-nurse"></i>
+                    </div>
+                    <h4>Soins infirmiers</h4>
+                    <p>Suivi personnalisé des soins avec planning intégré pour le personnel infirmier.</p>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-check"></i> Planning soins</li>
+                        <li><i class="fas fa-check"></i> Suivi patient</li>
+                        <li><i class="fas fa-check"></i> Rapports détaillés</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h4>Tableaux de bord</h4>
+                    <p>Visualisation en temps réel des données importantes avec analytiques avancées.</p>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-check"></i> Analytics temps réel</li>
+                        <li><i class="fas fa-check"></i> Rapports personnalisés</li>
+                        <li><i class="fas fa-check"></i> KPI médicaux</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h4>Sécurité & Confidentialité</h4>
+                    <p>Protection maximale des données médicales selon les standards internationaux.</p>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-check"></i> Chiffrement SSL</li>
+                        <li><i class="fas fa-check"></i> Conformité RGPD</li>
+                        <li><i class="fas fa-check"></i> Accès sécurisé</li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
-<div class="content-section">
-    <h2 class="text-center mb-4"><i class="fas fa-user-friends me-2" style="color: var(--primary-purple);"></i>Types d'utilisateurs</h2>
-    
-    <div class="row">
-        <div class="col-md-3 text-center mb-3">
-            <div class="card h-100">
-                <div class="card-body">
-                    <i class="fas fa-user-injured fa-3x mb-3" style="color: var(--primary-purple);"></i>
-                    <h5>Patients</h5>
-                    <p class="text-muted">Prise de rendez-vous, consultation du dossier médical</p>
-                </div>
-            </div>
+<!-- Types d'utilisateurs -->
+<div class="users-section">
+    <div class="container">
+        <div class="section-header text-center mb-5">
+            <h2 class="section-title">
+                <i class="fas fa-user-friends me-3"></i>Accès par rôle
+            </h2>
+            <p class="section-subtitle">Chaque utilisateur dispose d'une interface adaptée à ses besoins</p>
         </div>
         
-        <div class="col-md-3 text-center mb-3">
-            <div class="card h-100">
-                <div class="card-body">
-                    <i class="fas fa-user-md fa-3x mb-3" style="color: var(--primary-purple);"></i>
-                    <h5>Médecins</h5>
-                    <p class="text-muted">Gestion des consultations, planning médical</p>
+        <div class="row">
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="user-role-card">
+                    <div class="role-header">
+                        <div class="role-icon patient">
+                            <i class="fas fa-user-injured"></i>
+                        </div>
+                        <h4>Patients</h4>
+                    </div>
+                    <div class="role-features">
+                        <ul>
+                            <li><i class="fas fa-calendar-plus"></i> Prise de rendez-vous</li>
+                            <li><i class="fas fa-folder-open"></i> Dossier médical</li>
+                            <li><i class="fas fa-history"></i> Historique consultations</li>
+                            <li><i class="fas fa-download"></i> Documents PDF</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
-        </div>
-        
-        <div class="col-md-3 text-center mb-3">
-            <div class="card h-100">
-                <div class="card-body">
-                    <i class="fas fa-user-nurse fa-3x mb-3" style="color: var(--primary-purple);"></i>
-                    <h5>Infirmiers</h5>
-                    <p class="text-muted">Soins infirmiers, suivi des patients</p>
+            
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="user-role-card">
+                    <div class="role-header">
+                        <div class="role-icon medecin">
+                            <i class="fas fa-user-md"></i>
+                        </div>
+                        <h4>Médecins</h4>
+                    </div>
+                    <div class="role-features">
+                        <ul>
+                            <li><i class="fas fa-calendar"></i> Planning médical</li>
+                            <li><i class="fas fa-stethoscope"></i> Consultations</li>
+                            <li><i class="fas fa-prescription"></i> Prescriptions</li>
+                            <li><i class="fas fa-chart-bar"></i> Statistiques</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
-        </div>
-        
-        <div class="col-md-3 text-center mb-3">
-            <div class="card h-100">
-                <div class="card-body">
-                    <i class="fas fa-user-tie fa-3x mb-3" style="color: var(--primary-purple);"></i>
-                    <h5>Secrétaires</h5>
-                    <p class="text-muted">Gestion administrative, planification</p>
+            
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="user-role-card">
+                    <div class="role-header">
+                        <div class="role-icon infirmier">
+                            <i class="fas fa-user-nurse"></i>
+                        </div>
+                        <h4>Infirmiers</h4>
+                    </div>
+                    <div class="role-features">
+                        <ul>
+                            <li><i class="fas fa-syringe"></i> Planning soins</li>
+                            <li><i class="fas fa-heartbeat"></i> Suivi patients</li>
+                            <li><i class="fas fa-notes-medical"></i> Rapports soins</li>
+                            <li><i class="fas fa-clock"></i> Urgences</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="user-role-card">
+                    <div class="role-header">
+                        <div class="role-icon secretaire">
+                            <i class="fas fa-user-tie"></i>
+                        </div>
+                        <h4>Secrétaires</h4>
+                    </div>
+                    <div class="role-features">
+                        <ul>
+                            <li><i class="fas fa-phone"></i> Accueil téléphonique</li>
+                            <li><i class="fas fa-calendar-alt"></i> Gestion RDV</li>
+                            <li><i class="fas fa-file-alt"></i> Administration</li>
+                            <li><i class="fas fa-users"></i> Gestion patients</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Call to Action final -->
+{% if not user.is_authenticated %}
+<div class="cta-section">
+    <div class="container text-center">
+        <h2>Prêt à rejoindre ESCO ?</h2>
+        <p>Créez votre compte dès maintenant et découvrez une nouvelle façon de gérer votre santé.</p>
+        <div class="cta-buttons">
+            <a href="/inscription/" class="btn btn-cta-primary me-3">
+                <i class="fas fa-rocket me-2"></i>Commencer maintenant
+            </a>
+            <a href="#features" class="btn btn-cta-secondary">
+                <i class="fas fa-info-circle me-2"></i>En savoir plus
+            </a>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<style>
+/* Hero Section */
+.hero-section {
+    background: linear-gradient(135deg, var(--primary-purple) 0%, var(--secondary-purple) 100%);
+    color: white;
+    padding: 4rem 0;
+    margin: -2rem -15px 3rem -15px;
+    position: relative;
+    overflow: hidden;
+}
+.hero-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 100" fill="white" opacity="0.1"><polygon points="0,100 1000,0 1000,100"/></svg>');
+    background-size: cover;
+}
+.hero-content {
+    position: relative;
+    z-index: 2;
+}
+.hero-title {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+.text-gradient {
+    background: linear-gradient(45deg, #fff, #f8fafc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.hero-subtitle {
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+    opacity: 0.9;
+}
+.hero-description {
+    font-size: 1.1rem;
+    opacity: 0.8;
+    margin-bottom: 2rem;
+    line-height: 1.6;
+}
+.hero-buttons {
+    margin-top: 2rem;
+}
+.btn-hero-primary {
+    background: white;
+    color: var(--primary-purple);
+    padding: 12px 30px;
+    border-radius: 50px;
+    font-weight: 600;
+    border: none;
+    transition: all 0.3s ease;
+}
+.btn-hero-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(255,255,255,0.3);
+    color: var(--primary-purple);
+}
+.btn-hero-secondary {
+    background: transparent;
+    color: white;
+    padding: 12px 30px;
+    border-radius: 50px;
+    font-weight: 600;
+    border: 2px solid rgba(255,255,255,0.3);
+    transition: all 0.3s ease;
+}
+.btn-hero-secondary:hover {
+    background: rgba(255,255,255,0.1);
+    border-color: white;
+    color: white;
+}
+/* Welcome Card */
+.welcome-card {
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 1.5rem;
+    border: 1px solid rgba(255,255,255,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.user-avatar {
+    width: 50px;
+    height: 50px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary-purple);
+    margin-right: 1rem;
+}
+.welcome-info h5 {
+    margin: 0;
+    font-weight: 600;
+}
+.role-badge {
+    background: rgba(255,255,255,0.2);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+}
+.btn-dashboard {
+    background: white;
+    color: var(--primary-purple);
+    border: none;
+    padding: 8px 20px;
+    border-radius: 25px;
+    font-weight: 600;
+}
+/* Floating Cards Animation */
+.hero-illustration {
+    position: relative;
+    height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.floating-cards {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+.float-card {
+    position: absolute;
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 1rem;
+    text-align: center;
+    color: white;
+    border: 1px solid rgba(255,255,255,0.2);
+    animation: float 6s ease-in-out infinite;
+}
+.float-card i {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+.card-1 { top: 20%; left: 20%; animation-delay: 0s; }
+.card-2 { top: 10%; right: 20%; animation-delay: 1.5s; }
+.card-3 { bottom: 30%; left: 10%; animation-delay: 3s; }
+.card-4 { bottom: 20%; right: 10%; animation-delay: 4.5s; }
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+}
+/* Stats Section */
+.stats-section {
+    padding: 3rem 0;
+    background: #f8fafc;
+}
+.stat-card {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    text-align: center;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    height: 100%;
+}
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+.stat-icon {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, var(--primary-purple), var(--secondary-purple));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    color: white;
+    font-size: 1.5rem;
+}
+.stat-content h3 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary-purple);
+    margin-bottom: 0.5rem;
+}
+.stat-content p {
+    color: #6b7280;
+    margin: 0;
+    font-weight: 500;
+}
+/* Features Section */
+.features-section {
+    padding: 4rem 0;
+}
+.section-header {
+    margin-bottom: 3rem;
+}
+.section-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 1rem;
+}
+.section-subtitle {
+    font-size: 1.2rem;
+    color: #6b7280;
+    max-width: 600px;
+    margin: 0 auto;
+}
+.feature-card {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    height: 100%;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+.feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(135deg, var(--primary-purple), var(--secondary-purple));
+}
+.feature-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+}
+.feature-icon {
+    width: 70px;
+    height: 70px;
+    background: linear-gradient(135deg, var(--primary-purple), var(--secondary-purple));
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+}
+.feature-card h4 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 1rem;
+}
+.feature-card p {
+    color: #6b7280;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+}
+.feature-list {
+    list-style: none;
+    padding: 0;
+}
+.feature-list li {
+    padding: 0.3rem 0;
+    color: #6b7280;
+    font-size: 0.9rem;
+}
+.feature-list i {
+    color: #10b981;
+    width: 16px;
+    margin-right: 0.5rem;
+}
+/* Users Section */
+.users-section {
+    padding: 4rem 0;
+    background: #f8fafc;
+}
+.user-role-card {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    height: 100%;
+}
+.user-role-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+}
+.role-header {
+    padding: 2rem 1.5rem 1rem;
+    text-align: center;
+}
+.role-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 2rem;
+    margin: 0 auto 1rem;
+}
+.role-icon.patient { background: linear-gradient(135deg, #6366f1, #8b5cf6); }
+.role-icon.medecin { background: linear-gradient(135deg, #10b981, #059669); }
+.role-icon.infirmier { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+.role-icon.secretaire { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.role-header h4 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin: 0;
+}
+.role-features {
+    padding: 0 1.5rem 2rem;
+}
+.role-features ul {
+    list-style: none;
+    padding: 0;
+}
+.role-features li {
+    padding: 0.5rem 0;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+}
+.role-features i {
+    color: var(--primary-purple);
+    width: 20px;
+    margin-right: 0.75rem;
+}
+/* CTA Section */
+.cta-section {
+    background: linear-gradient(135deg, var(--primary-purple) 0%, var(--secondary-purple) 100%);
+    color: white;
+    padding: 4rem 0;
+    margin-top: 4rem;
+}
+.cta-section h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+.cta-section p {
+    font-size: 1.2rem;
+    opacity: 0.9;
+    margin-bottom: 2rem;
+}
+.btn-cta-primary {
+    background: white;
+    color: var(--primary-purple);
+    padding: 15px 30px;
+    border-radius: 50px;
+    font-weight: 600;
+    border: none;
+    transition: all 0.3s ease;
+}
+.btn-cta-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(255,255,255,0.3);
+    color: var(--primary-purple);
+}
+.btn-cta-secondary {
+    background: transparent;
+    color: white;
+    padding: 15px 30px;
+    border-radius: 50px;
+    font-weight: 600;
+    border: 2px solid rgba(255,255,255,0.3);
+    transition: all 0.3s ease;
+}
+.btn-cta-secondary:hover {
+    background: rgba(255,255,255,0.1);
+    border-color: white;
+    color: white;
+}
+/* Responsive */
+@media (max-width: 768px) {
+    .hero-title { font-size: 2rem; }
+    .section-title { font-size: 2rem; }
+    .floating-cards { display: none; }
+    .hero-buttons .btn { display: block; width: 100%; margin-bottom: 1rem; }
+}
+</style>
 {% endblock %}
-
-{% comment %} {% extends 'base.html' %}
-
-{% block title %}Accueil - ESCO{% endblock %}
-
-{% block content %}
-<div class="row">
-    <!-- Texte principal -->
-    <div class="col-6">
-        <div style="padding: 3rem 0;">
-            <h1 style="font-size: 3rem; font-weight: 700; color: #495057; margin-bottom: 1rem;">
-                Bienvenue sur<br>
-                <span style="color: #6c5ce7;">ESCO</span>
-            </h1>
-            
-            <p style="font-size: 1.1rem; color: #6c757d; line-height: 1.6; margin-bottom: 2rem;">
-                Votre plateforme de gestion hospitalière moderne. Gérez 
-                facilement vos rendez-vous, consultations et dossiers 
-                médicaux.
-            </p>
-            
-            <div style="display: flex; gap: 1rem;">
-                {% if not user.is_authenticated %}
-                <a href="{% url 'inscription' %}" class="btn btn-primary" style="font-size: 1rem; padding: 1rem 2rem;">
-                    <i class="fas fa-user-plus"></i>
-                    S'inscrire
-                </a>
-                
-                <a href="{% url 'login' %}" class="btn btn-outline" style="font-size: 1rem; padding: 1rem 2rem;">
-                    <i class="fas fa-sign-in-alt"></i>
-                    Se connecter
-                </a>
-                {% else %}
-                <a href="{% url 'dashboard' %}" class="btn btn-primary" style="font-size: 1rem; padding: 1rem 2rem;">
-                    <i class="fas fa-tachometer-alt"></i>
-                    Accéder au Dashboard
-                </a>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-    
-    <!-- Card Système Intégré -->
-    <div class="col-6">
-        <div style="padding: 2rem;">
-            <div class="card" style="text-align: center; padding: 3rem 2rem;">
-                <div style="font-size: 4rem; color: #6c5ce7; margin-bottom: 2rem;">
-                    <i class="fas fa-hospital"></i>
-                </div>
-                
-                <h2 style="color: #495057; margin-bottom: 1rem; font-weight: 600;">
-                    Système Intégré
-                </h2>
-                
-                <p style="color: #6c757d; font-size: 1rem; line-height: 1.5;">
-                    Une solution complète pour la gestion de votre établissement de 
-                    santé.
-                </p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Section fonctionnalités -->
-<div class="row" style="margin-top: 3rem;">
-    <div class="col-4">
-        <div class="card text-center">
-            <div class="card-body">
-                <div style="font-size: 2.5rem; color: #6c5ce7; margin-bottom: 1rem;">
-                    <i class="fas fa-calendar-alt"></i>
-                </div>
-                <h3 style="color: #495057; margin-bottom: 1rem;">Rendez-vous</h3>
-                <p style="color: #6c757d;">
-                    Planifiez et gérez facilement tous vos rendez-vous médicaux
-                </p>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-4">
-        <div class="card text-center">
-            <div class="card-body">
-                <div style="font-size: 2.5rem; color: #6c5ce7; margin-bottom: 1rem;">
-                    <i class="fas fa-file-medical"></i>
-                </div>
-                <h3 style="color: #495057; margin-bottom: 1rem;">Dossiers</h3>
-                <p style="color: #6c757d;">
-                    Consultez et gérez les dossiers médicaux en toute sécurité
-                </p>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-4">
-        <div class="card text-center">
-            <div class="card-body">
-                <div style="font-size: 2.5rem; color: #6c5ce7; margin-bottom: 1rem;">
-                    <i class="fas fa-stethoscope"></i>
-                </div>
-                <h3 style="color: #495057; margin-bottom: 1rem;">Consultations</h3>
-                <p style="color: #6c757d;">
-                    Suivez l'historique et les détails de toutes les consultations
-                </p>
-            </div>
-        </div>
-    </div>
-</div>
-{% endblock %} {% endcomment %}

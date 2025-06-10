@@ -5,154 +5,196 @@
 {% block content %}
 <!-- Header Dashboard avec fond violet mais texte blanc lisible -->
 <div class="dashboard-header">
-    <div class="d-flex align-items-center">
-        <div class="stats-icon me-3" style="background: rgba(255,255,255,0.2);">
-            <i class="fas fa-user-injured"></i>
+    <div class="d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center">
+            <div class="stats-icon me-3" style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-user-injured fa-2x"></i>
+            </div>
+            <div>
+                <h1 style="margin-bottom: 5px;">Bonjour {{ user.get_full_name|default:user.username }} !</h1>
+                <p style="margin: 0; opacity: 0.9;">Bienvenue sur votre espace patient ESCO</p>
+                <small style="opacity: 0.8;">ID Patient: {{ user.user_id|default:"Non défini" }}</small>
+            </div>
         </div>
-        <div>
-            <h1>Bonjour {{ user.get_full_name|default:user.username }} !</h1>
-            <p>Bienvenue sur votre espace patient ESCO</p>
+        <div class="text-end">
+            <span class="badge" style="background: rgba(255,255,255,0.2); color: white; font-size: 1rem; padding: 8px 15px;">
+                <i class="fas fa-circle text-success me-2"></i>Connecté
+            </span>
         </div>
     </div>
 </div>
 
-<!-- Informations Patient sur fond blanc -->
+<!-- Statistiques rapides -->
 <div class="row mb-4">
-    <div class="col-md-8">
-        <div class="content-section">
-            <h2 class="section-title">
-                <i class="fas fa-id-card section-icon"></i>
-                Mes Informations
-            </h2>
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="stats-card">
-                        <div class="stats-icon">
-                            <i class="fas fa-hashtag"></i>
-                        </div>
-                        <div class="stats-value">{{ user.user_id|default:"Non défini" }}</div>
-                        <div class="stats-label">Numéro Patient</div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="stats-card">
-                        <div class="stats-icon">
-                            <i class="fas fa-tint"></i>
-                        </div>
-                        <div class="stats-value">{{ patient.groupe_sanguin|default:"Non défini" }}</div>
-                        <div class="stats-label">Groupe Sanguin</div>
-                    </div>
-                </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="content-section text-center" style="padding: 1.5rem;">
+            <div style="color: var(--primary-purple); font-size: 2.5rem; margin-bottom: 0.5rem;">
+                <i class="fas fa-calendar-check"></i>
             </div>
+            <h3 style="color: var(--primary-purple); margin-bottom: 0.5rem;">{{ rdv_count|default:"0" }}</h3>
+            <p style="margin: 0; color: #6b7280;">Rendez-vous à venir</p>
         </div>
     </div>
     
-    <div class="col-md-4">
-        <div class="content-section">
-            <h2 class="section-title">
-                <i class="fas fa-chart-line section-icon"></i>
-                Statistiques
-            </h2>
-            <div class="stats-card">
-                <div class="stats-icon">
-                    <i class="fas fa-calendar-check"></i>
-                </div>
-                <div class="stats-value">{{ rdv_count|default:"0" }}</div>
-                <div class="stats-label">Rendez-vous totaux</div>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="content-section text-center" style="padding: 1.5rem;">
+            <div style="color: var(--primary-purple); font-size: 2.5rem; margin-bottom: 0.5rem;">
+                <i class="fas fa-stethoscope"></i>
             </div>
+            <h3 style="color: var(--primary-purple); margin-bottom: 0.5rem;">{{ consultations_count|default:"0" }}</h3>
+            <p style="margin: 0; color: #6b7280;">Consultations</p>
+        </div>
+    </div>
+    
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="content-section text-center" style="padding: 1.5rem;">
+            <div style="color: var(--primary-purple); font-size: 2.5rem; margin-bottom: 0.5rem;">
+                <i class="fas fa-tint"></i>
+            </div>
+            <h3 style="color: var(--primary-purple); margin-bottom: 0.5rem;">{{ patient.groupe_sanguin|default:"Non défini" }}</h3>
+            <p style="margin: 0; color: #6b7280;">Groupe Sanguin</p>
+        </div>
+    </div>
+    
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="content-section text-center" style="padding: 1.5rem;">
+            <div style="color: var(--primary-purple); font-size: 2.5rem; margin-bottom: 0.5rem;">
+                <i class="fas fa-heartbeat"></i>
+            </div>
+            <h3 style="color: var(--primary-purple); margin-bottom: 0.5rem;">Actif</h3>
+            <p style="margin: 0; color: #6b7280;">État du dossier</p>
         </div>
     </div>
 </div>
 
-<!-- Actions Rapides sur fond blanc -->
+<!-- Actions Rapides améliorées -->
 <div class="content-section">
-    <h2 class="section-title">
-        <i class="fas fa-bolt section-icon"></i>
+    <h2 class="section-title" style="display: flex; align-items: center; margin-bottom: 2rem;">
+        <i class="fas fa-bolt section-icon" style="color: var(--primary-purple); margin-right: 0.5rem;"></i>
         Actions rapides
     </h2>
     <div class="row">
         <div class="col-md-3 col-sm-6 mb-3">
-            <a href="#" class="action-card d-block">
-                <div class="action-icon">
-                    <i class="fas fa-calendar-plus"></i>
+            <a href="{% url 'nouveau_rdv' %}" class="action-card d-block" style="text-decoration: none; transition: all 0.3s ease;">
+                <div class="card h-100 border-0 shadow-sm" style="border-radius: 12px; overflow: hidden;">
+                    <div class="card-body text-center p-4">
+                        <div class="action-icon" style="width: 60px; height: 60px; margin: 0 auto 1rem; background: linear-gradient(135deg, var(--primary-purple), var(--secondary-purple)); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;">
+                            <i class="fas fa-calendar-plus fa-lg"></i>
+                        </div>
+                        <h5 style="color: var(--text-dark); margin-bottom: 0.5rem;">Nouveau RDV</h5>
+                        <p style="color: #6b7280; font-size: 0.9rem; margin: 0;">Prendre un rendez-vous</p>
+                    </div>
                 </div>
-                <div class="action-title">Nouveau RDV</div>
-                <div class="action-desc">Prendre un rendez-vous</div>
             </a>
         </div>
         
         <div class="col-md-3 col-sm-6 mb-3">
-            <a href="#" class="action-card d-block">
-                <div class="action-icon">
-                    <i class="fas fa-calendar-alt"></i>
+            <a href="{% url 'mes_rdv' %}" class="action-card d-block" style="text-decoration: none; transition: all 0.3s ease;">
+                <div class="card h-100 border-0 shadow-sm" style="border-radius: 12px; overflow: hidden;">
+                    <div class="card-body text-center p-4">
+                        <div class="action-icon" style="width: 60px; height: 60px; margin: 0 auto 1rem; background: linear-gradient(135deg, #10b981, #059669); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;">
+                            <i class="fas fa-calendar-alt fa-lg"></i>
+                        </div>
+                        <h5 style="color: var(--text-dark); margin-bottom: 0.5rem;">Mes RDV</h5>
+                        <p style="color: #6b7280; font-size: 0.9rem; margin: 0;">Voir mes rendez-vous</p>
+                    </div>
                 </div>
-                <div class="action-title">Mes RDV</div>
-                <div class="action-desc">Voir mes rendez-vous</div>
             </a>
         </div>
         
         <div class="col-md-3 col-sm-6 mb-3">
-            <a href="#" class="action-card d-block">
-                <div class="action-icon">
-                    <i class="fas fa-stethoscope"></i>
+            <a href="{% url 'mes_consultations' %}" class="action-card d-block" style="text-decoration: none; transition: all 0.3s ease;">
+                <div class="card h-100 border-0 shadow-sm" style="border-radius: 12px; overflow: hidden;">
+                    <div class="card-body text-center p-4">
+                        <div class="action-icon" style="width: 60px; height: 60px; margin: 0 auto 1rem; background: linear-gradient(135deg, #3b82f6, #1d4ed8); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;">
+                            <i class="fas fa-stethoscope fa-lg"></i>
+                        </div>
+                        <h5 style="color: var(--text-dark); margin-bottom: 0.5rem;">Consultations</h5>
+                        <p style="color: #6b7280; font-size: 0.9rem; margin: 0;">Historique médical</p>
+                    </div>
                 </div>
-                <div class="action-title">Consultations</div>
-                <div class="action-desc">Historique médical</div>
             </a>
         </div>
         
         <div class="col-md-3 col-sm-6 mb-3">
-            <a href="#" class="action-card d-block">
-                <div class="action-icon">
-                    <i class="fas fa-folder-open"></i>
+            <a href="{% url 'mon_dossier_medical' %}" class="action-card d-block" style="text-decoration: none; transition: all 0.3s ease;">
+                <div class="card h-100 border-0 shadow-sm" style="border-radius: 12px; overflow: hidden;">
+                    <div class="card-body text-center p-4">
+                        <div class="action-icon" style="width: 60px; height: 60px; margin: 0 auto 1rem; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;">
+                            <i class="fas fa-folder-open fa-lg"></i>
+                        </div>
+                        <h5 style="color: var(--text-dark); margin-bottom: 0.5rem;">Mon Dossier</h5>
+                        <p style="color: #6b7280; font-size: 0.9rem; margin: 0;">Dossier médical</p>
+                    </div>
                 </div>
-                <div class="action-title">Mon Dossier</div>
-                <div class="action-desc">Dossier médical</div>
             </a>
         </div>
     </div>
 </div>
 
-<!-- Prochains Rendez-vous -->
+<!-- Prochains Rendez-vous améliorés -->
 <div class="row">
     <div class="col-md-6">
         <div class="content-section">
-            <h2 class="section-title">
-                <i class="fas fa-calendar section-icon"></i>
-                Prochains rendez-vous
+            <h2 class="section-title" style="display: flex; align-items: center; justify-content: between; margin-bottom: 1.5rem;">
+                <span style="display: flex; align-items: center;">
+                    <i class="fas fa-calendar section-icon" style="color: var(--primary-purple); margin-right: 0.5rem;"></i>
+                    Prochains rendez-vous
+                </span>
+                {% if rdv_futurs %}
+                    <span class="badge" style="background: var(--primary-purple); color: white; font-size: 0.8rem;">{{ rdv_futurs.count }}</span>
+                {% endif %}
             </h2>
-            {% if prochains_rdv %}
+            
+            {% if rdv_futurs %}
                 <div class="table-responsive">
-                    <table class="table table-custom">
-                        <thead>
+                    <table class="table table-hover" style="border-radius: 8px; overflow: hidden;">
+                        <thead style="background: var(--light-purple);">
                             <tr>
-                                <th>Date</th>
-                                <th>Médecin</th>
-                                <th>Statut</th>
+                                <th style="border: none; padding: 1rem 0.75rem;">Date</th>
+                                <th style="border: none; padding: 1rem 0.75rem;">Médecin</th>
+                                <th style="border: none; padding: 1rem 0.75rem;">Statut</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% for rdv in prochains_rdv %}
-                            <tr>
-                                <td>{{ rdv.date_rdv|date:"d/m/Y H:i" }}</td>
-                                <td>Dr. {{ rdv.medecin.get_full_name }}</td>
-                                <td>
-                                    <span class="badge bg-primary">{{ rdv.get_status_display }}</span>
+                            {% for rdv in rdv_futurs %}
+                            <tr style="border-bottom: 1px solid #e5e7eb;">
+                                <td style="padding: 1rem 0.75rem;">
+                                    <div>
+                                        <strong>{{ rdv.date_rdv|date:"d/m/Y" }}</strong><br>
+                                        <small style="color: #6b7280;">{{ rdv.heure_rdv|time:"H:i" }}</small>
+                                    </div>
+                                </td>
+                                <td style="padding: 1rem 0.75rem;">
+                                    <div>
+                                        <strong>Dr. {{ rdv.medecin.get_full_name|default:rdv.medecin.username }}</strong><br>
+                                        <small style="color: #6b7280;">{{ rdv.motif|truncatewords:5 }}</small>
+                                    </div>
+                                </td>
+                                <td style="padding: 1rem 0.75rem;">
+                                    <span class="badge" style="background: #10b981; color: white; padding: 0.5rem 0.75rem;">
+                                        {{ rdv.get_status_display|default:"Programmé" }}
+                                    </span>
                                 </td>
                             </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
+                
+                <div class="text-center mt-3">
+                    <a href="{% url 'mes_rdv' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-eye me-2"></i>Voir tous mes rendez-vous
+                    </a>
+                </div>
             {% else %}
                 <div class="text-center py-4">
-                    <div class="stats-icon mb-3" style="background: #e2e8f0; color: var(--text-light);">
-                        <i class="fas fa-calendar-times"></i>
-                    </div>
-                    <p class="text-muted">Aucun rendez-vous programmé</p>
-                    <button class="btn btn-purple">
+                    <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Aucun rendez-vous programmé</h5>
+                    <p class="text-muted">Prenez votre prochain rendez-vous dès maintenant.</p>
+                    <a href="{% url 'nouveau_rdv' %}" class="btn btn-purple">
                         <i class="fas fa-plus me-2"></i>Prendre un rendez-vous
-                    </button>
+                    </a>
                 </div>
             {% endif %}
         </div>
@@ -160,44 +202,107 @@
     
     <div class="col-md-6">
         <div class="content-section">
-            <h2 class="section-title">
-                <i class="fas fa-notes-medical section-icon"></i>
+            <h2 class="section-title" style="display: flex; align-items: center; margin-bottom: 1.5rem;">
+                <i class="fas fa-notes-medical section-icon" style="color: var(--primary-purple); margin-right: 0.5rem;"></i>
                 Dernières consultations
             </h2>
-            {% if dernieres_consultations %}
-                <div class="table-responsive">
-                    <table class="table table-custom">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Médecin</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for consultation in dernieres_consultations %}
-                            <tr>
-                                <td>{{ consultation.created_at|date:"d/m/Y" }}</td>
-                                <td>Dr. {{ consultation.rdv.medecin.get_full_name }}</td>
-                                <td>
-                                    <button class="btn btn-outline-purple btn-sm">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+            
+            {% if rdv_passes %}
+                <div class="list-group list-group-flush">
+                    {% for rdv in rdv_passes|slice:":3" %}
+                    <div class="list-group-item border-0 px-0" style="background: transparent;">
+                        <div class="d-flex align-items-center">
+                            <div style="width: 50px; height: 50px; background: linear-gradient(135deg, var(--primary-purple), var(--secondary-purple)); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; margin-right: 1rem;">
+                                <i class="fas fa-user-md"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 style="margin-bottom: 0.25rem;">Dr. {{ rdv.medecin.get_full_name|default:rdv.medecin.username }}</h6>
+                                <p style="margin: 0; color: #6b7280; font-size: 0.9rem;">{{ rdv.date_rdv|date:"d/m/Y" }} - {{ rdv.motif|truncatewords:6 }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="text-center mt-3">
+                    <a href="{% url 'mes_consultations' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-history me-2"></i>Voir l'historique complet
+                    </a>
                 </div>
             {% else %}
                 <div class="text-center py-4">
-                    <div class="stats-icon mb-3" style="background: #e2e8f0; color: var(--text-light);">
-                        <i class="fas fa-stethoscope"></i>
-                    </div>
-                    <p class="text-muted">Aucune consultation récente</p>
+                    <i class="fas fa-notes-medical fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Aucune consultation</h5>
+                    <p class="text-muted">Vos consultations apparaîtront ici.</p>
                 </div>
             {% endif %}
         </div>
     </div>
 </div>
+
+<!-- Actions secondaires -->
+<div class="content-section">
+    <h2 class="section-title" style="display: flex; align-items: center; margin-bottom: 1.5rem;">
+        <i class="fas fa-cog section-icon" style="color: var(--primary-purple); margin-right: 0.5rem;"></i>
+        Gestion du compte
+    </h2>
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <a href="{% url 'mes_infos' %}" class="d-flex align-items-center p-3 border-0 rounded-3" style="background: #f8fafc; text-decoration: none; transition: all 0.3s ease;">
+                <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #6366f1, #8b5cf6); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; margin-right: 1rem;">
+                    <i class="fas fa-id-card"></i>
+                </div>
+                <div>
+                    <h6 style="margin-bottom: 0.25rem; color: var(--text-dark);">Mes Informations</h6>
+                    <small style="color: #6b7280;">Consulter mes données personnelles</small>
+                </div>
+            </a>
+        </div>
+        
+        <div class="col-md-6 mb-3">
+            <a href="{% url 'modifier_profil' %}" class="d-flex align-items-center p-3 border-0 rounded-3" style="background: #f8fafc; text-decoration: none; transition: all 0.3s ease;">
+                <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; margin-right: 1rem;">
+                    <i class="fas fa-user-edit"></i>
+                </div>
+                <div>
+                    <h6 style="margin-bottom: 0.25rem; color: var(--text-dark);">Modifier mon profil</h6>
+                    <small style="color: #6b7280;">Mettre à jour mes informations</small>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+.action-card:hover .card {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+}
+
+.action-card:hover .action-icon {
+    transform: scale(1.1);
+}
+
+.section-title {
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.section-icon {
+    font-size: 1.2rem;
+}
+
+.table th {
+    font-weight: 600;
+    color: var(--text-dark);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.list-group-item:hover {
+    background: #f8fafc !important;
+    border-radius: 8px;
+}
+</style>
 {% endblock %}

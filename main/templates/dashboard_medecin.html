@@ -5,150 +5,219 @@
 
 {% block content %}
 <div class="modern-container">
-    <!-- Header avec glassmorphism -->
+    <!-- Header avec glassmorphism amélioré -->
     <div class="doctor-header">
         <div class="header-content">
             <div class="doctor-info">
                 <div class="doctor-avatar">
                     <i class="fas fa-user-md"></i>
+                    <div class="status-indicator"></div>
                 </div>
                 <div class="doctor-details">
                     <h2>Dr. {{ user.first_name|default:user.username }} {{ user.last_name|default:"" }}</h2>
-                    <p class="doctor-specialty">Médecin Généraliste</p>
-                    <span class="status-badge">En ligne</span>
+                    <p class="doctor-specialty">{{ user.specialite|default:"Médecin Généraliste" }}</p>
+                    <span class="status-badge online">
+                        <i class="fas fa-circle"></i>
+                        En ligne
+                    </span>
                 </div>
             </div>
             <div class="quick-stats">
-                <div class="stat-card">
-                    <div class="stat-number">12</div>
-                    <div class="stat-label">Patients aujourd'hui</div>
+                <div class="stat-card patients">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number">{{ rdv_count|default:"12" }}</div>
+                        <div class="stat-label">Patients aujourd'hui</div>
+                    </div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-number">3</div>
-                    <div class="stat-label">Urgences</div>
+                <div class="stat-card urgences">
+                    <div class="stat-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number">{{ urgences_count|default:"3" }}</div>
+                        <div class="stat-label">Urgences</div>
+                    </div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-number">8</div>
-                    <div class="stat-label">Consultations</div>
+                <div class="stat-card consultations">
+                    <div class="stat-icon">
+                        <i class="fas fa-stethoscope"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number">{{ consultations_count|default:"8" }}</div>
+                        <div class="stat-label">Consultations</div>
+                    </div>
+                </div>
+                <div class="stat-card revenus">
+                    <div class="stat-icon">
+                        <i class="fas fa-euro-sign"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number">1.2K</div>
+                        <div class="stat-label">Revenus</div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Actions rapides modernes -->
+    <!-- Actions rapides avec animations -->
     <div class="quick-actions">
-        <div class="action-card primary">
+        <div class="action-card primary" data-action="consultations">
+            <div class="action-bg"></div>
             <div class="action-icon">
                 <i class="fas fa-calendar-check"></i>
             </div>
             <div class="action-content">
                 <h3>Mes Consultations</h3>
                 <p>Planning du jour et rendez-vous</p>
+                <div class="action-meta">{{ rdv_count|default:"12" }} aujourd'hui</div>
             </div>
-            <a href="/admin/main/rendezvous/" class="action-button">
-                <i class="fas fa-arrow-right"></i>
-            </a>
+            <a href="{% url 'mes_consultations_medecin' %}" class="action-button">
+    <i class="fas fa-arrow-right"></i>
+</a>
         </div>
 
-        <div class="action-card secondary">
+        <div class="action-card secondary" data-action="patients">
+            <div class="action-bg"></div>
             <div class="action-icon">
                 <i class="fas fa-users"></i>
             </div>
             <div class="action-content">
                 <h3>Mes Patients</h3>
                 <p>Dossiers et historiques médicaux</p>
+                <div class="action-meta">{{ patients_count|default:"45" }} patients</div>
             </div>
-            <a href="/admin/main/patient/" class="action-button">
-                <i class="fas fa-arrow-right"></i>
-            </a>
+           <a href="{% url 'liste_patients' %}" class="action-button">
+    <i class="fas fa-arrow-right"></i>
+</a>
         </div>
 
-        <div class="action-card accent">
+        <div class="action-card accent" data-action="prescriptions">
+            <div class="action-bg"></div>
             <div class="action-icon">
                 <i class="fas fa-prescription-bottle-alt"></i>
             </div>
             <div class="action-content">
                 <h3>Prescriptions</h3>
-                <p>Nouvelle ordonnance</p>
+                <p>Nouvelle prescription</p>
+                <div class="action-meta">{{ prescriptions_count|default:"23" }} ce mois</div>
             </div>
-            <a href="/admin/" class="action-button">
-                <i class="fas fa-arrow-right"></i>
-            </a>
+           <a href="{% url 'nouvelle_prescription' %}" class="action-button">
+    <i class="fas fa-arrow-right"></i>
+</a>
         </div>
 
-        <div class="action-card warning">
+        <div class="action-card warning" data-action="urgences">
+            <div class="action-bg"></div>
             <div class="action-icon">
                 <i class="fas fa-exclamation-triangle"></i>
             </div>
             <div class="action-content">
                 <h3>Urgences</h3>
                 <p>Patients prioritaires</p>
+                <div class="action-meta">{{ urgences_count|default:"3" }} en attente</div>
             </div>
-            <a href="/admin/" class="action-button">
-                <i class="fas fa-arrow-right"></i>
-            </a>
+           <a href="{% url 'urgences' %}" class="action-button">
+    <i class="fas fa-arrow-right"></i>
+</a>
         </div>
     </div>
 
-    <!-- Planning et patients -->
+    <!-- Contenu principal avec sidebar -->
     <div class="main-content">
-        <!-- Planning des consultations -->
+        <!-- Planning avec timeline interactive -->
         <div class="content-section">
             <div class="section-header">
-                <h3><i class="fas fa-clock me-2"></i>Planning du Jour</h3>
-                <span class="section-badge">Mercredi 5 Juin</span>
+                <div class="section-title">
+                    <h3><i class="fas fa-clock me-2"></i>Planning du Jour</h3>
+                    <div class="section-subtitle">{{ today|date:"l d F Y" }}</div>
+                </div>
+                <div class="section-actions">
+                    <button class="btn-icon" id="refresh-planning">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                    <button class="btn-icon" id="add-consultation">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
             </div>
+            
             <div class="consultation-timeline">
-                <!-- Consultation en cours -->
+                <!-- Exemple de consultations -->
                 <div class="consultation-item current">
                     <div class="consultation-time">
                         <div class="time-badge current">09:30</div>
+                        <div class="time-duration">30min</div>
                     </div>
                     <div class="consultation-details">
                         <div class="patient-name">Marie Dubois</div>
                         <div class="consultation-type">Consultation de contrôle</div>
-                        <div class="patient-age">45 ans • Salle 3</div>
+                        <div class="patient-meta">
+                            <span class="patient-age">45 ans</span>
+                            <span class="patient-room">Salle 3</span>
+                        </div>
                     </div>
                     <div class="consultation-actions">
-                        <button class="btn-action primary">
+                        <button class="btn-action current">
                             <i class="fas fa-play"></i>
                             En cours
+                        </button>
+                        <button class="btn-action-small">
+                            <i class="fas fa-eye"></i>
                         </button>
                     </div>
                 </div>
 
-                <!-- Prochaine consultation -->
                 <div class="consultation-item upcoming">
                     <div class="consultation-time">
                         <div class="time-badge upcoming">10:15</div>
+                        <div class="time-duration">45min</div>
                     </div>
                     <div class="consultation-details">
                         <div class="patient-name">Pierre Martin</div>
                         <div class="consultation-type">Première consultation</div>
-                        <div class="patient-age">32 ans • Salle 2</div>
+                        <div class="patient-meta">
+                            <span class="patient-age">32 ans</span>
+                            <span class="patient-room">Salle 2</span>
+                        </div>
                     </div>
                     <div class="consultation-actions">
-                        <button class="btn-action secondary">
+                        <button class="btn-action upcoming">
+                            <i class="fas fa-play"></i>
+                            Commencer
+                        </button>
+                        <button class="btn-action-small">
                             <i class="fas fa-eye"></i>
-                            Préparer
                         </button>
                     </div>
                 </div>
 
-                <!-- Consultation programmée -->
                 <div class="consultation-item scheduled">
                     <div class="consultation-time">
                         <div class="time-badge scheduled">11:00</div>
+                        <div class="time-duration">30min</div>
                     </div>
                     <div class="consultation-details">
                         <div class="patient-name">Sophie Laurent</div>
                         <div class="consultation-type">Suivi post-opératoire</div>
-                        <div class="patient-age">28 ans • Salle 1</div>
+                        <div class="patient-meta">
+                            <span class="patient-age">28 ans</span>
+                            <span class="patient-room">Salle 1</span>
+                            <span class="patient-alert" title="Allergies connues">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </span>
+                        </div>
                     </div>
                     <div class="consultation-actions">
                         <button class="btn-action neutral">
                             <i class="fas fa-calendar"></i>
                             Programmé
+                        </button>
+                        <button class="btn-action-small">
+                            <i class="fas fa-eye"></i>
                         </button>
                     </div>
                 </div>
@@ -157,11 +226,17 @@
                 <div class="consultation-item break">
                     <div class="consultation-time">
                         <div class="time-badge break">12:30</div>
+                        <div class="time-duration">60min</div>
                     </div>
                     <div class="consultation-details">
                         <div class="patient-name">Pause Déjeuner</div>
-                        <div class="consultation-type">60 minutes</div>
-                        <div class="patient-age">Repos bien mérité</div>
+                        <div class="consultation-type">Repos bien mérité</div>
+                        <div class="patient-meta">
+                            <span class="break-location">
+                                <i class="fas fa-coffee"></i>
+                                Cafétéria
+                            </span>
+                        </div>
                     </div>
                     <div class="consultation-actions">
                         <button class="btn-action neutral">
@@ -173,84 +248,160 @@
             </div>
         </div>
 
-        <!-- Patients prioritaires -->
+        <!-- Sidebar améliorée -->
         <div class="content-sidebar">
-            <div class="section-header">
-                <h3><i class="fas fa-heart-pulse me-2"></i>Patients Prioritaires</h3>
-                <span class="alert-badge">3</span>
+            <!-- Patients prioritaires -->
+            <div class="sidebar-section">
+                <div class="section-header">
+                    <h3><i class="fas fa-heart-pulse me-2"></i>Patients Prioritaires</h3>
+                    <span class="alert-badge">3</span>
+                </div>
+                
+                <div class="priority-patients">
+                    <div class="patient-card critical">
+                        <div class="patient-status"></div>
+                        <div class="patient-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="patient-info">
+                            <div class="patient-name">Jean Dupont</div>
+                            <div class="patient-condition">Hypertension sévère</div>
+                            <div class="patient-room">Chambre 205</div>
+                            <div class="patient-time">Il y a 2h</div>
+                        </div>
+                        <div class="patient-actions">
+                            <button class="btn-patient critical">
+                                <i class="fas fa-stethoscope"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="patient-card monitoring">
+                        <div class="patient-status"></div>
+                        <div class="patient-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="patient-info">
+                            <div class="patient-name">Lucie Bernard</div>
+                            <div class="patient-condition">Post-opératoire</div>
+                            <div class="patient-room">Chambre 312</div>
+                            <div class="patient-time">Il y a 4h</div>
+                        </div>
+                        <div class="patient-actions">
+                            <button class="btn-patient monitoring">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="patient-card routine">
+                        <div class="patient-status"></div>
+                        <div class="patient-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="patient-info">
+                            <div class="patient-name">Marc Rousseau</div>
+                            <div class="patient-condition">Contrôle diabète</div>
+                            <div class="patient-room">Consultation</div>
+                            <div class="patient-time">Il y a 1j</div>
+                        </div>
+                        <div class="patient-actions">
+                            <button class="btn-patient routine">
+                                <i class="fas fa-check"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
-            
-            <div class="priority-patients">
-                <!-- Patient critique -->
-                <div class="patient-card critical">
-                    <div class="patient-status"></div>
-                    <div class="patient-info">
-                        <div class="patient-name">Jean Dupont</div>
-                        <div class="patient-condition">Hypertension sévère</div>
-                        <div class="patient-room">Chambre 205</div>
-                    </div>
-                    <div class="patient-actions">
-                        <button class="btn-urgent">
-                            <i class="fas fa-stethoscope"></i>
-                        </button>
-                    </div>
-                </div>
 
-                <!-- Patient surveillance -->
-                <div class="patient-card monitoring">
-                    <div class="patient-status"></div>
-                    <div class="patient-info">
-                        <div class="patient-name">Lucie Bernard</div>
-                        <div class="patient-condition">Post-opératoire</div>
-                        <div class="patient-room">Chambre 312</div>
-                    </div>
-                    <div class="patient-actions">
-                        <button class="btn-monitor">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Patient contrôle -->
-                <div class="patient-card routine">
-                    <div class="patient-status"></div>
-                    <div class="patient-info">
-                        <div class="patient-name">Marc Rousseau</div>
-                        <div class="patient-condition">Contrôle diabète</div>
-                        <div class="patient-room">Consultation</div>
-                    </div>
-                    <div class="patient-actions">
-                        <button class="btn-routine">
-                            <i class="fas fa-check"></i>
-                        </button>
-                    </div>
+            <!-- Actions rapides sidebar -->
+            <div class="sidebar-section">
+                <h4><i class="fas fa-rocket me-2"></i>Actions Rapides</h4>
+                <div class="sidebar-actions">
+                    <button class="sidebar-btn primary">
+                        <i class="fas fa-plus"></i>
+                        Nouvelle consultation
+                    </button>
+                    <button class="sidebar-btn secondary">
+                        <i class="fas fa-user-plus"></i>
+                        Nouveau patient
+                    </button>
+                    <button class="sidebar-btn accent">
+                        <i class="fas fa-prescription"></i>
+                        Ordonnance
+                    </button>
+                    <button class="sidebar-btn neutral">
+                        <i class="fas fa-cog"></i>
+                        Administration
+                    </button>
                 </div>
             </div>
 
-            <!-- Actions rapides -->
-            <div class="sidebar-actions">
-                <button class="sidebar-btn primary">
-                    <i class="fas fa-plus"></i>
-                    Nouvelle consultation
-                </button>
-                <button class="sidebar-btn secondary">
-                    <i class="fas fa-file-medical"></i>
-                    Nouveau dossier
-                </button>
-                <button class="sidebar-btn accent">
-                    <i class="fas fa-cog"></i>
-                    Administration
-                </button>
+            <!-- Notifications récentes -->
+            <div class="sidebar-section">
+                <h4><i class="fas fa-bell me-2"></i>Notifications</h4>
+                <div class="notifications">
+                    <div class="notification-item urgent">
+                        <div class="notification-icon">
+                            <i class="fas fa-exclamation"></i>
+                        </div>
+                        <div class="notification-content">
+                            <div class="notification-title">Résultat urgent</div>
+                            <div class="notification-text">Patient Bernard - Analyses</div>
+                            <div class="notification-time">Il y a 5min</div>
+                        </div>
+                    </div>
+                    <div class="notification-item info">
+                        <div class="notification-icon">
+                            <i class="fas fa-calendar"></i>
+                        </div>
+                        <div class="notification-content">
+                            <div class="notification-title">RDV modifié</div>
+                            <div class="notification-text">Mme Durand - 15h30</div>
+                            <div class="notification-time">Il y a 15min</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
+<!-- Scripts pour interactions -->
+<script>
+// Animation des cartes au hover
+document.querySelectorAll('.action-card').forEach(card => {
+    card.addEventListener('mouseenter', function() {
+        this.style.transform = 'translateY(-8px) scale(1.02)';
+    });
+    
+    card.addEventListener('mouseleave', function() {
+        this.style.transform = 'translateY(0) scale(1)';
+    });
+});
+
+// Refresh planning
+document.getElementById('refresh-planning')?.addEventListener('click', function() {
+    this.style.animation = 'spin 1s linear';
+    setTimeout(() => {
+        this.style.animation = '';
+        location.reload();
+    }, 1000);
+});
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+</script>
+
+<!-- CSS Ultra-moderne (ajoutez à votre fichier CSS) -->
 <style>
-/* Variables modernes */
+/* Variables CSS étendues */
 :root {
     --primary: #6366f1;
     --primary-dark: #4f46e5;
+    --primary-light: #8b5cf6;
     --secondary: #8b5cf6;
     --accent: #06b6d4;
     --success: #10b981;
@@ -260,39 +411,65 @@
     
     --white: #ffffff;
     --gray-50: #f9fafb;
-    --gray-100: #f3f4f6;
-    --gray-800: #1f2937;
+    --gray-500: #6b7280;
+    --gray-600: #4b5563;
     
-    --gradient-modern: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     --gradient-glass: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+    --gradient-glass-hover: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%);
+    
     --shadow-glass: 0 8px 32px rgba(31, 38, 135, 0.37);
-    --shadow-modern: 0 8px 30px rgba(0, 0, 0, 0.12);
+    --shadow-modern: 0 10px 40px rgba(0, 0, 0, 0.1);
+    
+    --border-radius: 20px;
+    --border-radius-sm: 12px;
+    --border-radius-lg: 24px;
+    
+    --animation-fast: 0.2s ease;
+    --animation-normal: 0.3s ease;
+    --animation-slow: 0.5s ease;
 }
 
 /* Container principal */
 .modern-container {
     min-height: 100vh;
-    background: var(--gradient-modern);
-    padding: 2rem;
-    font-family: 'Inter', sans-serif;
+    background: var(--gradient-primary);
+    padding: 1.5rem;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 14px;
 }
 
 /* Header glassmorphism */
 .doctor-header {
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--gradient-glass);
     backdrop-filter: blur(20px);
-    border-radius: 24px;
+    border-radius: var(--border-radius-lg);
     border: 1px solid rgba(255, 255, 255, 0.2);
     box-shadow: var(--shadow-glass);
     padding: 2rem;
     margin-bottom: 2rem;
-    transition: all 0.3s ease;
+    transition: all var(--animation-normal);
+    position: relative;
+    overflow: hidden;
+}
+
+.doctor-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
+    opacity: 0.7;
 }
 
 .header-content {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 2rem;
+    flex-wrap: wrap;
 }
 
 .doctor-info {
@@ -304,14 +481,20 @@
 .doctor-avatar {
     width: 80px;
     height: 80px;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: var(--border-radius);
     display: flex;
     align-items: center;
     justify-content: center;
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    position: relative;
+    transition: all var(--animation-normal);
+}
+
+.doctor-avatar:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 30px rgba(255, 255, 255, 0.2);
 }
 
 .doctor-avatar i {
@@ -319,55 +502,134 @@
     color: var(--white);
 }
 
+.status-indicator {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    width: 20px;
+    height: 20px;
+    background: var(--success);
+    border-radius: 50%;
+    border: 3px solid var(--white);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.1); opacity: 0.7; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
 .doctor-details h2 {
     color: var(--white);
     font-size: 1.75rem;
     font-weight: 700;
     margin: 0 0 0.5rem 0;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    text-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    letter-spacing: -0.025em;
 }
 
 .doctor-specialty {
     color: rgba(255, 255, 255, 0.9);
     font-size: 1rem;
-    margin: 0 0 0.5rem 0;
+    margin: 0 0 0.75rem 0;
+    font-weight: 500;
 }
 
 .status-badge {
     background: var(--success);
     color: var(--white);
-    padding: 0.25rem 0.75rem;
-    border-radius: 12px;
+    padding: 0.4rem 0.8rem;
+    border-radius: var(--border-radius-sm);
     font-size: 0.75rem;
     font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.status-badge i {
+    font-size: 0.6rem;
+    animation: pulse 2s infinite;
 }
 
 .quick-stats {
-    display: flex;
-    gap: 1.5rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1rem;
+    min-width: 0;
 }
 
 .stat-card {
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(10px);
-    border-radius: 16px;
-    padding: 1.5rem;
-    text-align: center;
+    border-radius: var(--border-radius);
     border: 1px solid rgba(255, 255, 255, 0.2);
-    min-width: 120px;
+    padding: 1.25rem;
+    transition: all var(--animation-normal);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--primary);
+    transform: scaleX(0);
+    transition: transform var(--animation-normal);
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 8px 25px rgba(255, 255, 255, 0.1);
+}
+
+.stat-card:hover::before {
+    transform: scaleX(1);
+}
+
+.stat-card.patients::before { background: var(--info); }
+.stat-card.urgences::before { background: var(--danger); }
+.stat-card.consultations::before { background: var(--success); }
+.stat-card.revenus::before { background: var(--warning); }
+
+.stat-icon {
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--white);
+    font-size: 1rem;
 }
 
 .stat-number {
-    font-size: 2rem;
-    font-weight: 800;
     color: var(--white);
-    margin-bottom: 0.5rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .stat-label {
-    font-size: 0.875rem;
-    color: rgba(255, 255, 255, 0.9);
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.75rem;
     font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    text-align: center;
 }
 
 /* Actions rapides */
@@ -379,412 +641,535 @@
 }
 
 .action-card {
-    background: rgba(255, 255, 255, 0.95);
+    background: var(--gradient-glass);
     backdrop-filter: blur(20px);
-    border-radius: 20px;
-    padding: 1.5rem;
+    border-radius: var(--border-radius-lg);
     border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: var(--shadow-modern);
+    padding: 1.5rem;
+    transition: all var(--animation-normal);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
     display: flex;
     align-items: center;
     gap: 1rem;
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    position: relative;
-    overflow: hidden;
+}
+
+.action-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--gradient-glass-hover);
+    opacity: 0;
+    transition: opacity var(--animation-normal);
+}
+
+.action-card:hover .action-bg {
+    opacity: 1;
 }
 
 .action-card:hover {
-    transform: translateY(-4px) scale(1.02);
+    transform: translateY(-6px);
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
 }
-
-.action-card.primary { border-left: 4px solid var(--primary); }
-.action-card.secondary { border-left: 4px solid var(--secondary); }
-.action-card.accent { border-left: 4px solid var(--accent); }
-.action-card.warning { border-left: 4px solid var(--warning); }
 
 .action-icon {
     width: 60px;
     height: 60px;
-    border-radius: 16px;
+    border-radius: var(--border-radius);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 1.5rem;
     color: var(--white);
+    flex-shrink: 0;
+    position: relative;
+    z-index: 2;
 }
 
-.action-card.primary .action-icon { background: var(--primary); }
-.action-card.secondary .action-icon { background: var(--secondary); }
-.action-card.accent .action-icon { background: var(--accent); }
-.action-card.warning .action-icon { background: var(--warning); }
+.action-card.primary .action-icon {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+}
+
+.action-card.secondary .action-icon {
+    background: linear-gradient(135deg, var(--secondary), var(--primary-light));
+}
+
+.action-card.accent .action-icon {
+    background: linear-gradient(135deg, var(--accent), #0891b2);
+}
+
+.action-card.warning .action-icon {
+    background: linear-gradient(135deg, var(--warning), #d97706);
+}
 
 .action-content {
     flex: 1;
+    position: relative;
+    z-index: 2;
 }
 
 .action-content h3 {
+    color: var(--white);
     font-size: 1.125rem;
-    font-weight: 600;
-    color: var(--gray-800);
+    font-weight: 700;
     margin: 0 0 0.25rem 0;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .action-content p {
+    color: rgba(255, 255, 255, 0.8);
     font-size: 0.875rem;
-    color: var(--gray-600);
-    margin: 0;
+    margin: 0 0 0.5rem 0;
+    line-height: 1.4;
+}
+
+.action-meta {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.75rem;
+    font-weight: 500;
 }
 
 .action-button {
     width: 40px;
     height: 40px;
-    border-radius: 12px;
-    background: var(--gray-100);
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--gray-600);
+    color: var(--white);
     text-decoration: none;
-    transition: all 0.3s ease;
+    transition: all var(--animation-fast);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    position: relative;
+    z-index: 2;
 }
 
 .action-button:hover {
-    background: var(--primary);
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1) rotate(15deg);
     color: var(--white);
-    transform: scale(1.1);
 }
 
-/* Contenu principal */
+/* Main content */
 .main-content {
     display: grid;
-    grid-template-columns: 2fr 1fr;
+    grid-template-columns: 1fr 350px;
     gap: 2rem;
+    align-items: start;
 }
 
-.content-section, .content-sidebar {
-    background: rgba(255, 255, 255, 0.95);
+.content-section {
+    background: var(--gradient-glass);
     backdrop-filter: blur(20px);
-    border-radius: 20px;
+    border-radius: var(--border-radius-lg);
     border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: var(--shadow-modern);
+    box-shadow: var(--shadow-glass);
     overflow: hidden;
 }
 
 .section-header {
-    background: var(--gradient-modern);
-    color: var(--white);
     padding: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-.section-header h3 {
-    font-size: 1.125rem;
-    font-weight: 600;
-    margin: 0;
-}
-
-.section-badge {
-    background: rgba(255, 255, 255, 0.2);
-    padding: 0.375rem 0.75rem;
-    border-radius: 8px;
-    font-size: 0.75rem;
-    font-weight: 500;
-}
-
-.alert-badge {
-    background: var(--danger);
+.section-title h3 {
     color: var(--white);
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.75rem;
-    font-weight: 600;
-}
-
-/* Timeline des consultations */
-.consultation-timeline {
-    padding: 1.5rem;
-}
-
-.consultation-item {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 1rem 0;
-    border-bottom: 1px solid var(--gray-100);
-    transition: all 0.3s ease;
-}
-
-.consultation-item:last-child {
-    border-bottom: none;
-}
-
-.consultation-item:hover {
-    background: rgba(99, 102, 241, 0.02);
-    border-radius: 12px;
-    margin: 0 -1rem;
-    padding: 1rem;
-}
-
-.time-badge {
-    min-width: 60px;
-    padding: 0.5rem 0.75rem;
-    border-radius: 8px;
-    text-align: center;
-    font-weight: 600;
-    font-size: 0.875rem;
-}
-
-.time-badge.current {
-    background: var(--primary);
-    color: var(--white);
-}
-
-.time-badge.upcoming {
-    background: var(--warning);
-    color: var(--white);
-}
-
-.time-badge.scheduled {
-    background: var(--info);
-    color: var(--white);
-}
-
-.time-badge.break {
-    background: var(--gray-500);
-    color: var(--white);
-}
-
-.consultation-details {
-    flex: 1;
-}
-
-.patient-name {
-    font-weight: 600;
-    color: var(--gray-800);
-    margin-bottom: 0.25rem;
-}
-
-.consultation-type {
-    color: var(--gray-600);
-    font-size: 0.875rem;
-    margin-bottom: 0.25rem;
-}
-
-.patient-age {
-    color: var(--gray-500);
-    font-size: 0.75rem;
-}
-
-.btn-action {
-    padding: 0.5rem 1rem;
-    border-radius: 8px;
-    border: none;
-    font-weight: 500;
-    font-size: 0.75rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0 0 0.25rem 0;
     display: flex;
     align-items: center;
     gap: 0.5rem;
 }
 
-.btn-action.primary {
-    background: var(--primary);
+.section-subtitle {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.875rem;
+    text-transform: capitalize;
+}
+
+.section-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-icon {
+    width: 36px;
+    height: 36px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     color: var(--white);
+    cursor: pointer;
+    transition: all var(--animation-fast);
+    backdrop-filter: blur(10px);
 }
-
-.btn-action.secondary {
-    background: var(--secondary);
-    color: var(--white);
+.btn-icon:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
 }
-
-.btn-action.neutral {
-    background: var(--gray-200);
-    color: var(--gray-600);
+/* Timeline consultations */
+.consultation-timeline {
+    padding: 1rem 0;
+    max-height: 600px;
+    overflow-y: auto;
 }
-
-.btn-action:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-/* Patients prioritaires */
-.priority-patients {
-    padding: 1.5rem;
-}
-
-.patient-card {
+.consultation-item {
     display: flex;
     align-items: center;
     gap: 1rem;
-    padding: 1rem;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all var(--animation-fast);
+    position: relative;
+}
+.consultation-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: var(--gray-500);
+    transition: all var(--animation-fast);
+}
+.consultation-item.current::before { background: var(--success); }
+.consultation-item.upcoming::before { background: var(--info); }
+.consultation-item.scheduled::before { background: var(--primary); }
+.consultation-item.break::before { background: var(--warning); }
+.consultation-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+.consultation-time {
+    flex-shrink: 0;
+    text-align: center;
+    min-width: 80px;
+}
+.time-badge {
+    background: var(--gray-600);
+    color: var(--white);
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--border-radius-sm);
+    font-size: 0.875rem;
+    font-weight: 600;
+    display: block;
+    margin-bottom: 0.25rem;
+}
+.time-badge.current { background: var(--success); }
+.time-badge.upcoming { background: var(--info); }
+.time-badge.scheduled { background: var(--primary); }
+.time-badge.break { background: var(--warning); }
+.time-duration {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.75rem;
+}
+.consultation-details {
+    flex: 1;
+    min-width: 0;
+}
+.patient-name {
+    color: var(--white);
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+.consultation-type {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+}
+.patient-meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+.patient-age,
+.patient-room {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.75rem;
+}
+.patient-alert {
+    color: var(--warning);
+    font-size: 0.875rem;
+    cursor: help;
+}
+.break-location {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+.consultation-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+.btn-action {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: var(--border-radius-sm);
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--animation-fast);
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    backdrop-filter: blur(10px);
+}
+.btn-action.current {
+    background: var(--success);
+    color: var(--white);
+}
+.btn-action.upcoming {
+    background: var(--info);
+    color: var(--white);
+}
+.btn-action.neutral {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--white);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.btn-action:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+.btn-action-small {
+    width: 32px;
+    height: 32px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--white);
+    cursor: pointer;
+    transition: all var(--animation-fast);
+    backdrop-filter: blur(10px);
+}
+.btn-action-small:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+/* Sidebar */
+.content-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+.sidebar-section {
+    background: var(--gradient-glass);
+    backdrop-filter: blur(20px);
+    border-radius: var(--border-radius-lg);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: var(--shadow-glass);
+    overflow: hidden;
+}
+.sidebar-section .section-header {
+    padding: 1.25rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+.sidebar-section h3,
+.sidebar-section h4 {
+    color: var(--white);
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.alert-badge {
+    background: var(--danger);
+    color: var(--white);
+    padding: 0.25rem 0.5rem;
     border-radius: 12px;
-    margin-bottom: 1rem;
-    border-left: 4px solid;
-    background: var(--white);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    transition: all 0.3s ease;
+    font-size: 0.75rem;
+    font-weight: 600;
+    min-width: 20px;
+    text-align: center;
 }
-
+/* Patients prioritaires */
+.priority-patients {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+.patient-card {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: var(--border-radius);
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: all var(--animation-fast);
+    border-left: 4px solid var(--gray-500);
+}
 .patient-card:hover {
+    background: rgba(255, 255, 255, 0.1);
     transform: translateX(4px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
-
-.patient-card.critical {
-    border-left-color: var(--danger);
-}
-
-.patient-card.monitoring {
-    border-left-color: var(--warning);
-}
-
-.patient-card.routine {
-    border-left-color: var(--success);
-}
-
+.patient-card.critical { border-left-color: var(--danger); }
+.patient-card.monitoring { border-left-color: var(--warning); }
+.patient-card.routine { border-left-color: var(--success); }
 .patient-status {
     width: 8px;
     height: 8px;
     border-radius: 50%;
-}
-
-.patient-card.critical .patient-status {
-    background: var(--danger);
+    background: var(--gray-500);
+    flex-shrink: 0;
     animation: pulse 2s infinite;
 }
-
-.patient-card.monitoring .patient-status {
-    background: var(--warning);
-}
-
-.patient-card.routine .patient-status {
-    background: var(--success);
-}
-
-.patient-info {
-    flex: 1;
-}
-
-.patient-name {
-    font-weight: 600;
-    color: var(--gray-800);
-    margin-bottom: 0.25rem;
-}
-
-.patient-condition {
-    color: var(--gray-600);
-    font-size: 0.875rem;
-    margin-bottom: 0.25rem;
-}
-
-.patient-room {
-    color: var(--gray-500);
-    font-size: 0.75rem;
-}
-
-.btn-urgent, .btn-monitor, .btn-routine {
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    border: none;
-    color: var(--white);
-    cursor: pointer;
-    transition: all 0.3s ease;
+.patient-card.critical .patient-status { background: var(--danger); }
+.patient-card.monitoring .patient-status { background: var(--warning); }
+.patient-card.routine .patient-status { background: var(--success); }
+.patient-avatar {
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
+    color: var(--white);
+    flex-shrink: 0;
 }
-
-.btn-urgent {
-    background: var(--danger);
+.patient-info {
+    flex: 1;
+    min-width: 0;
 }
-
-.btn-monitor {
-    background: var(--warning);
+.patient-name {
+    color: var(--white);
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
 }
-
-.btn-routine {
-    background: var(--success);
+.patient-condition {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.75rem;
+    margin-bottom: 0.25rem;
 }
-
-.btn-urgent:hover, .btn-monitor:hover, .btn-routine:hover {
-    transform: scale(1.1);
+.patient-room,
+.patient-time {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.7rem;
 }
-
-/* Actions sidebar */
-.sidebar-actions {
-    padding: 1.5rem;
-    border-top: 1px solid var(--gray-100);
-}
-
-.sidebar-btn {
-    width: 100%;
-    padding: 0.75rem 1rem;
-    border-radius: 12px;
+.btn-patient {
+    width: 32px;
+    height: 32px;
     border: none;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    margin-bottom: 0.75rem;
+    border-radius: 50%;
     display: flex;
     align-items: center;
+    justify-content: center;
+    color: var(--white);
+    cursor: pointer;
+    transition: all var(--animation-fast);
+}
+.btn-patient.critical { background: var(--danger); }
+.btn-patient.monitoring { background: var(--warning); }
+.btn-patient.routine { background: var(--success); }
+.btn-patient:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+/* Actions sidebar */
+.sidebar-actions {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
     gap: 0.75rem;
 }
-
-.sidebar-btn.primary {
-    background: var(--primary);
-    color: var(--white);
+.sidebar-btn {
+    padding: 0.75rem 1rem;
+    border: none;
+    border-radius: var(--border-radius-sm);
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--animation-fast);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
-
-.sidebar-btn.secondary {
-    background: var(--secondary);
-    color: var(--white);
-}
-
-.sidebar-btn.accent {
-    background: var(--accent);
-    color: var(--white);
-}
-
+.sidebar-btn.primary { background: var(--primary); color: var(--white); }
+.sidebar-btn.secondary { background: var(--secondary); color: var(--white); }
+.sidebar-btn.accent { background: var(--accent); color: var(--white); }
+.sidebar-btn.neutral { background: rgba(255, 255, 255, 0.1); color: var(--white); }
 .sidebar-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
-
-@keyframes pulse {
-    0% {
-        transform: scale(1);
-        opacity: 1;
-    }
-    50% {
-        transform: scale(1.2);
-        opacity: 0.7;
-    }
-    100% {
-        transform: scale(1);
-        opacity: 1;
-    }
+/* Notifications */
+.notifications {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-height: 300px;
+    overflow-y: auto;
 }
-
+.notification-item {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: var(--border-radius-sm);
+    border-left: 3px solid var(--gray-500);
+}
+.notification-item.urgent { border-left-color: var(--danger); }
+.notification-item.info { border-left-color: var(--info); }
+.notification-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--white);
+    font-size: 0.875rem;
+    flex-shrink: 0;
+}
+.notification-item.urgent .notification-icon { background: var(--danger); }
+.notification-item.info .notification-icon { background: var(--info); }
+.notification-title {
+    color: var(--white);
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+.notification-text {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.75rem;
+    margin-bottom: 0.25rem;
+}
+.notification-time {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.7rem;
+}
 /* Responsive */
 @media (max-width: 1200px) {
     .main-content {
         grid-template-columns: 1fr;
     }
-    
-    .quick-actions {
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    }
 }
-
 @media (max-width: 768px) {
     .modern-container {
         padding: 1rem;
@@ -796,13 +1181,27 @@
     }
     
     .quick-stats {
-        flex-wrap: wrap;
-        gap: 1rem;
+        grid-template-columns: repeat(2, 1fr);
     }
     
     .quick-actions {
         grid-template-columns: 1fr;
     }
+}
+/* Scrollbar styling */
+.consultation-timeline::-webkit-scrollbar,
+.notifications::-webkit-scrollbar {
+    width: 6px;
+}
+.consultation-timeline::-webkit-scrollbar-track,
+.notifications::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+.consultation-timeline::-webkit-scrollbar-thumb,
+.notifications::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
 }
 </style>
 {% endblock %}

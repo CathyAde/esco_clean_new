@@ -1,74 +1,303 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Mon Dossier - ESCO{% endblock %}
+{% block title %}Mon Dossier Médical - ESCO{% endblock %}
 
 {% block content %}
 <div class="container-fluid py-4">
-    <div class="row">
+    <!-- Header du dossier -->
+    <div class="row mb-4">
         <div class="col-12">
-            <div class="card shadow-lg border-0 rounded-3">
-                <div class="card-header text-white" style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);">
-                    <h4 class="mb-0">
-                        <i class="fas fa-folder-open me-2"></i>Mon Dossier Médical
-                    </h4>
-                </div>
-                <div class="card-body">
-                    {% if patient %}
-                        <div class="row">
-                            <div class="col-md-6">
-                                <h5>Informations personnelles</h5>
-                                <table class="table table-borderless">
-                                    <tr>
-                                        <td><strong>Nom :</strong></td>
-                                        <td>{{ patient.user.first_name }} {{ patient.user.last_name }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td><strong>Email :</strong></td>
-                                        <td>{{ patient.user.email }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td><strong>Téléphone :</strong></td>
-                                        <td>{{ patient.telephone }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td><strong>Date de naissance :</strong></td>
-                                        <td>{{ patient.date_naissance|date:"d/m/Y" }}</td>
-                                    </tr>
-                                </table>
+            <div class="card border-0 shadow-lg" style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); border-radius: 20px;">
+                <div class="card-body p-4 text-white">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <div style="width: 70px; height: 70px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 20px;">
+                                <i class="fas fa-folder-open fa-2x"></i>
                             </div>
-                            <div class="col-md-6">
-                                <h5>Statistiques</h5>
-                                <div class="row text-center">
-                                    <div class="col-6">
-                                        <div class="card bg-primary text-white">
-                                            <div class="card-body">
-                                                <h3>{{ consultations.count }}</h3>
-                                                <p>Consultations</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-6">
-                                        <div class="card bg-info text-white">
-                                            <div class="card-body">
-                                                <h3>{{ rdv.count }}</h3>
-                                                <p>Rendez-vous</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                            <div>
+                                <h2 style="margin: 0; font-weight: 700;">Mon Dossier Médical</h2>
+                                <p style="margin: 5px 0 0 0; opacity: 0.9;">{{ user.get_full_name|default:user.username }}</p>
+                                <small style="opacity: 0.8;">ID Patient: {{ user.user_id|default:"Non défini" }}</small>
                             </div>
                         </div>
+                        <div class="text-end">
+                            <a href="{% url 'download_my_dossier_pdf' %}" class="btn btn-light" style="border-radius: 10px;">
+    <i class="fas fa-download me-2"></i>Télécharger PDF
+</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Informations personnelles améliorées -->
+        <div class="col-lg-4 mb-4">
+            <div class="card border-0 shadow-sm h-100" style="border-radius: 16px;">
+                <div class="card-header border-0" style="background: #f8fafc; border-radius: 16px 16px 0 0;">
+                    <h5 class="mb-0 d-flex align-items-center">
+                        <i class="fas fa-id-card me-2" style="color: #6366f1;"></i>
+                        Informations Personnelles
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="info-item mb-3">
+                        <div class="d-flex align-items-center mb-2">
+                            <div style="width: 35px; height: 35px; background: linear-gradient(135deg, #6366f1, #8b5cf6); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: 12px;">
+                                <i class="fas fa-user text-white" style="font-size: 0.9rem;"></i>
+                            </div>
+                            <div>
+                                <strong style="color: #1f2937;">Nom complet</strong><br>
+                                <span style="color: #6b7280;">{{ user.get_full_name|default:user.username }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-item mb-3">
+                        <div class="d-flex align-items-center mb-2">
+                            <div style="width: 35px; height: 35px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: 12px;">
+                                <i class="fas fa-envelope text-white" style="font-size: 0.9rem;"></i>
+                            </div>
+                            <div>
+                                <strong style="color: #1f2937;">Email</strong><br>
+                                <span style="color: #6b7280;">{{ user.email|default:"Non renseigné" }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-item mb-3">
+                        <div class="d-flex align-items-center mb-2">
+                            <div style="width: 35px; height: 35px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: 12px;">
+                                <i class="fas fa-phone text-white" style="font-size: 0.9rem;"></i>
+                            </div>
+                            <div>
+                                <strong style="color: #1f2937;">Téléphone</strong><br>
+                                <span style="color: #6b7280;">{{ user.telephone|default:"Non renseigné" }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-item mb-3">
+                        <div class="d-flex align-items-center mb-2">
+                            <div style="width: 35px; height: 35px; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: 12px;">
+                                <i class="fas fa-birthday-cake text-white" style="font-size: 0.9rem;"></i>
+                            </div>
+                            <div>
+                                <strong style="color: #1f2937;">Date de naissance</strong><br>
+                                <span style="color: #6b7280;">{{ user.date_naissance|date:"d/m/Y"|default:"Non renseignée" }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-item mb-3">
+                        <div class="d-flex align-items-center mb-2">
+                            <div style="width: 35px; height: 35px; background: linear-gradient(135deg, #ef4444, #dc2626); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: 12px;">
+                                <i class="fas fa-tint text-white" style="font-size: 0.9rem;"></i>
+                            </div>
+                            <div>
+                                <strong style="color: #1f2937;">Groupe sanguin</strong><br>
+                                <span style="color: #6b7280;">{{ patient.groupe_sanguin|default:"Non défini" }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-4">
+                        <a href="{% url 'modifier_profil' %}" class="btn btn-outline-primary" style="border-radius: 10px; width: 100%;">
+                            <i class="fas fa-edit me-2"></i>Modifier mes informations
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistiques médicales -->
+        <div class="col-lg-8 mb-4">
+            <div class="card border-0 shadow-sm" style="border-radius: 16px;">
+                <div class="card-header border-0" style="background: #f8fafc; border-radius: 16px 16px 0 0;">
+                    <h5 class="mb-0 d-flex align-items-center">
+                        <i class="fas fa-chart-line me-2" style="color: #6366f1;"></i>
+                        Statistiques Médicales
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row">
+                        <div class="col-md-3 col-sm-6 mb-3">
+                            <div class="text-center p-3" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); border-radius: 12px; color: white;">
+                                <i class="fas fa-calendar-check fa-2x mb-2"></i>
+                                <h3 class="mb-1">{{ rdv.count|default:"0" }}</h3>
+                                <small>Rendez-vous</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-3">
+                            <div class="text-center p-3" style="background: linear-gradient(135deg, #10b981, #059669); border-radius: 12px; color: white;">
+                                <i class="fas fa-stethoscope fa-2x mb-2"></i>
+                                <h3 class="mb-1">{{ consultations.count|default:"0" }}</h3>
+                                <small>Consultations</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-3">
+                            <div class="text-center p-3" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); border-radius: 12px; color: white;">
+                                <i class="fas fa-syringe fa-2x mb-2"></i>
+                                <h3 class="mb-1">{{ soins_list.count|default:"0" }}</h3>
+                                <small>Soins</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-3">
+                            <div class="text-center p-3" style="background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 12px; color: white;">
+                                <i class="fas fa-prescription-bottle-alt fa-2x mb-2"></i>
+                                <h3 class="mb-1">{{ consultations.count|default:"0" }}</h3>
+                                <small>Ordonnances</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Historique médical -->
+    <div class="row">
+        <!-- Derniers rendez-vous -->
+        <div class="col-lg-6 mb-4">
+            <div class="card border-0 shadow-sm" style="border-radius: 16px;">
+                <div class="card-header border-0 d-flex justify-content-between align-items-center" style="background: #f8fafc; border-radius: 16px 16px 0 0;">
+                    <h5 class="mb-0 d-flex align-items-center">
+                        <i class="fas fa-calendar me-2" style="color: #6366f1;"></i>
+                        Derniers Rendez-vous
+                    </h5>
+                    <a href="{% url 'mes_rdv' %}" class="btn btn-sm btn-outline-primary" style="border-radius: 8px;">
+                        Voir tout
+                    </a>
+                </div>
+                <div class="card-body p-0">
+                    {% if rdv_list %}
+                        {% for rdv in rdv_list|slice:":5" %}
+                        <div class="d-flex align-items-center p-3 border-bottom">
+                            <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #6366f1, #8b5cf6); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; margin-right: 15px;">
+                                <i class="fas fa-user-md"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">Dr. {{ rdv.medecin.get_full_name|default:rdv.medecin.username }}</h6>
+                                <p class="mb-0 text-muted" style="font-size: 0.9rem;">
+                                    {{ rdv.date_rdv|date:"d/m/Y" }} à {{ rdv.heure_rdv|time:"H:i" }}
+                                </p>
+                                <small class="text-muted">{{ rdv.motif|truncatewords:8 }}</small>
+                            </div>
+                            <span class="badge" style="background: {% if rdv.status == 'termine' %}#10b981{% elif rdv.status == 'programme' %}#3b82f6{% else %}#6b7280{% endif %}; color: white;">
+                                {{ rdv.get_status_display|default:"Programmé" }}
+                            </span>
+                        </div>
+                        {% endfor %}
                     {% else %}
-                        <div class="text-center py-5">
-                            <i class="fas fa-user-times fa-4x text-muted mb-3"></i>
-                            <h4 class="text-muted">Dossier non accessible</h4>
-                            <p class="text-muted">Votre profil patient n'est pas encore configuré.</p>
+                        <div class="text-center py-4">
+                            <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">Aucun rendez-vous enregistré</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Dernières consultations -->
+        <div class="col-lg-6 mb-4">
+            <div class="card border-0 shadow-sm" style="border-radius: 16px;">
+                <div class="card-header border-0 d-flex justify-content-between align-items-center" style="background: #f8fafc; border-radius: 16px 16px 0 0;">
+                    <h5 class="mb-0 d-flex align-items-center">
+                        <i class="fas fa-notes-medical me-2" style="color: #6366f1;"></i>
+                        Dernières Consultations
+                    </h5>
+                    <a href="{% url 'mes_consultations' %}" class="btn btn-sm btn-outline-primary" style="border-radius: 8px;">
+                        Voir tout
+                    </a>
+                </div>
+                <div class="card-body p-0">
+                    {% if consultations_list %}
+                        {% for consultation in consultations_list|slice:":5" %}
+                        <div class="d-flex align-items-center p-3 border-bottom">
+                            <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; margin-right: 15px;">
+                                <i class="fas fa-stethoscope"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">Dr. {{ consultation.rdv.medecin.get_full_name|default:consultation.rdv.medecin.username }}</h6>
+                                <p class="mb-0 text-muted" style="font-size: 0.9rem;">
+                                    {{ consultation.rdv.date_rdv|date:"d/m/Y" }}
+                                </p>
+                                <small class="text-muted">{{ consultation.diagnostic|truncatewords:8|default:"Diagnostic non renseigné" }}</small>
+                            </div>
+                            <i class="fas fa-chevron-right text-muted"></i>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-notes-medical fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">Aucune consultation enregistrée</p>
                         </div>
                     {% endif %}
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Actions rapides -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm" style="border-radius: 16px;">
+                <div class="card-header border-0" style="background: #f8fafc; border-radius: 16px 16px 0 0;">
+                    <h5 class="mb-0 d-flex align-items-center">
+                        <i class="fas fa-bolt me-2" style="color: #6366f1;"></i>
+                        Actions Rapides
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row">
+                        <div class="col-md-3 col-sm-6 mb-3">
+                            <a href="{% url 'nouveau_rdv' %}" class="btn btn-outline-primary w-100" style="border-radius: 10px; padding: 1rem;">
+                                <i class="fas fa-calendar-plus fa-lg mb-2 d-block"></i>
+                                Nouveau RDV
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-3">
+                            <a href="{% url 'mes_rdv' %}" class="btn btn-outline-success w-100" style="border-radius: 10px; padding: 1rem;">
+                                <i class="fas fa-calendar-alt fa-lg mb-2 d-block"></i>
+                                Mes RDV
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-3">
+                            <a href="{% url 'mes_consultations' %}" class="btn btn-outline-info w-100" style="border-radius: 10px; padding: 1rem;">
+                                <i class="fas fa-stethoscope fa-lg mb-2 d-block"></i>
+                                Consultations
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-3">
+                            <a href="{% url 'dashboard_patient' %}" class="btn btn-outline-secondary w-100" style="border-radius: 10px; padding: 1rem;">
+                                <i class="fas fa-home fa-lg mb-2 d-block"></i>
+                                Dashboard
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<style>
+.info-item:hover {
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 8px;
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+</style>
 {% endblock %}

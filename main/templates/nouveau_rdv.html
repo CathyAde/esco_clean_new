@@ -14,47 +14,123 @@
                     </h4>
                 </div>
                 <div class="card-body p-4">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
                     <form method="post">
                         {% csrf_token %}
+                        
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="{{ form.medecin.id_for_label }}" class="form-label fw-bold">{{ form.medecin.label }}</label>
-                                {{ form.medecin }}
+                                <label for="id_medecin" class="form-label fw-bold">
+                                    <i class="fas fa-user-md me-2"></i>Choisir un médecin *
+                                </label>
+                                <select name="medecin" id="id_medecin" class="form-control" required>
+                                    <option value="">-- Sélectionner un médecin --</option>
+                                    {% for medecin in form.medecin.field.queryset %}
+                                        <option value="{{ medecin.pk }}">
+                                            Dr. {{ medecin.get_full_name|default:medecin.username }}
+                                            {% if medecin.specialite %} - {{ medecin.specialite }}{% endif %}
+                                        </option>
+                                    {% endfor %}
+                                </select>
                                 {% if form.medecin.errors %}
-                                    <div class="text-danger">{{ form.medecin.errors }}</div>
+                                    <div class="text-danger mt-1">{{ form.medecin.errors }}</div>
                                 {% endif %}
                             </div>
+                            
                             <div class="col-md-6 mb-3">
-                                <label for="{{ form.date_rdv.id_for_label }}" class="form-label fw-bold">{{ form.date_rdv.label }}</label>
-                                {{ form.date_rdv }}
+                                <label for="id_date_rdv" class="form-label fw-bold">
+                                    <i class="fas fa-calendar me-2"></i>Date du rendez-vous *
+                                </label>
+                                <input type="date" name="date_rdv" id="id_date_rdv" class="form-control" required
+                                       min="{{ today|date:'Y-m-d' }}" value="{{ form.date_rdv.value|default:'' }}">
                                 {% if form.date_rdv.errors %}
-                                    <div class="text-danger">{{ form.date_rdv.errors }}</div>
+                                    <div class="text-danger mt-1">{{ form.date_rdv.errors }}</div>
                                 {% endif %}
                             </div>
                         </div>
+                        
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="{{ form.heure_rdv.id_for_label }}" class="form-label fw-bold">{{ form.heure_rdv.label }}</label>
-                                {{ form.heure_rdv }}
+                                <label for="id_heure_rdv" class="form-label fw-bold">
+                                    <i class="fas fa-clock me-2"></i>Heure du rendez-vous *
+                                </label>
+                                <select name="heure_rdv" id="id_heure_rdv" class="form-control" required>
+                                    <option value="">-- Choisir une heure --</option>
+                                    <option value="08:00">08:00 - 8h00</option>
+                                    <option value="08:30">08:30 - 8h30</option>
+                                    <option value="09:00">09:00 - 9h00</option>
+                                    <option value="09:30">09:30 - 9h30</option>
+                                    <option value="10:00">10:00 - 10h00</option>
+                                    <option value="10:30">10:30 - 10h30</option>
+                                    <option value="11:00">11:00 - 11h00</option>
+                                    <option value="11:30">11:30 - 11h30</option>
+                                    <option value="14:00">14:00 - 14h00</option>
+                                    <option value="14:30">14:30 - 14h30</option>
+                                    <option value="15:00">15:00 - 15h00</option>
+                                    <option value="15:30">15:30 - 15h30</option>
+                                    <option value="16:00">16:00 - 16h00</option>
+                                    <option value="16:30">16:30 - 16h30</option>
+                                    <option value="17:00">17:00 - 17h00</option>
+                                </select>
                                 {% if form.heure_rdv.errors %}
-                                    <div class="text-danger">{{ form.heure_rdv.errors }}</div>
+                                    <div class="text-danger mt-1">{{ form.heure_rdv.errors }}</div>
                                 {% endif %}
                             </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-info-circle me-2"></i>Type de consultation
+                                </label>
+                                <select class="form-control">
+                                    <option>Consultation générale</option>
+                                    <option>Consultation de contrôle</option>
+                                    <option>Première consultation</option>
+                                    <option>Consultation d'urgence</option>
+                                </select>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="{{ form.motif.id_for_label }}" class="form-label fw-bold">{{ form.motif.label }}</label>
-                            {{ form.motif }}
+                        
+                        <div class="mb-4">
+                            <label for="id_motif" class="form-label fw-bold">
+                                <i class="fas fa-comment-medical me-2"></i>Motif de consultation *
+                            </label>
+                            <textarea name="motif" id="id_motif" rows="4" class="form-control" 
+                                      placeholder="Décrivez brièvement le motif de votre consultation..." required>{{ form.motif.value|default:'' }}</textarea>
                             {% if form.motif.errors %}
-                                <div class="text-danger">{{ form.motif.errors }}</div>
+                                <div class="text-danger mt-1">{{ form.motif.errors }}</div>
                             {% endif %}
+                            <small class="text-muted">
+                                <i class="fas fa-lightbulb me-1"></i>
+                                Exemples : douleur abdominale, contrôle tension, renouvellement ordonnance...
+                            </small>
                         </div>
-                        <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save me-2"></i>Prendre rendez-vous
-                            </button>
+
+                        <!-- Informations importantes -->
+                        <div class="alert alert-info border-0" style="background: #e0f2fe;">
+                            <h6><i class="fas fa-info-circle me-2"></i>Informations importantes</h6>
+                            <ul class="mb-0" style="font-size: 0.9rem;">
+                                <li>Merci d'arriver 10 minutes avant votre rendez-vous</li>
+                                <li>Pensez à apporter votre carte vitale et ordonnances en cours</li>
+                                <li>En cas d'empêchement, prévenez au moins 24h à l'avance</li>
+                                <li>Pour les urgences, contactez directement le 15</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="d-flex gap-3 justify-content-end">
                             <a href="{% url 'dashboard_patient' %}" class="btn btn-secondary">
                                 <i class="fas fa-arrow-left me-2"></i>Retour au dashboard
                             </a>
+                            <button type="submit" class="btn btn-primary" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); border: none;">
+                                <i class="fas fa-save me-2"></i>Prendre rendez-vous
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -62,4 +138,17 @@
         </div>
     </div>
 </div>
+
+<script>
+// Validation côté client
+document.getElementById('id_date_rdv').addEventListener('change', function() {
+    const selectedDate = new Date(this.value);
+    const today = new Date();
+    const dayOfWeek = selectedDate.getDay();
+    
+    if (dayOfWeek === 0 || dayOfWeek === 6) {
+        alert('Attention : Les consultations ne sont généralement pas disponibles le week-end.');
+    }
+});
+</script>
 {% endblock %}

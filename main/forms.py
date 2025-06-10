@@ -125,7 +125,11 @@ class ProfileUpdateForm(forms.ModelForm):
         model = CustomUser
         fields = ['first_name', 'last_name', 'email', 'telephone', 'adresse']
         widgets = {
-            'adresse': forms.Textarea(attrs={'rows': 3}),
+            'first_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'telephone': forms.TextInput(attrs={'class': 'form-control'}),
+            'adresse': forms.Textarea(attrs={'rows': 3, 'class': 'form-control'}),
         }
         labels = {
             'first_name': 'Prénom',
