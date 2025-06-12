@@ -66,6 +66,13 @@ class PatientAdmin(admin.ModelAdmin):
             obj.numero_patient or 'Non défini'
         )
     numero_patient_display.short_description = 'N° Patient'
+    
+    def get_nom_complet(self, obj):
+        """Méthode pour afficher le nom complet du patient"""
+        if obj.user.first_name or obj.user.last_name:
+            return f"{obj.user.first_name} {obj.user.last_name}".strip()
+        return obj.user.username
+    get_nom_complet.short_description = 'Nom complet'
 
 @admin.register(Medecin, site=admin_site)
 class MedecinAdmin(admin.ModelAdmin):

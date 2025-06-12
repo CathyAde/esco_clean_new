@@ -1,0 +1,282 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Urgences - ESCO{% endblock %}
+
+{% block content %}
+<div class="modern-container">
+    <div class="content-header">
+        <h1><i class="fas fa-exclamation-triangle me-3"></i>Patients en Urgence</h1>
+        <a href="{% url 'dashboard_medecin' %}" class="btn-back">
+            <i class="fas fa-arrow-left"></i> Retour
+        </a>
+    </div>
+
+    <div class="urgences-grid">
+        {% for urgence in urgences %}
+        <div class="urgence-card critical">
+            <div class="urgence-status">
+                <div class="status-indicator urgent"></div>
+                <span class="priority-badge">URGENT</span>
+            </div>
+            <div class="urgence-info">
+                <h3>{{ urgence.patient.get_full_name }}</h3>
+                <p class="motif">{{ urgence.motif }}</p>
+                <div class="urgence-meta">
+                    <span><i class="fas fa-clock"></i> {{ urgence.date_rdv|date:"H:i" }}</span>
+                    <span><i class="fas fa-calendar"></i> {{ urgence.date_rdv|date:"d/m/Y" }}</span>
+                </div>
+            </div>
+            <div class="urgence-actions">
+                <button class="btn-urgent" onclick="handleUrgence({{ urgence.id }})">
+                    <i class="fas fa-stethoscope"></i> Prendre en charge
+                </button>
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state">
+            <i class="fas fa-check-circle"></i>
+            <h3>Aucune urgence</h3>
+            <p>Aucun patient en urgence pour le moment.</p>
+        </div>
+        {% endfor %}
+
+        <!-- Exemple d'urgences fictives si la liste est vide -->
+        {% if not urgences %}
+        <div class="urgence-card critical">
+            <div class="urgence-status">
+                <div class="status-indicator urgent"></div>
+                <span class="priority-badge">URGENT</span>
+            </div>
+            <div class="urgence-info">
+                <h3>Jean Dupont</h3>
+                <p class="motif">Douleurs thoraciques</p>
+                <div class="urgence-meta">
+                    <span><i class="fas fa-clock"></i> 09:30</span>
+                    <span><i class="fas fa-calendar"></i> Aujourd'hui</span>
+                </div>
+            </div>
+            <div class="urgence-actions">
+                <button class="btn-urgent">
+                    <i class="fas fa-stethoscope"></i> Prendre en charge
+                </button>
+            </div>
+        </div>
+
+        <div class="urgence-card monitoring">
+            <div class="urgence-status">
+                <div class="status-indicator warning"></div>
+                <span class="priority-badge warning">SURVEILLANCE</span>
+            </div>
+            <div class="urgence-info">
+                <h3>Marie Bernard</h3>
+                <p class="motif">Post-opératoire</p>
+                <div class="urgence-meta">
+                    <span><i class="fas fa-clock"></i> 10:15</span>
+                    <span><i class="fas fa-calendar"></i> Aujourd'hui</span>
+                </div>
+            </div>
+            <div class="urgence-actions">
+                <button class="btn-warning">
+                    <i class="fas fa-eye"></i> Surveiller
+                </button>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.modern-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 2rem;
+}
+
+.content-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.content-header h1 {
+    color: white;
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.btn-back {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    text-decoration: none;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    transition: all 0.3s ease;
+}
+
+.btn-back:hover {
+    background: rgba(255, 255, 255, 0.3);
+    color: white;
+}
+
+.urgences-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+}
+
+.urgence-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+    position: relative;
+    border-left: 5px solid #ef4444;
+}
+
+.urgence-card.critical {
+    border-left-color: #ef4444;
+    animation: pulse-red 2s infinite;
+}
+
+.urgence-card.monitoring {
+    border-left-color: #f59e0b;
+    animation: pulse-orange 2s infinite;
+}
+
+@keyframes pulse-red {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+    50% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+}
+
+@keyframes pulse-orange {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); }
+    50% { box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); }
+}
+
+.urgence-status {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.status-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    animation: blink 1s infinite;
+}
+
+.status-indicator.urgent {
+    background: #ef4444;
+}
+
+.status-indicator.warning {
+    background: #f59e0b;
+}
+
+@keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0.3; }
+}
+
+.priority-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: white;
+}
+
+.priority-badge {
+    background: #ef4444;
+}
+
+.priority-badge.warning {
+    background: #f59e0b;
+}
+
+.urgence-info h3 {
+    color: white;
+    margin: 0 0 0.5rem 0;
+    font-size: 1.25rem;
+}
+
+.motif {
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 1rem;
+    font-weight: 500;
+}
+
+.urgence-meta {
+    display: flex;
+    gap: 1rem;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+}
+
+.urgence-actions {
+    margin-top: 1.5rem;
+}
+
+.btn-urgent, .btn-warning {
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    width: 100%;
+}
+
+.btn-urgent {
+    background: #ef4444;
+    color: white;
+}
+
+.btn-urgent:hover {
+    background: #dc2626;
+    transform: translateY(-2px);
+}
+
+.btn-warning {
+    background: #f59e0b;
+    color: white;
+}
+
+.btn-warning:hover {
+    background: #d97706;
+    transform: translateY(-2px);
+}
+
+.empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.8);
+    padding: 3rem;
+}
+
+.empty-state i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    color: #10b981;
+}
+</style>
+
+<script>
+function handleUrgence(urgenceId) {
+    if (confirm('Voulez-vous prendre en charge cette urgence ?')) {
+        // Logique pour prendre en charge l'urgence
+        alert('Urgence prise en charge !');
+        location.reload();
+    }
+}
+</script>
+{% endblock %}

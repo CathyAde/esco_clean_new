@@ -5,6 +5,186 @@
 {% block content %}
 <div class="container-fluid py-4">
     <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow-lg border-0 rounded-3">
+                <div class="card-header text-white" style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);">
+                    <h4 class="mb-0">
+                        <i class="fas fa-user-edit me-2"></i>Modifier Mon Profil Médical
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <!-- Informations personnelles -->
+                        <div class="card mb-4">
+                            <div class="card-header" style="background-color: #f8fafc;">
+                                <h5 class="mb-0"><i class="fas fa-id-card me-2"></i>Informations personnelles</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold">Prénom *</label>
+                                        {{ form.first_name }}
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold">Nom *</label>
+                                        {{ form.last_name }}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold">Email *</label>
+                                        {{ form.email }}
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold">Téléphone</label>
+                                        {{ form.telephone }}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold">Date de naissance</label>
+                                        {{ form.date_naissance }}
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold">Profession</label>
+                                        {{ form.profession }}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold">Situation familiale</label>
+                                        {{ form.situation_familiale }}
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold">Assurance maladie</label>
+                                        {{ form.assurance }}
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Adresse</label>
+                                    {{ form.adresse }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Informations médicales -->
+                        <div class="card mb-4">
+                            <div class="card-header" style="background-color: #fef3c7;">
+                                <h5 class="mb-0"><i class="fas fa-heartbeat me-2"></i>Informations médicales</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label fw-bold">Groupe sanguin</label>
+                                        {{ form.groupe_sanguin }}
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label fw-bold">Poids (kg)</label>
+                                        {{ form.poids }}
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label fw-bold">Taille (cm)</label>
+                                        {{ form.taille }}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold">Allergies connues</label>
+                                        {{ form.allergies }}
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold">Antécédents médicaux</label>
+                                        {{ form.antecedents }}
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Médecin traitant</label>
+                                    {{ form.medecin_traitant }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Contact d'urgence -->
+                        <div class="card mb-4">
+                            <div class="card-header" style="background-color: #fee2e2;">
+                                <h5 class="mb-0"><i class="fas fa-phone-alt me-2"></i>Contact d'urgence</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold">Personne à contacter</label>
+                                        {{ form.personne_contact }}
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold">Téléphone contact</label>
+                                        {{ form.tel_contact }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Boutons -->
+                        <div class="d-flex gap-2 justify-content-between">
+                            <a href="{% url 'mon_dossier_medical' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Retour au dossier
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save me-2"></i>Enregistrer les modifications
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Calculer l'IMC automatiquement
+document.addEventListener('DOMContentLoaded', function() {
+    const poidsInput = document.querySelector('input[name="poids"]');
+    const tailleInput = document.querySelector('input[name="taille"]');
+    
+    function calculateIMC() {
+        const poids = parseFloat(poidsInput.value);
+        const taille = parseFloat(tailleInput.value);
+        
+        if (poids && taille) {
+            const tailleM = taille / 100;
+            const imc = (poids / (tailleM * tailleM)).toFixed(1);
+            
+            // Afficher l'IMC quelque part si vous voulez
+            console.log('IMC calculé:', imc);
+        }
+    }
+    
+    if (poidsInput && tailleInput) {
+        poidsInput.addEventListener('input', calculateIMC);
+        tailleInput.addEventListener('input', calculateIMC);
+    }
+});
+</script>
+{% endblock %}
+
+{% comment %} {% extends 'base.html' %}
+
+{% block title %}Modifier Profil - ESCO{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card shadow-lg border-0 rounded-3">
                 <div class="card-header text-white" style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);">
@@ -53,4 +233,4 @@
         </div>
     </div>
 </div>
-{% endblock %}
+{% endblock %} {% endcomment %}

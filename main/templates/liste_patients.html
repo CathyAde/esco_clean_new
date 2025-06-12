@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Mes Patients - ESCO{% endblock %}
+
+{% block content %}
+<div class="modern-container">
+    <div class="content-header">
+        <h1><i class="fas fa-users me-3"></i>Mes Patients</h1>
+        <a href="{% url 'dashboard_medecin' %}" class="btn-back">
+            <i class="fas fa-arrow-left"></i> Retour
+        </a>
+    </div>
+
+    <div class="patients-grid">
+        {% for patient in patients %}
+        <div class="patient-card">
+            <div class="patient-avatar">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="patient-info">
+                <h3>{{ patient.get_full_name }}</h3>
+                <p class="patient-details">
+                    <i class="fas fa-envelope"></i> {{ patient.email|default:"Non renseigné" }}
+                </p>
+                <p class="patient-details">
+                    <i class="fas fa-phone"></i> {{ patient.telephone|default:"Non renseigné" }}
+                </p>
+                {% if patient.date_naissance %}
+                <p class="patient-details">
+                    <i class="fas fa-birthday-cake"></i> {{ patient.date_naissance|date:"d/m/Y" }}
+                </p>
+                {% endif %}
+            </div>
+            <div class="patient-actions">
+                <button class="btn-primary" onclick="viewPatient({{ patient.id }})">
+                    <i class="fas fa-eye"></i> Voir dossier
+                </button>
+                <button class="btn-secondary" onclick="newRdv({{ patient.id }})">
+                    <i class="fas fa-calendar-plus"></i> Nouveau RDV
+                </button>
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state">
+            <i class="fas fa-user-times"></i>
+            <h3>Aucun patient</h3>
+            <p>Vous n'avez pas encore de patients assignés.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+.modern-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 2rem;
+}
+
+.content-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.content-header h1 {
+    color: white;
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.btn-back {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    text-decoration: none;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    transition: all 0.3s ease;
+}
+
+.btn-back:hover {
+    background: rgba(255, 255, 255, 0.3);
+    color: white;
+}
+
+.patients-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.patient-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.patient-card:hover {
+    transform: translateY(-5px);
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.patient-avatar {
+    width: 80px;
+    height: 80px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem auto;
+    font-size: 2rem;
+    color: white;
+}
+
+.patient-info h3 {
+    color: white;
+    margin: 0 0 1rem 0;
+    font-size: 1.25rem;
+}
+
+.patient-details {
+    color: rgba(255, 255, 255, 0.8);
+    margin: 0.5rem 0;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.patient-actions {
+    margin-top: 1.5rem;
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+.btn-primary, .btn-secondary {
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.85rem;
+}
+
+.btn-primary {
+    background: #6366f1;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #4f46e5;
+}
+
+.btn-secondary {
+    background: #10b981;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #059669;
+}
+
+.empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.8);
+    padding: 3rem;
+}
+
+.empty-state i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+</style>
+
+<script>
+function viewPatient(patientId) {
+    window.open(`/admin/main/patient/${patientId}/change/`, '_blank');
+}
+
+function newRdv(patientId) {
+    window.location.href = `{% url 'nouveau_rdv' %}?patient=${patientId}`;
+}
+</script>
+{% endblock %}

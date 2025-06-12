@@ -3,6 +3,767 @@
 {% block title %}Dashboard Patient - ESCO{% endblock %}
 
 {% block content %}
+<!-- Styles CSS intégrés pour le glassmorphism -->
+<style>
+:root {
+    --primary-purple: #6366f1;
+    --secondary-purple: #8b5cf6;
+    --light-purple: rgba(99, 102, 241, 0.1);
+    --text-dark: #1f2937;
+    --glass-bg: rgba(255, 255, 255, 0.1);
+    --glass-border: rgba(255, 255, 255, 0.2);
+}
+
+.patient-dashboard-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 2rem;
+    color: white;
+}
+
+/* Header avec glassmorphism */
+.dashboard-header {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.stats-icon {
+    background: rgba(255, 255, 255, 0.2) !important;
+    backdrop-filter: blur(10px);
+    animation: pulse-glow 2s infinite alternate;
+}
+
+@keyframes pulse-glow {
+    0% { box-shadow: 0 0 20px rgba(255, 255, 255, 0.3); }
+    100% { box-shadow: 0 0 30px rgba(255, 255, 255, 0.5); }
+}
+
+/* Statistiques avec glassmorphism */
+.stat-card-glass {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    margin-bottom: 1rem;
+}
+
+.stat-card-glass:hover {
+    transform: translateY(-5px);
+    background: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+.stat-icon-modern {
+    font-size: 2.5rem;
+    color: #fff;
+    margin-bottom: 0.5rem;
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.stat-label {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+}
+
+/* Actions rapides modernes */
+.actions-section {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.action-card-modern {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    text-decoration: none;
+    color: white;
+    display: block;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+.action-card-modern::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.action-card-modern:hover::before {
+    left: 100%;
+}
+
+.action-card-modern:hover {
+    transform: translateY(-8px) scale(1.02);
+    background: rgba(255, 255, 255, 0.25);
+    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.2);
+    text-decoration: none;
+    color: white;
+}
+
+.action-icon-modern {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto 1rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    position: relative;
+    z-index: 2;
+}
+
+.action-icon-primary { background: linear-gradient(135deg, #667eea, #764ba2); }
+.action-icon-success { background: linear-gradient(135deg, #10b981, #059669); }
+.action-icon-info { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+.action-icon-warning { background: linear-gradient(135deg, #f59e0b, #d97706); }
+
+/* Contenu principal */
+.content-section-glass {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.table-glass {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.table-glass th {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    font-weight: 600;
+}
+
+.table-glass td {
+    border: none;
+    color: rgba(255, 255, 255, 0.9);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.table-glass tr:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* Boutons modernes */
+.btn-glass {
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 25px;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-glass:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    color: white;
+    text-decoration: none;
+}
+
+.btn-glass-primary {
+    background: linear-gradient(135deg, var(--primary-purple), var(--secondary-purple));
+    border: none;
+}
+
+/* État vide moderne */
+.empty-state-glass {
+    text-align: center;
+    padding: 3rem 2rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    border: 2px dashed rgba(255, 255, 255, 0.2);
+}
+
+.empty-icon-glass {
+    font-size: 3rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 1rem;
+}
+
+/* Animations */
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-slide-in {
+    animation: slideInUp 0.6s ease-out forwards;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .patient-dashboard-container {
+        padding: 1rem;
+    }
+    
+    .dashboard-header {
+        padding: 1.5rem;
+    }
+    
+    .actions-section {
+        padding: 1.5rem;
+    }
+}
+</style>
+
+<div class="patient-dashboard-container">
+    <!-- Header Dashboard avec glassmorphism -->
+    <div class="dashboard-header animate-slide-in">
+        <div class="d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center">
+                <div class="stats-icon me-3" style="width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-user-injured fa-2x"></i>
+                </div>
+                <div>
+                    <h1 style="margin-bottom: 5px; font-size: 2.5rem; font-weight: 700;">
+                        Bonjour {{ user.get_full_name|default:user.username }} ! 👋
+                    </h1>
+                    <p style="margin: 0; opacity: 0.9; font-size: 1.1rem;">
+                        Bienvenue sur votre espace patient ESCO
+                    </p>
+                    <small style="opacity: 0.8; background: rgba(255,255,255,0.2); padding: 0.25rem 0.75rem; border-radius: 15px; margin-top: 0.5rem; display: inline-block;">
+                        <i class="fas fa-id-card me-1"></i>
+                        ID Patient: {{ user.user_id|default:"ESC-2025-001" }}
+                    </small>
+                </div>
+            </div>
+            <div class="text-end">
+                <span class="badge" style="background: rgba(34, 197, 94, 0.3); color: white; font-size: 1rem; padding: 10px 20px; border-radius: 25px; border: 1px solid rgba(34, 197, 94, 0.5);">
+                    <i class="fas fa-circle me-2" style="color: #22c55e; animation: pulse 2s infinite;"></i>Connecté
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistiques rapides avec glassmorphism -->
+    <div class="row mb-4">
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="stat-card-glass animate-slide-in" onclick="navigateTo('{% url 'mes_rdv' %}')" style="animation-delay: 0.1s">
+                <div class="stat-icon-modern">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="stat-number">{{ rdv_count|default:"5" }}</div>
+                <div class="stat-label">Rendez-vous à venir</div>
+                <div style="margin-top: 0.5rem; font-size: 0.8rem; color: rgba(255,255,255,0.7);">
+                    <i class="fas fa-arrow-up"></i> +2 cette semaine
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="stat-card-glass animate-slide-in" onclick="navigateTo('{% url 'mes_consultations' %}')" style="animation-delay: 0.2s">
+                <div class="stat-icon-modern">
+                    <i class="fas fa-stethoscope"></i>
+                </div>
+                <div class="stat-number">{{ consultations_count|default:"12" }}</div>
+                <div class="stat-label">Consultations</div>
+                <div style="margin-top: 0.5rem; font-size: 0.8rem; color: rgba(255,255,255,0.7);">
+                    <i class="fas fa-check-circle"></i> 3 ce mois
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="stat-card-glass animate-slide-in" onclick="navigateTo('{% url 'mon_dossier_medical' %}')" style="animation-delay: 0.3s">
+                <div class="stat-icon-modern">
+                    <i class="fas fa-tint"></i>
+                </div>
+                <div class="stat-number">{{ patient.groupe_sanguin|default:"O+" }}</div>
+                <div class="stat-label">Groupe Sanguin</div>
+                <div style="margin-top: 0.5rem; font-size: 0.8rem; color: rgba(255,255,255,0.7);">
+                    <i class="fas fa-shield-alt"></i> Vérifié
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="stat-card-glass animate-slide-in" onclick="showHealthStatus()" style="animation-delay: 0.4s">
+                <div class="stat-icon-modern">
+                    <i class="fas fa-heartbeat" style="animation: pulse 2s infinite;"></i>
+                </div>
+                <div class="stat-number">Actif</div>
+                <div class="stat-label">État du dossier</div>
+                <div style="margin-top: 0.5rem; font-size: 0.8rem; color: rgba(255,255,255,0.7);">
+                    <i class="fas fa-check"></i> À jour
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions Rapides ultra-modernes -->
+    <div class="actions-section animate-slide-in" style="animation-delay: 0.5s">
+        <h2 class="section-title" style="display: flex; align-items: center; margin-bottom: 2rem; color: white;">
+            <i class="fas fa-bolt" style="color: #fbbf24; margin-right: 0.75rem; font-size: 1.5rem;"></i>
+            <span style="font-size: 1.8rem; font-weight: 700;">Actions Rapides</span>
+        </h2>
+        
+        <div class="row">
+            <div class="col-md-3 col-sm-6 mb-3">
+                <a href="{% url 'nouveau_rdv' %}" class="action-card-modern" onclick="trackAction('new_appointment')">
+                    <div class="action-icon-modern action-icon-primary">
+                        <i class="fas fa-calendar-plus"></i>
+                    </div>
+                    <h5 style="color: white; margin-bottom: 0.5rem; font-weight: 600;">Nouveau RDV</h5>
+                    <p style="color: rgba(255,255,255,0.8); font-size: 0.9rem; margin: 0;">
+                        Prendre un rendez-vous médical
+                    </p>
+                    <div style="margin-top: 0.75rem; font-size: 0.8rem; color: rgba(255,255,255,0.7);">
+                        <i class="fas fa-clock"></i> Disponible aujourd'hui
+                    </div>
+                </a>
+            </div>
+            
+            <div class="col-md-3 col-sm-6 mb-3">
+                <a href="{% url 'mes_rdv' %}" class="action-card-modern" onclick="trackAction('my_appointments')">
+                    <div class="action-icon-modern action-icon-success">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <h5 style="color: white; margin-bottom: 0.5rem; font-weight: 600;">Mes RDV</h5>
+                    <p style="color: rgba(255,255,255,0.8); font-size: 0.9rem; margin: 0;">
+                        Voir mes rendez-vous programmés
+                    </p>
+                    <div style="margin-top: 0.75rem; font-size: 0.8rem; color: rgba(255,255,255,0.7);">
+                        <i class="fas fa-list"></i> {{ rdv_count|default:"5" }} à venir
+                    </div>
+                </a>
+            </div>
+            
+            <div class="col-md-3 col-sm-6 mb-3">
+                <a href="{% url 'mes_consultations' %}" class="action-card-modern" onclick="trackAction('consultations')">
+                    <div class="action-icon-modern action-icon-info">
+                        <i class="fas fa-stethoscope"></i>
+                    </div>
+                    <h5 style="color: white; margin-bottom: 0.5rem; font-weight: 600;">Consultations</h5>
+                    <p style="color: rgba(255,255,255,0.8); font-size: 0.9rem; margin: 0;">
+                        Historique et détails médicaux
+                    </p>
+                    <div style="margin-top: 0.75rem; font-size: 0.8rem; color: rgba(255,255,255,0.7);">
+                        <i class="fas fa-history"></i> {{ consultations_count|default:"12" }} consultations
+                    </div>
+                </a>
+            </div>
+            
+            <div class="col-md-3 col-sm-6 mb-3">
+                <a href="{% url 'mon_dossier_medical' %}" class="action-card-modern" onclick="trackAction('medical_file')">
+                    <div class="action-icon-modern action-icon-warning">
+                        <i class="fas fa-folder-open"></i>
+                    </div>
+                    <h5 style="color: white; margin-bottom: 0.5rem; font-weight: 600;">Mon Dossier</h5>
+                    <p style="color: rgba(255,255,255,0.8); font-size: 0.9rem; margin: 0;">
+                        Dossier médical complet
+                    </p>
+                    <div style="margin-top: 0.75rem; font-size: 0.8rem; color: rgba(255,255,255,0.7);">
+                        <i class="fas fa-file-medical"></i> MAJ: Aujourd'hui
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Prochains Rendez-vous avec glassmorphism -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="content-section-glass animate-slide-in" style="animation-delay: 0.6s">
+                <h2 class="section-title" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; color: white;">
+                    <span style="display: flex; align-items: center;">
+                        <i class="fas fa-calendar" style="color: #60a5fa; margin-right: 0.75rem; font-size: 1.3rem;"></i>
+                        <span style="font-size: 1.5rem; font-weight: 600;">Prochains rendez-vous</span>
+                    </span>
+                    {% if rdv_futurs %}
+                        <span style="background: linear-gradient(135deg, var(--primary-purple), var(--secondary-purple)); color: white; font-size: 0.8rem; padding: 0.5rem 1rem; border-radius: 20px;">
+                            {{ rdv_futurs.count }} RDV
+                        </span>
+                    {% endif %}
+                </h2>
+                
+                {% if rdv_futurs %}
+                    <div class="table-responsive">
+                        <table class="table table-glass">
+                            <thead>
+                                <tr>
+                                    <th style="padding: 1rem 0.75rem; font-size: 1rem;">📅 Date & Heure</th>
+                                    <th style="padding: 1rem 0.75rem; font-size: 1rem;">👨‍⚕️ Médecin</th>
+                                    <th style="padding: 1rem 0.75rem; font-size: 1rem;">📋 Statut</th>
+                                    <th style="padding: 1rem 0.75rem; font-size: 1rem;">⚡ Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for rdv in rdv_futurs %}
+                                <tr style="transition: all 0.3s ease;">
+                                    <td style="padding: 1rem 0.75rem;">
+                                        <div>
+                                            <strong style="font-size: 1.1rem;">{{ rdv.date_rdv|date:"d/m/Y" }}</strong><br>
+                                            <small style="color: rgba(255,255,255,0.7); font-size: 0.9rem;">
+                                                <i class="fas fa-clock"></i> {{ rdv.heure_rdv|time:"H:i" }}
+                                            </small>
+                                        </div>
+                                    </td>
+                                    <td style="padding: 1rem 0.75rem;">
+                                        <div>
+                                            <strong style="font-size: 1rem;">Dr. {{ rdv.medecin.get_full_name|default:rdv.medecin.username }}</strong><br>
+                                            <small style="color: rgba(255,255,255,0.7);">{{ rdv.motif|truncatewords:4 }}</small>
+                                        </div>
+                                    </td>
+                                    <td style="padding: 1rem 0.75rem;">
+                                        <span style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.85rem; font-weight: 500;">
+                                            ✅ {{ rdv.get_status_display|default:"Confirmé" }}
+                                        </span>
+                                    </td>
+                                    <td style="padding: 1rem 0.75rem;">
+                                        <div style="display: flex; gap: 0.25rem;">
+                                            <button class="btn btn-sm" style="background: rgba(59, 130, 246, 0.3); color: white; border: 1px solid rgba(59, 130, 246, 0.5); border-radius: 8px; padding: 0.25rem 0.5rem;" onclick="viewAppointment({{ rdv.id }})" title="Voir détails">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="btn btn-sm" style="background: rgba(245, 158, 11, 0.3); color: white; border: 1px solid rgba(245, 158, 11, 0.5); border-radius: 8px; padding: 0.25rem 0.5rem;" onclick="editAppointment({{ rdv.id }})" title="Modifier">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="text-center mt-3">
+                        <a href="{% url 'mes_rdv' %}" class="btn-glass">
+                            <i class="fas fa-calendar-alt"></i>
+                            Voir tous mes rendez-vous
+                        </a>
+                    </div>
+                {% else %}
+                    <div class="empty-state-glass">
+                        <div class="empty-icon-glass">
+                            <i class="fas fa-calendar-times"></i>
+                        </div>
+                        <h4 style="color: white; margin-bottom: 0.5rem;">Aucun rendez-vous programmé</h4>
+                        <p style="color: rgba(255,255,255,0.8); margin-bottom: 1.5rem;">
+                            Prenez votre prochain rendez-vous dès maintenant pour un suivi optimal.
+                        </p>
+                        <a href="{% url 'nouveau_rdv' %}" class="btn-glass-primary">
+                            <i class="fas fa-plus"></i>
+                            Prendre un rendez-vous
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="content-section-glass animate-slide-in" style="animation-delay: 0.7s">
+                <h2 class="section-title" style="display: flex; align-items: center; margin-bottom: 1.5rem; color: white;">
+                    <i class="fas fa-notes-medical" style="color: #34d399; margin-right: 0.75rem; font-size: 1.3rem;"></i>
+                    <span style="font-size: 1.5rem; font-weight: 600;">Dernières consultations</span>
+                </h2>
+                
+                {% if rdv_passes %}
+                    <div style="space-y: 1rem;">
+                        {% for rdv in rdv_passes|slice:":3" %}
+                        <div style="background: rgba(255,255,255,0.1); border-radius: 12px; padding: 1rem; margin-bottom: 1rem; border: 1px solid rgba(255,255,255,0.1); transition: all 0.3s ease;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
+                            <div class="d-flex align-items-center">
+                                <div style="width: 50px; height: 50px; background: linear-gradient(135deg, var(--primary-purple), var(--secondary-purple)); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; margin-right: 1rem;">
+                                    <i class="fas fa-user-md"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 style="color: white; margin-bottom: 0.25rem; font-weight: 600;">
+                                        Dr. {{ rdv.medecin.get_full_name|default:rdv.medecin.username }}
+                                    </h6>
+                                    <p style="color: rgba(255,255,255,0.8); margin-bottom: 0.25rem; font-size: 0.9rem;">
+                                        <i class="fas fa-calendar"></i> {{ rdv.date_rdv|date:"d F Y" }} à {{ rdv.heure_rdv|time:"H:i" }}
+                                    </p>
+                                    <small style="color: rgba(255,255,255,0.7);">
+                                        <i class="fas fa-stethoscope"></i> {{ rdv.motif|truncatewords:6 }}
+                                    </small>
+                                </div>
+                                <div>
+                                    <span style="background: rgba(34, 197, 94, 0.3); color: white; padding: 0.25rem 0.75rem; border-radius: 15px; font-size: 0.8rem; border: 1px solid rgba(34, 197, 94, 0.5);">
+                                        <i class="fas fa-check-circle"></i> Terminée
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="text-center mt-3">
+                        <a href="{% url 'mes_consultations' %}" class="btn-glass">
+                            <i class="fas fa-history"></i>
+                            Historique complet
+                        </a>
+                    </div>
+                {% else %}
+                    <div class="empty-state-glass">
+                        <div class="empty-icon-glass">
+                            <i class="fas fa-stethoscope"></i>
+                        </div>
+                        <h5 style="color: white; margin-bottom: 0.5rem;">Aucune consultation récente</h5>
+                        <p style="color: rgba(255,255,255,0.8);">
+                            Vos prochaines consultations apparaîtront ici.
+                        </p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Section supplémentaire : Raccourcis rapides -->
+    <div class="content-section-glass animate-slide-in" style="animation-delay: 0.8s;">
+        <h2 style="color: white; margin-bottom: 1.5rem; display: flex; align-items: center;">
+            <i class="fas fa-star" style="color: #fbbf24; margin-right: 0.75rem;"></i>
+            Raccourcis Utiles
+        </h2>
+        
+        <div class="row">
+            <div class="col-md-3 col-6 mb-3">
+                <button class="btn-glass w-100" onclick="emergencyCall()" style="padding: 1rem; flex-direction: column; height: 100px;">
+                    <i class="fas fa-phone-alt fa-2x mb-2" style="color: #ef4444;"></i>
+                    <span>Urgence 🚨</span>
+                </button>
+            </div>
+            <div class="col-md-3 col-6 mb-3">
+                <button class="btn-glass w-100" onclick="downloadMedicalFile()" style="padding: 1rem; flex-direction: column; height: 100px;">
+                    <i class="fas fa-file-download fa-2x mb-2" style="color: #3b82f6;"></i>
+                    <span>PDF Dossier 📄</span>
+                </button>
+            </div>
+            <div class="col-md-3 col-6 mb-3">
+                <button class="btn-glass w-100" onclick="contactSupport()" style="padding: 1rem; flex-direction: column; height: 100px;">
+                    <i class="fas fa-headset fa-2x mb-2" style="color: #10b981;"></i>
+                    <span>Support 💬</span>
+                </button>
+            </div>
+            <div class="col-md-3 col-6 mb-3">
+                <button class="btn-glass w-100" onclick="shareProfile()" style="padding: 1rem; flex-direction: column; height: 100px;">
+                    <i class="fas fa-share-alt fa-2x mb-2" style="color: #8b5cf6;"></i>
+                    <span>Partager 🔗</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript pour les interactions -->
+<script>
+// Fonction de navigation
+function navigateTo(url) {
+    // Animation de sortie
+    document.body.style.cursor = 'wait';
+    document.querySelector('.patient-dashboard-container').style.opacity = '0.8';
+    
+    setTimeout(() => {
+        window.location.href = url;
+    }, 200);
+}
+
+// Fonctions spécifiques
+function trackAction(action) {
+    console.log('Action tracked:', action);
+    showNotification(`Navigation vers ${action}...`, 'info');
+}
+
+function showHealthStatus() {
+    showNotification('Affichage des détails de santé...', 'info');
+    navigateTo('{% url "mon_dossier_medical" %}');
+}
+
+function viewAppointment(id) {
+    showNotification('Chargement des détails du rendez-vous...', 'info');
+    navigateTo(`/admin/main/rendezvous/${id}/change/`);
+}
+
+function editAppointment(id) {
+    if (confirm('Voulez-vous modifier ce rendez-vous ?')) {
+        showNotification('Modification du rendez-vous...', 'info');
+        navigateTo(`/admin/main/rendezvous/${id}/change/`);
+    }
+}
+
+function emergencyCall() {
+    if (confirm('🚨 Voulez-vous appeler les services d\'urgence ?\n\n📞 SAMU: 15\n🚑 Pompiers: 18\n👮 Police: 17')) {
+        const choice = prompt('Tapez le numéro à appeler (15, 18, 17):');
+        if (['15', '18', '17'].includes(choice)) {
+            window.open(`tel:${choice}`, '_self');
+        }
+    }
+}
+
+function downloadMedicalFile() {
+    showNotification('📄 Préparation du dossier médical PDF...', 'info');
+    navigateTo('{% url "mon_dossier_medical" %}');
+}
+
+function contactSupport() {
+    showNotification('💬 Ouverture du support client...', 'info');
+    // Ici vous pouvez ajouter l'ouverture d'un chat ou d'un formulaire
+    alert('Support technique :\n📧 support@esco-medical.fr\n📞 01 23 45 67 89\n💬 Chat disponible 24h/7j');
+}
+
+function shareProfile() {
+    if (navigator.share) {
+        navigator.share({
+            title: 'Mon profil médical ESCO',
+            text: 'Consultez mon profil patient sur la plateforme ESCO',
+            url: window.location.href
+        });
+    } else {
+        // Fallback pour les navigateurs qui ne supportent pas Web Share API
+        const url = window.location.href;
+        navigator.clipboard.writeText(url).then(() => {
+            showNotification('🔗 Lien copié dans le presse-papier !', 'success');
+        });
+    }
+}
+
+// Système de notifications
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        color: #1f2937;
+        padding: 1rem 1.5rem;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        z-index: 9999;
+        transform: translateX(400px);
+        transition: all 0.3s ease;
+        max-width: 350px;
+    `;
+    
+    const icon = type === 'success' ? '✅' : type === 'warning' ? '⚠️' : type === 'error' ? '❌' : 'ℹ️';
+    notification.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <span style="font-size: 1.2rem;">${icon}</span>
+            <span style="font-weight: 500;">${message}</span>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.transform = 'translateX(0)';
+    }, 100);
+    
+    setTimeout(() => {
+        notification.style.transform = 'translateX(400px)';
+        setTimeout(() => {
+            document.body.removeChild(notification);
+        }, 300);
+    }, 3000);
+}
+
+// Animation au chargement
+document.addEventListener('DOMContentLoaded', function() {
+    // Animation des compteurs
+    const counters = document.querySelectorAll('.stat-number');
+    counters.forEach(counter => {
+        const target = parseInt(counter.textContent) || 0;
+        if (!isNaN(target)) {
+            let current = 0;
+            const increment = target / 20;
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    current = target;
+                    clearInterval(timer);
+                }
+                counter.textContent = Math.floor(current);
+            }, 50);
+        }
+    });
+    
+    // Ajout des raccourcis clavier
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey) {
+            switch(e.key) {
+                case '1':
+                    e.preventDefault();
+                    navigateTo('{% url "nouveau_rdv" %}');
+                    break;
+                case '2':
+                    e.preventDefault();
+                    navigateTo('{% url "mes_rdv" %}');
+                    break;
+                case '3':
+                    e.preventDefault();
+                    navigateTo('{% url "mes_consultations" %}');
+                    break;
+                case '4':
+                    e.preventDefault();
+                    navigateTo('{% url "mon_dossier_medical" %}');
+                    break;
+            }
+        }
+    });
+    
+    showNotification('🎉 Tableau de bord chargé avec succès !', 'success');
+});
+</script>
+{% endblock %}
+
+
+
+{% comment %} {% extends 'base.html' %}
+
+{% block title %}Dashboard Patient - ESCO{% endblock %}
+
+{% block content %}
 <!-- Header Dashboard avec fond violet mais texte blanc lisible -->
 <div class="dashboard-header">
     <div class="d-flex align-items-center justify-content-between">
@@ -305,4 +1066,4 @@
     border-radius: 8px;
 }
 </style>
-{% endblock %}
+{% endblock %} {% endcomment %}

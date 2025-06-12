@@ -23,13 +23,69 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
 from io import BytesIO
 import datetime
-
+from datetime import datetime, time
 @login_required
 def download_my_dossier_pdf(request):
-    """Télécharger le dossier médical en PDF"""
+    """Télécharger le dossier médical en PDF avec header ESCO"""
     if request.user.role != 'patient':
         messages.error(request, 'Accès réservé aux patients.')
         return redirect('home')
+    
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="dossier_medical_{request.user.username}_{datetime.date.today().strftime("%Y%m%d")}.pdf"'
+    
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4)
+    styles = getSampleStyleSheet()
+    story = []
+    
+    # Couleurs ESCO
+    purple_color = HexColor('#7c3aed')
+    
+    # Style pour header ESCO
+    header_style = ParagraphStyle(
+        'ESCOHeader',
+        parent=styles['Heading1'],
+        fontSize=28,
+        spaceAfter=10,
+        textColor=purple_color,
+        alignment=TA_CENTER,
+        fontName='Helvetica-Bold'
+    )
+    
+    clinic_style = ParagraphStyle(
+        'ClinicInfo',
+        parent=styles['Normal'],
+        fontSize=12,
+        spaceAfter=20,
+        alignment=TA_CENTER,
+        fontName='Helvetica'
+    )
+    
+    # **HEADER ESCO AMÉLIORÉ**
+    story.append(Paragraph("🏥 CLINIQUE ESCO", header_style))
+    story.append(Paragraph("Système Hospitalier - Soins de Qualité", clinic_style))
+    story.append(Paragraph("📍 Adresse de la clinique | ☎️ Téléphone | 🌐 www.esco-clinic.com", clinic_style))
+    story.append(Spacer(1, 20))
+    
+    # Ligne de séparation
+    story.append(Paragraph("<hr/>", styles['Normal']))
+    story.append(Spacer(1, 10))
+    
+    # Titre du document
+    title_style = ParagraphStyle(
+        'DocumentTitle',
+        parent=styles['Heading2'],
+        fontSize=18,
+        spaceAfter=30,
+        textColor=purple_color,
+        alignment=TA_CENTER,
+        fontName='Helvetica-Bold'
+    )
+    
+    story.append(Paragraph(f"DOSSIER MÉDICAL - {request.user.get_full_name() or request.user.username}", title_style))
+    story.append(Paragraph(f"Généré le {datetime.date.today().strftime('%d/%m/%Y')}", clinic_style))
+    story.append(Spacer(1, 20))
     
     # Créer la réponse HTTP avec le type de contenu PDF
     response = HttpResponse(content_type='application/pdf')
@@ -223,70 +279,70 @@ def home(request):
 # ===== VUES PATIENTS COMPLÈTES =====
 @login_required
 def nouveau_rdv(request):
-    """Créer un nouveau rendez-vous avec toutes les informations"""
+    """Créer un nouveau rendez-vous"""
     if request.user.role != 'patient':
         messages.error(request, 'Accès réservé aux patients.')
-        return redirect('home')
-    
-    if request.method == 'POST':
-        form = RendezVousForm(request.POST)
-        if form.is_valid():
-            rdv = form.save(commit=False)
-            rdv.patient = request.user
-            rdv.save()
-            messages.success(request, f'✅ Rendez-vous créé avec succès pour le {rdv.date_rdv.strftime("%d/%m/%Y")} à {rdv.heure_rdv.strftime("%H:%M")}!')
-            return redirect('mes_rdv')
-        else:
-            messages.error(request, '❌ Veuillez corriger les erreurs dans le formulaire.')
-    else:
-        form = RendezVousForm()
-    
-    # Passer les données nécessaires au template
-    from django.utils import timezone
-    context = {
-        'form': form,
-        'today': timezone.now().date(),
-    }
-    return render(request, 'nouveau_rdv.html', context)
-# @login_required
-# def nouveau_rdv(request):
-#     """Vue pour créer un nouveau rendez-vous"""
-#     if request.user.role != 'patient':
-#         messages.error(request, 'Accès réservé aux patients.')
-#         return redirect('home')
-    
-#     if request.method == 'POST':
-#         form = RendezVousForm(request.POST)
-#         if form.is_valid():
-#             rdv = form.save(commit=False)
-#             rdv.patient = request.user
-#             rdv.save()
-#             messages.success(request, 'Rendez-vous créé avec succès!')
-#             return redirect('mes_rdv')
-#         else:
-#             messages.error(request, 'Veuillez corriger les erreurs dans le formulaire.')
-#     else:
-#         form = RendezVousForm()
-    
-#     return render(request, 'nouveau_rdv.html', {'form': form})
+        return redirect('dashboard')
 
+    if request.method == 'POST':
+        # Traitement manuel des données du formulaire
+        medecin_id = request.POST.get('medecin')
+        date_rdv = request.POST.get('date_rdv')
+        heure_rdv = request.POST.get('heure_rdv')
+        motif = request.POST.get('motif')
+        
+        # Validation
+        errors = []
+        if not medecin_id:
+            errors.append('Veuillez sélectionner un médecin.')
+        if not date_rdv:
+            errors.append('Veuillez sélectionner une date.')
+        if not heure_rdv:
+            errors.append('Veuillez sélectionner une heure.')
+        if not motif:
+            errors.append('Veuillez saisir un motif.')
+            
+        if errors:
+            for error in errors:
+                messages.error(request, error)
+        else:
+            try:
+                # Créer le rendez-vous
+                medecin = CustomUser.objects.get(id=medecin_id, role='docteur')
+                rdv = RendezVous.objects.create(
+                    patient=request.user,
+                    medecin=medecin,
+                    date_rdv=date_rdv,
+                    heure_rdv=heure_rdv,
+                    motif=motif,
+                    status='programme'
+                )
+                messages.success(request, 'Votre rendez-vous a été programmé avec succès!')
+                return redirect('mes_rdv')
+            except Exception as e:
+                messages.error(request, f'Erreur lors de la création du rendez-vous: {str(e)}')
+
+    # Récupérer tous les médecins actifs
+    medecins = CustomUser.objects.filter(role='docteur', is_active=True)
+    
+    return render(request, 'main/nouveau_rdv.html', {
+        'medecins': medecins
+    })
+# Dans views.py
 @login_required
 def mes_rdv(request):
-    """Vue pour voir les rendez-vous du patient"""
+    """Afficher tous les rendez-vous du patient (créés par admin ou patient)"""
     if request.user.role != 'patient':
         messages.error(request, 'Accès réservé aux patients.')
-        return redirect('home')
+        return redirect('dashboard')
     
-    try:
-        rdv_list = RendezVous.objects.filter(patient=request.user).order_by('-date_rdv', '-heure_rdv')
-        context = {
-            'rdv_list': rdv_list,
-            'user': request.user
-        }
-        return render(request, 'mes_rdv.html', context)
-    except Exception as e:
-        messages.error(request, f"Erreur lors du chargement des rendez-vous: {str(e)}")
-        return redirect('dashboard_patient')
+    # CORRECTION : Récupérer TOUS les RDV où l'utilisateur est patient
+    rdv_list = RendezVous.objects.filter(patient=request.user).order_by('-date_rdv', '-heure_rdv')
+    
+    return render(request, 'main/mes_rdv.html', {
+        'rdv_list': rdv_list,
+        'user': request.user
+    })
 
 @login_required
 def mes_consultations(request):
@@ -565,56 +621,91 @@ def mes_infos(request):
 
 @login_required
 def modifier_profil(request):
-    """Vue pour modifier le profil"""
+    """Modifier le profil utilisateur avec informations médicales"""
     if request.user.role != 'patient':
         messages.error(request, 'Accès réservé aux patients.')
-        return redirect('home')
+        return redirect('dashboard')
     
-    try:
-        patient, created = Patient.objects.get_or_create(user=request.user)
-        
-        if request.method == 'POST':
-            form = ProfileUpdateForm(request.POST, instance=request.user)
-            if form.is_valid():
-                form.save()
-                messages.success(request, 'Profil mis à jour avec succès!')
-                return redirect('mes_infos')
-            else:
-                messages.error(request, 'Veuillez corriger les erreurs ci-dessous.')
+    # Récupérer ou créer le profil patient
+    patient, created = Patient.objects.get_or_create(user=request.user)
+    
+    if request.method == 'POST':
+        form = ProfileUpdateForm(request.POST, instance=request.user, patient=patient)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Votre profil a été mis à jour avec succès!')
+            return redirect('mon_dossier_medical')
         else:
-            form = ProfileUpdateForm(instance=request.user)
-        
-        context = {
-            'form': form,
-            'patient': patient,
-            'user': request.user
-        }
-        return render(request, 'modifier_profil.html', context)
-    except Exception as e:
-        messages.error(request, f"Erreur lors de la modification du profil: {str(e)}")
-        return redirect('dashboard_patient')
-
+            messages.error(request, 'Veuillez corriger les erreurs ci-dessous.')
+    else:
+        form = ProfileUpdateForm(instance=request.user, patient=patient)
+    
+    return render(request, 'main/modifier_profil.html', {
+        'form': form,
+        'patient': patient
+    })
 # Alias pour compatibilité
 consultations = mes_consultations
 mon_dossier = mon_dossier_medical
 
+
 @login_required
 def nouveau_rdv(request):
-    """Vue pour créer un nouveau rendez-vous"""
+    """Créer un nouveau rendez-vous"""
+    if request.user.role != 'patient':
+        messages.error(request, 'Accès réservé aux patients.')
+        return redirect('dashboard')
+
     if request.method == 'POST':
-        form = RendezVousForm(request.POST)
-        if form.is_valid():
-            rdv = form.save(commit=False)
-            # Si c'est un patient connecté, l'associer automatiquement
-            if request.user.role == 'patient':
-                rdv.patient = request.user
-            rdv.save()
-            messages.success(request, 'Rendez-vous créé avec succès!')
-            return redirect('dashboard_patient')
-    else:
-        form = RendezVousForm()
+        # Traitement manuel des données du formulaire
+        medecin_id = request.POST.get('medecin')
+        date_rdv = request.POST.get('date_rdv')
+        heure_rdv = request.POST.get('heure_rdv')
+        motif = request.POST.get('motif')
+        
+        # Validation
+        errors = []
+        if not medecin_id:
+            errors.append('Veuillez sélectionner un médecin.')
+        if not date_rdv:
+            errors.append('Veuillez sélectionner une date.')
+        if not heure_rdv:
+            errors.append('Veuillez sélectionner une heure.')
+        if not motif:
+            errors.append('Veuillez saisir un motif.')
+            
+        if errors:
+            for error in errors:
+                messages.error(request, error)
+        else:
+            try:
+                # Convertir les chaînes en objets datetime/time
+                date_obj = datetime.strptime(date_rdv, '%Y-%m-%d').date()
+                heure_obj = datetime.strptime(heure_rdv, '%H:%M').time()
+                
+                # Créer le rendez-vous
+                medecin = CustomUser.objects.get(id=medecin_id, role='docteur')
+                rdv = RendezVous.objects.create(
+                    patient=request.user,
+                    medecin=medecin,
+                    date_rdv=date_obj,
+                    heure_rdv=heure_obj,
+                    motif=motif,
+                    status='programme'
+                )
+                messages.success(request, 'Votre rendez-vous a été programmé avec succès!')
+                return redirect('mes_rdv')
+            except ValueError as e:
+                messages.error(request, 'Format de date ou d\'heure incorrect.')
+            except Exception as e:
+                messages.error(request, f'Erreur lors de la création du rendez-vous: {str(e)}')
+
+    # Récupérer tous les médecins actifs
+    medecins = CustomUser.objects.filter(role='docteur', is_active=True)
     
-    return render(request, 'nouveau_rdv.html', {'form': form})
+    return render(request, 'main/nouveau_rdv.html', {
+        'medecins': medecins
+    })
 
 @login_required
 def mes_rdv(request):

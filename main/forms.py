@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from .models import CustomUser, RendezVous, Patient, Medecin, Infirmier, Secretaire
 
+
 class CustomUserCreationForm(UserCreationForm):
     email = forms.EmailField(required=True, label="Email")
     first_name = forms.CharField(max_length=30, required=True, label="Prénom")
@@ -92,33 +93,37 @@ class CustomUserCreationForm(UserCreationForm):
         except Exception as e:
             print(f"Erreur lors de la création du profil spécialisé: {e}")
 
+
 class RendezVousForm(forms.ModelForm):
-    date_rdv = forms.DateField(
-        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
-        label="Date du rendez-vous"
-    )
-    heure_rdv = forms.TimeField(
-        widget=forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'}),
-        label="Heure du rendez-vous"
-    )
-    
     class Meta:
         model = RendezVous
         fields = ['medecin', 'date_rdv', 'heure_rdv', 'motif']
         widgets = {
-            'motif': forms.Textarea(attrs={'rows': 3, 'class': 'form-control'}),
-            'medecin': forms.Select(attrs={'class': 'form-control'}),
+            'date_rdv': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'heure_rdv': forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'}),
+            'motif': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
         }
-        labels = {
-            'medecin': 'Médecin',
-            'motif': 'Motif de consultation'
-        }
-    
+
     def __init__(self, *args, **kwargs):
+        medecins = kwargs.pop('medecins', None)  # 👈 extraire les médecins passés en argument
         super().__init__(*args, **kwargs)
-        # Filtrer pour ne montrer que les médecins
-        self.fields['medecin'].queryset = CustomUser.objects.filter(role='docteur', is_active=True)
-        self.fields['medecin'].empty_label = "Choisir un médecin..."
+
+        # Si des médecins sont passés à la vue
+        if medecins is not None:
+            self.fields['medecin'].queryset = medecins
+        else:
+            self.fields['medecin'].queryset = CustomUser.objects.filter(role='docteur', is_active=True)
+
+        self.fields['medecin'].label = "Choisir un médecin"
+        self.fields['medecin'].empty_label = "-- Sélectionner un médecin --"
+        self.fields['medecin'].widget.attrs.update({
+            'class': 'form-select',
+            'required': 'required'
+        })
+        self.fields['medecin'].label_from_instance = lambda obj: f"Dr. {obj.get_full_name()} - {obj.specialite or 'Généraliste'}"
+
+    
+    
 
 class ProfileUpdateForm(forms.ModelForm):
     class Meta:
@@ -138,6 +143,9 @@ class ProfileUpdateForm(forms.ModelForm):
             'telephone': 'Téléphone',
             'adresse': 'Adresse',
         }
+
+        
+        
         # from django import forms
 # from django.contrib.auth.forms import UserCreationForm
 # from .models import CustomUser, RendezVous, Patient, Medecin, Infirmier, Secretaire
