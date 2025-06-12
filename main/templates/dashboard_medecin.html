@@ -1,11 +1,11 @@
-{% extends 'base.html' %}
+ {% extends 'base.html' %}
 {% load static %}
 
 {% block title %}Espace Médecin - ESCO{% endblock %}
 
 {% block content %}
 <div class="modern-container">
-    <!-- Header avec glassmorphism amélioré -->
+    <!-- Header avec glassmorphism -->
     <div class="doctor-header">
         <div class="header-content">
             <div class="doctor-info">
@@ -17,150 +17,80 @@
                     <h2>Dr. {{ user.first_name|default:user.username }} {{ user.last_name|default:"" }}</h2>
                     <p class="doctor-specialty">{{ user.specialite|default:"Médecin Généraliste" }}</p>
                     <span class="status-badge online">
-                        <i class="fas fa-circle pulse"></i>
+                        <i class="fas fa-circle"></i>
                         En ligne
                     </span>
                 </div>
             </div>
             <div class="quick-stats">
-                <div class="stat-card patients" data-value="{{ rdv_count|default:'12' }}">
+                <div class="stat-card patients" data-value="{{ rdv_count|default:0 }}">
                     <div class="stat-icon">
                         <i class="fas fa-users"></i>
                     </div>
                     <div class="stat-content">
-                        <div class="stat-number counter">{{ rdv_count|default:"12" }}</div>
-                        <div class="stat-label">Patients aujourd'hui</div>
-                    </div>
-                    <div class="stat-trend up">
-                        <i class="fas fa-arrow-up"></i>
-                        +15%
+                        <div class="stat-number counter">{{ rdv_count|default:0 }}</div>
+                        <div class="stat-label">RDV aujourd'hui</div>
                     </div>
                 </div>
-                <div class="stat-card urgences" data-value="{{ urgences_count|default:'3' }}">
-                    <div class="stat-icon">
-                        <i class="fas fa-exclamation-triangle"></i>
-                    </div>
-                    <div class="stat-content">
-                        <div class="stat-number counter">{{ urgences_count|default:"3" }}</div>
-                        <div class="stat-label">Urgences</div>
-                    </div>
-                    <div class="stat-trend urgent">
-                        <i class="fas fa-exclamation"></i>
-                        URGENT
-                    </div>
-                </div>
-                <div class="stat-card consultations" data-value="{{ consultations_count|default:'8' }}">
+                <div class="stat-card consultations" data-value="{{ consultations_mois|default:0 }}">
                     <div class="stat-icon">
                         <i class="fas fa-stethoscope"></i>
                     </div>
                     <div class="stat-content">
-                        <div class="stat-number counter">{{ consultations_count|default:"8" }}</div>
+                        <div class="stat-number counter">{{ consultations_mois|default:0 }}</div>
                         <div class="stat-label">Consultations</div>
-                    </div>
-                    <div class="stat-trend stable">
-                        <i class="fas fa-equals"></i>
-                        Stable
-                    </div>
-                </div>
-                <div class="stat-card revenus" data-value="1200">
-                    <div class="stat-icon">
-                        <i class="fas fa-euro-sign"></i>
-                    </div>
-                    <div class="stat-content">
-                        <div class="stat-number counter">1.2K</div>
-                        <div class="stat-label">Revenus</div>
-                    </div>
-                    <div class="stat-trend up">
-                        <i class="fas fa-arrow-up"></i>
-                        +8%
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Actions rapides CLIQUABLES avec animations -->
+    <!-- Actions rapides -->
     <div class="quick-actions">
-        <div class="action-card primary clickable" onclick="navigateTo('{% url 'mes_consultations_medecin' %}')" data-action="consultations">
-            <div class="action-bg"></div>
+        <div class="action-card primary clickable" onclick="navigateTo('{% url 'mes_consultations_medecin' %}')">
             <div class="action-icon">
                 <i class="fas fa-calendar-check"></i>
             </div>
             <div class="action-content">
                 <h3>Mes Consultations</h3>
                 <p>Planning du jour et rendez-vous</p>
-                <div class="action-meta">
-                    <i class="fas fa-clock"></i>
-                    {{ rdv_count|default:"12" }} aujourd'hui
-                </div>
+                <div class="action-meta">{{ rdv_count|default:0 }} aujourd'hui</div>
             </div>
             <div class="action-button">
                 <i class="fas fa-arrow-right"></i>
             </div>
-            <div class="action-ripple"></div>
         </div>
 
-        <div class="action-card secondary clickable" onclick="navigateTo('{% url 'liste_patients' %}')" data-action="patients">
-            <div class="action-bg"></div>
+        <div class="action-card secondary clickable" onclick="navigateTo('{% url 'liste_patients' %}')">
             <div class="action-icon">
                 <i class="fas fa-users"></i>
             </div>
             <div class="action-content">
                 <h3>Mes Patients</h3>
                 <p>Dossiers et historiques médicaux</p>
-                <div class="action-meta">
-                    <i class="fas fa-folder-medical"></i>
-                    {{ patients_count|default:"45" }} patients
-                </div>
             </div>
             <div class="action-button">
                 <i class="fas fa-arrow-right"></i>
             </div>
-            <div class="action-ripple"></div>
         </div>
 
-        <div class="action-card accent clickable" onclick="navigateTo('{% url 'nouvelle_prescription' %}')" data-action="prescriptions">
-            <div class="action-bg"></div>
+        <div class="action-card accent clickable" onclick="navigateTo('{% url 'nouvelle_prescription' %}')">
             <div class="action-icon">
                 <i class="fas fa-prescription-bottle-alt"></i>
             </div>
             <div class="action-content">
                 <h3>Prescriptions</h3>
                 <p>Nouvelle ordonnance médicale</p>
-                <div class="action-meta">
-                    <i class="fas fa-pills"></i>
-                    {{ prescriptions_count|default:"23" }} ce mois
-                </div>
             </div>
             <div class="action-button">
                 <i class="fas fa-arrow-right"></i>
             </div>
-            <div class="action-ripple"></div>
-        </div>
-
-        <div class="action-card warning clickable" onclick="navigateTo('{% url 'urgences' %}')" data-action="urgences">
-            <div class="action-bg"></div>
-            <div class="action-icon">
-                <i class="fas fa-exclamation-triangle pulse-icon"></i>
-            </div>
-            <div class="action-content">
-                <h3>Urgences</h3>
-                <p>Patients prioritaires en attente</p>
-                <div class="action-meta urgent-meta">
-                    <i class="fas fa-heartbeat"></i>
-                    {{ urgences_count|default:"3" }} en attente
-                </div>
-            </div>
-            <div class="action-button urgent">
-                <i class="fas fa-arrow-right"></i>
-            </div>
-            <div class="action-ripple urgent"></div>
         </div>
     </div>
 
-    <!-- Contenu principal avec sidebar -->
+    <!-- Contenu principal -->
     <div class="main-content">
-        <!-- Planning avec timeline interactive -->
+        <!-- Planning vide -->
         <div class="content-section">
             <div class="section-header">
                 <div class="section-title">
@@ -171,223 +101,23 @@
                     <button class="btn-icon" id="refresh-planning" title="Actualiser">
                         <i class="fas fa-sync-alt"></i>
                     </button>
-                    <button class="btn-icon" id="add-consultation" title="Ajouter consultation" onclick="navigateTo('{% url 'nouveau_rdv' %}')">
-                        <i class="fas fa-plus"></i>
-                    </button>
-                    <button class="btn-icon" id="calendar-view" title="Vue calendrier">
-                        <i class="fas fa-calendar-alt"></i>
+                    <button class="btn-icon" id="add-consultation" title="Ajouter consultation" onclick="navigateTo('#')">                      <i class="fas fa-plus"></i>
                     </button>
                 </div>
             </div>
             
-            <div class="consultation-timeline">
-                <!-- Consultation en cours -->
-                <div class="consultation-item current animate-slide-in">
-                    <div class="consultation-time">
-                        <div class="time-badge current pulse">09:30</div>
-                        <div class="time-duration">30min</div>
-                    </div>
-                    <div class="consultation-details">
-                        <div class="patient-name">Marie Dubois</div>
-                        <div class="consultation-type">Consultation de contrôle</div>
-                        <div class="patient-meta">
-                            <span class="patient-age"><i class="fas fa-user"></i> 45 ans</span>
-                            <span class="patient-room"><i class="fas fa-door-open"></i> Salle 3</span>
-                            <span class="patient-vital"><i class="fas fa-heartbeat"></i> Stable</span>
-                        </div>
-                    </div>
-                    <div class="consultation-actions">
-                        <button class="btn-action current pulse" onclick="continueConsultation(1)">
-                            <i class="fas fa-play"></i>
-                            En cours
-                        </button>
-                        <button class="btn-action-small" onclick="viewPatientDetails('marie-dubois')" title="Voir dossier">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                        <button class="btn-action-small" onclick="endConsultation(1)" title="Terminer">
-                            <i class="fas fa-check"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Prochaine consultation -->
-                <div class="consultation-item upcoming animate-slide-in" style="animation-delay: 0.1s">
-                    <div class="consultation-time">
-                        <div class="time-badge upcoming">10:15</div>
-                        <div class="time-duration">45min</div>
-                    </div>
-                    <div class="consultation-details">
-                        <div class="patient-name">Pierre Martin</div>
-                        <div class="consultation-type">Première consultation</div>
-                        <div class="patient-meta">
-                            <span class="patient-age"><i class="fas fa-user"></i> 32 ans</span>
-                            <span class="patient-room"><i class="fas fa-door-open"></i> Salle 2</span>
-                            <span class="patient-new"><i class="fas fa-star"></i> Nouveau</span>
-                        </div>
-                    </div>
-                    <div class="consultation-actions">
-                        <button class="btn-action upcoming" onclick="startConsultation(2)">
-                            <i class="fas fa-play"></i>
-                            Commencer
-                        </button>
-                        <button class="btn-action-small" onclick="viewPatientDetails('pierre-martin')" title="Voir dossier">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                        <button class="btn-action-small" onclick="prepareConsultation(2)" title="Préparer">
-                            <i class="fas fa-clipboard-list"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Consultation programmée -->
-                <div class="consultation-item scheduled animate-slide-in" style="animation-delay: 0.2s">
-                    <div class="consultation-time">
-                        <div class="time-badge scheduled">11:00</div>
-                        <div class="time-duration">30min</div>
-                    </div>
-                    <div class="consultation-details">
-                        <div class="patient-name">Sophie Laurent</div>
-                        <div class="consultation-type">Suivi post-opératoire</div>
-                        <div class="patient-meta">
-                            <span class="patient-age"><i class="fas fa-user"></i> 28 ans</span>
-                            <span class="patient-room"><i class="fas fa-door-open"></i> Salle 1</span>
-                            <span class="patient-alert blink" title="Allergies: Pénicilline">
-                                <i class="fas fa-exclamation-triangle"></i> Allergies
-                            </span>
-                        </div>
-                    </div>
-                    <div class="consultation-actions">
-                        <button class="btn-action neutral">
-                            <i class="fas fa-calendar"></i>
-                            Programmé
-                        </button>
-                        <button class="btn-action-small" onclick="viewPatientDetails('sophie-laurent')" title="Voir dossier">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                        <button class="btn-action-small" onclick="reschedule(3)" title="Reprogrammer">
-                            <i class="fas fa-clock"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Pause déjeuner -->
-                <div class="consultation-item break animate-slide-in" style="animation-delay: 0.3s">
-                    <div class="consultation-time">
-                        <div class="time-badge break">12:30</div>
-                        <div class="time-duration">60min</div>
-                    </div>
-                    <div class="consultation-details">
-                        <div class="patient-name">Pause Déjeuner</div>
-                        <div class="consultation-type">Repos bien mérité</div>
-                        <div class="patient-meta">
-                            <span class="break-location">
-                                <i class="fas fa-coffee"></i>
-                                Cafétéria - Étage 2
-                            </span>
-                        </div>
-                    </div>
-                    <div class="consultation-actions">
-                        <button class="btn-action neutral">
-                            <i class="fas fa-coffee"></i>
-                            Pause
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Consultation après-midi -->
-                <div class="consultation-item scheduled animate-slide-in" style="animation-delay: 0.4s">
-                    <div class="consultation-time">
-                        <div class="time-badge scheduled">14:00</div>
-                        <div class="time-duration">45min</div>
-                    </div>
-                    <div class="consultation-details">
-                        <div class="patient-name">Robert Durand</div>
-                        <div class="consultation-type">Bilan de santé annuel</div>
-                        <div class="patient-meta">
-                            <span class="patient-age"><i class="fas fa-user"></i> 58 ans</span>
-                            <span class="patient-room"><i class="fas fa-door-open"></i> Salle 3</span>
-                            <span class="patient-routine"><i class="fas fa-check-circle"></i> Routine</span>
-                        </div>
-                    </div>
-                    <div class="consultation-actions">
-                        <button class="btn-action neutral">
-                            <i class="fas fa-calendar"></i>
-                            Programmé
-                        </button>
-                        <button class="btn-action-small" onclick="viewPatientDetails('robert-durand')" title="Voir dossier">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                    </div>
-                </div>
+            <div class="empty-state">
+                <i class="fas fa-calendar-alt"></i>
+                <h4>Aucun rendez-vous aujourd'hui</h4>
+                <p>Vous n'avez pas de consultation programmée pour aujourd'hui</p>
+                <button class="btn-primary" onclick="navigateTo('{% url 'nouveau_rdv' %}')">
+                    <i class="fas fa-plus"></i> Planifier une consultation
+                </button>
             </div>
         </div>
 
-        <!-- Sidebar améliorée -->
+        <!-- Sidebar simplifiée -->
         <div class="content-sidebar">
-            <!-- Patients prioritaires -->
-            <div class="sidebar-section">
-                <div class="section-header">
-                    <h3><i class="fas fa-heart-pulse me-2 pulse"></i>Patients Prioritaires</h3>
-                    <span class="alert-badge pulse">3</span>
-                </div>
-                
-                <div class="priority-patients">
-                    <div class="patient-card critical animate-slide-in">
-                        <div class="patient-status critical-pulse"></div>
-                        <div class="patient-avatar critical">
-                            <i class="fas fa-user"></i>
-                        </div>
-                        <div class="patient-info">
-                            <div class="patient-name">Jean Dupont</div>
-                            <div class="patient-condition">Hypertension sévère</div>
-                            <div class="patient-room">Chambre 205</div>
-                            <div class="patient-time">Il y a 2h</div>
-                        </div>
-                        <div class="patient-actions">
-                            <button class="btn-patient critical pulse" onclick="handleUrgentPatient('jean-dupont')" title="Intervention urgente">
-                                <i class="fas fa-stethoscope"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="patient-card monitoring animate-slide-in" style="animation-delay: 0.1s">
-                        <div class="patient-status warning-pulse"></div>
-                        <div class="patient-avatar monitoring">
-                            <i class="fas fa-user"></i>
-                        </div>
-                        <div class="patient-info">
-                            <div class="patient-name">Lucie Bernard</div>
-                            <div class="patient-condition">Post-opératoire</div>
-                            <div class="patient-room">Chambre 312</div>
-                            <div class="patient-time">Il y a 4h</div>
-                        </div>
-                        <div class="patient-actions">
-                            <button class="btn-patient monitoring" onclick="monitorPatient('lucie-bernard')" title="Surveiller patient">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="patient-card routine animate-slide-in" style="animation-delay: 0.2s">
-                        <div class="patient-status success-pulse"></div>
-                        <div class="patient-avatar routine">
-                            <i class="fas fa-user"></i>
-                        </div>
-                        <div class="patient-info">
-                            <div class="patient-name">Marc Rousseau</div>
-                            <div class="patient-condition">Contrôle diabète</div>
-                            <div class="patient-room">Consultation</div>
-                            <div class="patient-time">Il y a 1j</div>
-                        </div>
-                        <div class="patient-actions">
-                            <button class="btn-patient routine" onclick="routineCheck('marc-rousseau')" title="Contrôle de routine">
-                                <i class="fas fa-check"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <!-- Actions rapides sidebar -->
             <div class="sidebar-section">
                 <h4><i class="fas fa-rocket me-2"></i>Actions Rapides</h4>
@@ -404,266 +134,1730 @@
                         <i class="fas fa-prescription"></i>
                         Ordonnance rapide
                     </button>
-                    <button class="sidebar-btn info clickable" onclick="navigateTo('/admin/main/consultation/add/')">
-                        <i class="fas fa-notes-medical"></i>
-                        Nouvelle consultation
-                    </button>
-                    <button class="sidebar-btn neutral clickable" onclick="navigateTo('/admin/')">
-                        <i class="fas fa-cog"></i>
-                        Administration
-                    </button>
                 </div>
             </div>
 
-            <!-- Notifications récentes -->
+            <!-- Section vide pour les notifications -->
             <div class="sidebar-section">
                 <h4><i class="fas fa-bell me-2"></i>Notifications</h4>
-                <div class="notifications">
-                    <div class="notification-item urgent animate-slide-in">
-                        <div class="notification-icon urgent pulse">
-                            <i class="fas fa-exclamation"></i>
-                        </div>
-                        <div class="notification-content">
-                            <div class="notification-title">Résultat urgent</div>
-                            <div class="notification-text">Patient Bernard - Analyses sanguines</div>
-                            <div class="notification-time">Il y a 5min</div>
-                        </div>
-                        <button class="notification-action" onclick="viewAnalysis('bernard')">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                    </div>
-                    
-                    <div class="notification-item info animate-slide-in" style="animation-delay: 0.1s">
-                        <div class="notification-icon info">
-                            <i class="fas fa-calendar"></i>
-                        </div>
-                        <div class="notification-content">
-                            <div class="notification-title">RDV modifié</div>
-                            <div class="notification-text">Mme Durand - Reprogrammé à 15h30</div>
-                            <div class="notification-time">Il y a 15min</div>
-                        </div>
-                        <button class="notification-action" onclick="confirmReschedule('durand')">
-                            <i class="fas fa-check"></i>
-                        </button>
-                    </div>
-                    
-                    <div class="notification-item success animate-slide-in" style="animation-delay: 0.2s">
-                        <div class="notification-icon success">
-                            <i class="fas fa-check-circle"></i>
-                        </div>
-                        <div class="notification-content">
-                            <div class="notification-title">Consultation terminée</div>
-                            <div class="notification-text">M. Martin - Rapport disponible</div>
-                            <div class="notification-time">Il y a 30min</div>
-                        </div>
-                        <button class="notification-action" onclick="viewReport('martin')">
-                            <i class="fas fa-file-medical"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Météo et infos utiles -->
-            <div class="sidebar-section weather-section">
-                <h4><i class="fas fa-info-circle me-2"></i>Infos Utiles</h4>
-                <div class="info-cards">
-                    <div class="info-card weather">
-                        <div class="info-icon">
-                            <i class="fas fa-sun"></i>
-                        </div>
-                        <div class="info-content">
-                            <div class="info-title">Météo</div>
-                            <div class="info-value">22°C - Ensoleillé</div>
-                        </div>
-                    </div>
-                    
-                    <div class="info-card time">
-                        <div class="info-icon">
-                            <i class="fas fa-clock"></i>
-                        </div>
-                        <div class="info-content">
-                            <div class="info-title">Heure</div>
-                            <div class="info-value current-time">10:45</div>
-                        </div>
-                    </div>
-                    
-                    <div class="info-card hospital">
-                        <div class="info-icon">
-                            <i class="fas fa-hospital"></i>
-                        </div>
-                        <div class="info-content">
-                            <div class="info-title">Occupancy</div>
-                            <div class="info-value">78% - Normal</div>
-                        </div>
-                    </div>
+                <div class="empty-state small">
+                    <i class="fas fa-bell-slash"></i>
+                    <p>Aucune notification récente</p>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Scripts JavaScript améliorés -->
+<!-- Scripts JavaScript -->
 <script>
-// Variables globales
-let isNavigating = false;
-
-// Fonction de navigation principale
 function navigateTo(url) {
-    if (isNavigating) return;
-    isNavigating = true;
-    
-    // Effet de chargement
-    document.body.style.cursor = 'wait';
-    
-    // Animation de sortie
-    document.querySelector('.modern-container').style.opacity = '0.8';
-    
-    setTimeout(() => {
-        window.location.href = url;
-    }, 200);
+    window.location.href = url;
 }
 
-// Fonctions des consultations
-function continueConsultation(id) {
-    showNotification('Consultation en cours...', 'info');
-}
-
-function startConsultation(id) {
-    if (confirm('Voulez-vous commencer cette consultation ?')) {
-        showNotification('Consultation démarrée !', 'success');
-    }
-}
-
-function endConsultation(id) {
-    if (confirm('Voulez-vous terminer cette consultation ?')) {
-        showNotification('Consultation terminée !', 'success');
-    }
-}
-
-function prepareConsultation(id) {
-    showNotification('Préparation de la consultation...', 'info');
-}
-
-function reschedule(id) {
-    if (confirm('Voulez-vous reprogrammer ce rendez-vous ?')) {
-        showNotification('Rendez-vous reprogrammé !', 'info');
-    }
-}
-
-// Fonctions des patients
-function viewPatientDetails(patientId) {
-    navigateTo(`/admin/main/patient/?q=${patientId}`);
-}
-
-function handleUrgentPatient(patientId) {
-    if (confirm('Prendre en charge ce patient urgent ?')) {
-        showNotification('Patient pris en charge !', 'success');
-    }
-}
-
-function monitorPatient(patientId) {
-    showNotification('Surveillance du patient activée', 'info');
-}
-
-function routineCheck(patientId) {
-    showNotification('Contrôle de routine programmé', 'success');
-}
-
-// Fonctions des notifications
-function viewAnalysis(patientId) {
-    navigateTo(`/admin/main/consultation/?patient=${patientId}`);
-}
-
-function confirmReschedule(patientId) {
-    showNotification('Reprogrammation confirmée', 'success');
-}
-
-function viewReport(patientId) {
-    navigateTo(`/admin/main/consultation/?patient=${patientId}`);
-}
-
-// Système de notifications
-function showNotification(message, type = 'info') {
-    const notification = document.createElement('div');
-    notification.className = `toast toast-${type}`;
-    notification.innerHTML = `
-        <div class="toast-content">
-            <i class="fas fa-${getIconForType(type)}"></i>
-            <span>${message}</span>
-        </div>
-    `;
-    
-    document.body.appendChild(notification);
-    
-    setTimeout(() => {
-        notification.classList.add('show');
-    }, 100);
-    
-    setTimeout(() => {
-        notification.classList.remove('show');
-        setTimeout(() => {
-            document.body.removeChild(notification);
-        }, 300);
-    }, 3000);
-}
-
-function getIconForType(type) {
-    const icons = {
-        success: 'check-circle',
-        error: 'times-circle',
-        warning: 'exclamation-triangle',
-        info: 'info-circle'
-    };
-    return icons[type] || 'info-circle';
-}
-
-// Animations et effets
+// Animation des compteurs
 document.addEventListener('DOMContentLoaded', function() {
-    // Animation des compteurs
-    animateCounters();
+    // Animation des compteurs avec données réelles
+    document.querySelectorAll('.counter').forEach(counter => {
+        const target = parseInt(counter.textContent) || 0;
+        let current = 0;
+        const increment = target / 50;
+        const timer = setInterval(() => {
+            current += increment;
+            if (current >= target) {
+                counter.textContent = target;
+                clearInterval(timer);
+            } else {
+                counter.textContent = Math.floor(current);
+            }
+        }, 30);
+    });
     
     // Horloge en temps réel
     updateTime();
     setInterval(updateTime, 1000);
     
-    // Effets hover pour les cartes
-    addHoverEffects();
-    
-    // Effet ripple sur les clics
-    addRippleEffect();
-    
-    // Refresh planning
-    document.getElementById('refresh-planning')?.addEventListener('click', function() {
-        this.classList.add('rotate');
-        setTimeout(() => {
-            this.classList.remove('rotate');
-            showNotification('Planning actualisé !', 'success');
-        }, 1000);
-    });
-    
-    // Auto-refresh des données (optionnel)
-    // setInterval(refreshData, 300000); // 5 minutes
+    // Animation d'entrée
+    setTimeout(() => {
+        document.querySelectorAll('.action-card, .content-section, .sidebar-section').forEach((el, index) => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            setTimeout(() => {
+                el.style.transition = 'all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+                el.style.opacity = '1';
+                el.style.transform = 'translateY(0)';
+            }, index * 100);
+        });
+    }, 100);
 });
 
-function animateCounters() {
+function updateTime() {
+    const now = new Date();
+    const timeString = now.toLocaleTimeString('fr-FR', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        second: '2-digit'
+    });
+    const timeElement = document.querySelector('.current-time');
+    if (timeElement) {
+        timeElement.textContent = timeString;
+    }
+}
+
+// Effet de particules au survol
+document.addEventListener('mousemove', function(e) {
+    if (Math.random() > 0.98) {
+        createParticle(e.clientX, e.clientY);
+    }
+});
+
+function createParticle(x, y) {
+    const particle = document.createElement('div');
+    particle.style.cssText = `
+        position: fixed;
+        left: ${x}px;
+        top: ${y}px;
+        width: 4px;
+        height: 4px;
+        background: rgba(255,255,255,0.6);
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 1000;
+        animation: float 2s ease-out forwards;
+    `;
+    document.body.appendChild(particle);
+    setTimeout(() => particle.remove(), 2000);
+}
+</script>
+
+<style>
+/* Styles de base améliorés */
+.modern-container {
+    min-height: 100vh;
+    padding: 1.5rem;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    position: relative;
+    overflow-x: hidden;
+}
+
+.modern-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 40% 80%, rgba(120, 219, 255, 0.3) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: -1;
+}
+
+.doctor-header {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(20px);
+    border-radius: 24px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.doctor-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+}
+
+.doctor-info {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.doctor-avatar {
+    width: 80px;
+    height: 80px;
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.doctor-avatar:hover {
+    transform: scale(1.05);
+}
+
+.doctor-avatar i {
+    font-size: 2rem;
+    color: white;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+}
+
+.status-indicator {
+    width: 18px;
+    height: 18px;
+    background: #10b981;
+    border-radius: 50%;
+    border: 3px solid white;
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    animation: pulse 2s infinite;
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+.doctor-details h2 {
+    color: white;
+    font-size: 1.75rem;
+    margin: 0;
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.doctor-specialty {
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0.5rem 0;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.status-badge {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 16px;
+    font-size: 0.8rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.status-badge i {
+    animation: pulse 2s infinite;
+}
+
+.quick-stats {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.stat-card {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    padding: 1.5rem;
+    min-width: 140px;
+    text-align: center;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    transition: left 0.6s;
+}
+
+.stat-card:hover::before {
+    left: 100%;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+}
+
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 0.75rem;
+    color: white;
+    font-size: 1.2rem;
+    transition: transform 0.3s ease;
+}
+
+.stat-card:hover .stat-icon {
+    transform: scale(1.1);
+}
+
+.stat-number {
+    color: white;
+    font-size: 2rem;
+    font-weight: 800;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    transition: transform 0.3s ease;
+}
+
+.stat-card:hover .stat-number {
+    transform: scale(1.1);
+}
+
+.stat-label {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.quick-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.action-card {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+}
+
+.action-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    transition: left 0.6s;
+}
+
+.action-card:hover::before {
+    left: 100%;
+}
+
+.action-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    background: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.action-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.action-card.primary .action-icon { 
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    box-shadow: 0 8px 16px rgba(99, 102, 241, 0.3);
+}
+.action-card.secondary .action-icon { 
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    box-shadow: 0 8px 16px rgba(139, 92, 246, 0.3);
+}
+.action-card.accent .action-icon { 
+    background: linear-gradient(135deg, #06b6d4, #0891b2);
+    box-shadow: 0 8px 16px rgba(6, 182, 212, 0.3);
+}
+
+.action-card:hover .action-icon {
+    transform: scale(1.1) rotate(5deg);
+}
+
+.action-content {
+    flex: 1;
+}
+
+.action-content h3 {
+    color: white;
+    margin: 0 0 0.5rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.action-content p {
+    color: rgba(255, 255, 255, 0.8);
+    margin: 0 0 0.75rem;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.action-meta {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.8rem;
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    display: inline-block;
+}
+
+.action-button {
+    width: 44px;
+    height: 44px;
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    transition: all 0.3s ease;
+    font-size: 1.1rem;
+}
+
+.action-card:hover .action-button {
+    background: rgba(255, 255, 255, 0.35);
+    transform: scale(1.1);
+}
+
+.main-content {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 2rem;
+}
+
+@media (max-width: 1024px) {
+    .main-content {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+}
+
+.content-section {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    padding: 2rem;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.section-title h3 {
+    color: white;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.3rem;
+    font-weight: 700;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.section-subtitle {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+    margin-top: 0.25rem;
+    font-weight: 500;
+}
+
+.section-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.btn-icon {
+    width: 44px;
+    height: 44px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    cursor: pointer;
+    border: none;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.btn-icon:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    border: 2px dashed rgba(255, 255, 255, 0.3);
+}
+
+.empty-state i {
+    font-size: 3.5rem;
+    margin-bottom: 1.5rem;
+    color: rgba(255, 255, 255, 0.6);
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+}
+
+.empty-state h4 {
+    color: white;
+    margin: 0.75rem 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.empty-state p {
+    margin: 0.75rem 0 2rem;
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+.empty-state.small {
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.empty-state.small i {
+    font-size: 2rem;
+    margin-bottom: 0.75rem;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 1rem 2rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 16px rgba(99, 102, 241, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.6s;
+}
+
+.btn-primary:hover::before {
+    left: 100%;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(99, 102, 241, 0.4);
+}
+
+.content-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.sidebar-section {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    padding: 1.5rem;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-section h4 {
+    color: white;
+    margin: 0 0 1.5rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.sidebar-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.sidebar-btn {
+    padding: 1rem 1.25rem;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+}
+
+.sidebar-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    transition: left 0.6s;
+}
+
+.sidebar-btn:hover::before {
+    left: 100%;
+}
+
+.sidebar-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateX(5px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.sidebar-btn.primary:hover { border-left: 4px solid #6366f1; }
+.sidebar-btn.secondary:hover { border-left: 4px solid #8b5cf6; }
+.sidebar-btn.accent:hover { border-left: 4px solid #06b6d4; }
+
+@keyframes float {
+    0% { 
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+    100% { 
+        opacity: 0;
+        transform: translateY(-100px) scale(0.5);
+    }
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+    .modern-container {
+        padding: 1rem;
+    }
+    
+    .doctor-header {
+        padding: 1.5rem;
+    }
+    
+    .header-content {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .quick-stats {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .quick-actions {
+        grid-template-columns: 1fr;
+    }
+    
+    .main-content {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %} 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{% comment %} {% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Espace Médecin - ESCO{% endblock %}
+
+{% block content %}
+<div class="modern-container">
+    <!-- Header avec glassmorphism -->
+    <div class="doctor-header">
+        <div class="header-content">
+            <div class="doctor-info">
+                <div class="doctor-avatar">
+                    <i class="fas fa-user-md"></i>
+                    <div class="status-indicator online"></div>
+                </div>
+                <div class="doctor-details">
+                    <h2>Dr. {{ user.first_name|default:user.username }} {{ user.last_name|default:"" }}</h2>
+                    <p class="doctor-specialty">{{ user.specialite|default:"Médecin Généraliste" }}</p>
+                    <span class="status-badge online">
+                        <i class="fas fa-circle"></i>
+                        En ligne
+                    </span>
+                </div>
+            </div>
+            <div class="quick-stats">
+                <div class="stat-card patients" data-value="{{ rdv_count|default:0 }}">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number counter">{{ rdv_count|default:0 }}</div>
+                        <div class="stat-label">RDV aujourd'hui</div>
+                    </div>
+                </div>
+                <div class="stat-card consultations" data-value="{{ consultations_mois|default:0 }}">
+                    <div class="stat-icon">
+                        <i class="fas fa-stethoscope"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number counter">{{ consultations_mois|default:0 }}</div>
+                        <div class="stat-label">Consultations</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions rapides -->
+    <div class="quick-actions">
+        <div class="action-card primary clickable" onclick="navigateTo('{% url 'mes_consultations_medecin' %}')">
+            <div class="action-icon">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <div class="action-content">
+                <h3>Mes Consultations</h3>
+                <p>Planning du jour et rendez-vous</p>
+                <div class="action-meta">{{ rdv_count|default:0 }} aujourd'hui</div>
+            </div>
+            <div class="action-button">
+                <i class="fas fa-arrow-right"></i>
+            </div>
+        </div>
+
+        <div class="action-card secondary clickable" onclick="navigateTo('{% url 'liste_patients' %}')">
+            <div class="action-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="action-content">
+                <h3>Mes Patients</h3>
+                <p>Dossiers et historiques médicaux</p>
+            </div>
+            <div class="action-button">
+                <i class="fas fa-arrow-right"></i>
+            </div>
+        </div>
+
+        <div class="action-card accent clickable" onclick="navigateTo('{% url 'nouvelle_prescription' %}')">
+            <div class="action-icon">
+                <i class="fas fa-prescription-bottle-alt"></i>
+            </div>
+            <div class="action-content">
+                <h3>Prescriptions</h3>
+                <p>Nouvelle ordonnance médicale</p>
+            </div>
+            <div class="action-button">
+                <i class="fas fa-arrow-right"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenu principal -->
+    <div class="main-content">
+        <!-- Planning vide -->
+        <div class="content-section">
+            <div class="section-header">
+                <div class="section-title">
+                    <h3><i class="fas fa-clock me-2"></i>Planning du Jour</h3>
+                    <div class="section-subtitle">{{ today|date:"l d F Y"|default:"Mercredi 10 Juin 2025" }}</div>
+                </div>
+                <div class="section-actions">
+                    <button class="btn-icon" id="refresh-planning" title="Actualiser">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                    <button class="btn-icon" id="add-consultation" title="Ajouter consultation" onclick="navigateTo('{% url 'nouveau_rdv' %}')">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="empty-state">
+                <i class="fas fa-calendar-alt"></i>
+                <h4>Aucun rendez-vous aujourd'hui</h4>
+                <p>Vous n'avez pas de consultation programmée pour aujourd'hui</p>
+                <button class="btn-primary" onclick="navigateTo('{% url 'nouveau_rdv' %}')">
+                    <i class="fas fa-plus"></i> Planifier une consultation
+                </button>
+            </div>
+        </div>
+
+        <!-- Sidebar simplifiée -->
+        <div class="content-sidebar">
+            <!-- Actions rapides sidebar -->
+            <div class="sidebar-section">
+                <h4><i class="fas fa-rocket me-2"></i>Actions Rapides</h4>
+                <div class="sidebar-actions">
+                    <button class="sidebar-btn primary clickable" onclick="navigateTo('{% url 'nouveau_rdv' %}')">
+                        <i class="fas fa-plus"></i>
+                        Nouvelle consultation
+                    </button>
+                    <button class="sidebar-btn secondary clickable" onclick="navigateTo('/admin/main/patient/add/')">
+                        <i class="fas fa-user-plus"></i>
+                        Nouveau patient
+                    </button>
+                    <button class="sidebar-btn accent clickable" onclick="navigateTo('{% url 'nouvelle_prescription' %}')">
+                        <i class="fas fa-prescription"></i>
+                        Ordonnance rapide
+                    </button>
+                </div>
+            </div>
+
+            <!-- Section vide pour les notifications -->
+            <div class="sidebar-section">
+                <h4><i class="fas fa-bell me-2"></i>Notifications</h4>
+                <div class="empty-state small">
+                    <i class="fas fa-bell-slash"></i>
+                    <p>Aucune notification récente</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts JavaScript -->
+<script>
+function navigateTo(url) {
+    window.location.href = url;
+}
+
+// Animation des compteurs
+document.addEventListener('DOMContentLoaded', function() {
+    // Animation des compteurs avec données réelles
     document.querySelectorAll('.counter').forEach(counter => {
-        const target = parseInt(counter.getAttribute('data-value') || counter.textContent.replace(/\D/g, ''));
-        const duration = 1000;
-        const step = target / (duration / 16);
+        const target = parseInt(counter.textContent) || 0;
         let current = 0;
-        
+        const increment = target / 50;
         const timer = setInterval(() => {
-            current += step;
+            current += increment;
             if (current >= target) {
-                counter.textContent = counter.textContent.includes('K') ? 
-                    (target / 1000).toFixed(1) + 'K' : target;
+                counter.textContent = target;
                 clearInterval(timer);
             } else {
                 counter.textContent = Math.floor(current);
             }
-        }, 16);
+        }, 30);
     });
+    
+    // Horloge en temps réel
+    updateTime();
+    setInterval(updateTime, 1000);
+    
+    // Animation d'entrée
+    setTimeout(() => {
+        document.querySelectorAll('.action-card, .content-section, .sidebar-section').forEach((el, index) => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            setTimeout(() => {
+                el.style.transition = 'all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+                el.style.opacity = '1';
+                el.style.transform = 'translateY(0)';
+            }, index * 100);
+        });
+    }, 100);
+});
+
+function updateTime() {
+    const now = new Date();
+    const timeString = now.toLocaleTimeString('fr-FR', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        second: '2-digit'
+    });
+    const timeElement = document.querySelector('.current-time');
+    if (timeElement) {
+        timeElement.textContent = timeString;
+    }
 }
+
+// Effet de particules au survol
+document.addEventListener('mousemove', function(e) {
+    if (Math.random() > 0.98) {
+        createParticle(e.clientX, e.clientY);
+    }
+});
+
+function createParticle(x, y) {
+    const particle = document.createElement('div');
+    particle.style.cssText = `
+        position: fixed;
+        left: ${x}px;
+        top: ${y}px;
+        width: 4px;
+        height: 4px;
+        background: rgba(255,255,255,0.6);
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 1000;
+        animation: float 2s ease-out forwards;
+    `;
+    document.body.appendChild(particle);
+    setTimeout(() => particle.remove(), 2000);
+}
+</script>
+
+<style>
+/* Styles de base améliorés */
+.modern-container {
+    min-height: 100vh;
+    padding: 1.5rem;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    position: relative;
+    overflow-x: hidden;
+}
+
+.modern-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 40% 80%, rgba(120, 219, 255, 0.3) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: -1;
+}
+
+.doctor-header {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(20px);
+    border-radius: 24px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.doctor-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+}
+
+.doctor-info {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.doctor-avatar {
+    width: 80px;
+    height: 80px;
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.doctor-avatar:hover {
+    transform: scale(1.05);
+}
+
+.doctor-avatar i {
+    font-size: 2rem;
+    color: white;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+}
+
+.status-indicator {
+    width: 18px;
+    height: 18px;
+    background: #10b981;
+    border-radius: 50%;
+    border: 3px solid white;
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    animation: pulse 2s infinite;
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+.doctor-details h2 {
+    color: white;
+    font-size: 1.75rem;
+    margin: 0;
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.doctor-specialty {
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0.5rem 0;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.status-badge {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 16px;
+    font-size: 0.8rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.status-badge i {
+    animation: pulse 2s infinite;
+}
+
+.quick-stats {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.stat-card {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    padding: 1.5rem;
+    min-width: 140px;
+    text-align: center;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    transition: left 0.6s;
+}
+
+.stat-card:hover::before {
+    left: 100%;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+}
+
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 0.75rem;
+    color: white;
+    font-size: 1.2rem;
+    transition: transform 0.3s ease;
+}
+
+.stat-card:hover .stat-icon {
+    transform: scale(1.1);
+}
+
+.stat-number {
+    color: white;
+    font-size: 2rem;
+    font-weight: 800;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    transition: transform 0.3s ease;
+}
+
+.stat-card:hover .stat-number {
+    transform: scale(1.1);
+}
+
+.stat-label {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.quick-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.action-card {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+}
+
+.action-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    transition: left 0.6s;
+}
+
+.action-card:hover::before {
+    left: 100%;
+}
+
+.action-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    background: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.action-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.action-card.primary .action-icon { 
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    box-shadow: 0 8px 16px rgba(99, 102, 241, 0.3);
+}
+.action-card.secondary .action-icon { 
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    box-shadow: 0 8px 16px rgba(139, 92, 246, 0.3);
+}
+.action-card.accent .action-icon { 
+    background: linear-gradient(135deg, #06b6d4, #0891b2);
+    box-shadow: 0 8px 16px rgba(6, 182, 212, 0.3);
+}
+
+.action-card:hover .action-icon {
+    transform: scale(1.1) rotate(5deg);
+}
+
+.action-content {
+    flex: 1;
+}
+
+.action-content h3 {
+    color: white;
+    margin: 0 0 0.5rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.action-content p {
+    color: rgba(255, 255, 255, 0.8);
+    margin: 0 0 0.75rem;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.action-meta {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.8rem;
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    display: inline-block;
+}
+
+.action-button {
+    width: 44px;
+    height: 44px;
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    transition: all 0.3s ease;
+    font-size: 1.1rem;
+}
+
+.action-card:hover .action-button {
+    background: rgba(255, 255, 255, 0.35);
+    transform: scale(1.1);
+}
+
+.main-content {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 2rem;
+}
+
+@media (max-width: 1024px) {
+    .main-content {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+}
+
+.content-section {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    padding: 2rem;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.section-title h3 {
+    color: white;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.3rem;
+    font-weight: 700;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.section-subtitle {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+    margin-top: 0.25rem;
+    font-weight: 500;
+}
+
+.section-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.btn-icon {
+    width: 44px;
+    height: 44px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    cursor: pointer;
+    border: none;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.btn-icon:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    border: 2px dashed rgba(255, 255, 255, 0.3);
+}
+
+.empty-state i {
+    font-size: 3.5rem;
+    margin-bottom: 1.5rem;
+    color: rgba(255, 255, 255, 0.6);
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+}
+
+.empty-state h4 {
+    color: white;
+    margin: 0.75rem 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.empty-state p {
+    margin: 0.75rem 0 2rem;
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+.empty-state.small {
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.empty-state.small i {
+    font-size: 2rem;
+    margin-bottom: 0.75rem;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 1rem 2rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 16px rgba(99, 102, 241, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.6s;
+}
+
+.btn-primary:hover::before {
+    left: 100%;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(99, 102, 241, 0.4);
+}
+
+.content-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.sidebar-section {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    padding: 1.5rem;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-section h4 {
+    color: white;
+    margin: 0 0 1.5rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.sidebar-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.sidebar-btn {
+    padding: 1rem 1.25rem;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+}
+
+.sidebar-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    transition: left 0.6s;
+}
+
+.sidebar-btn:hover::before {
+    left: 100%;
+}
+
+.sidebar-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateX(5px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.sidebar-btn.primary:hover { border-left: 4px solid #6366f1; }
+.sidebar-btn.secondary:hover { border-left: 4px solid #8b5cf6; }
+.sidebar-btn.accent:hover { border-left: 4px solid #06b6d4; }
+
+@keyframes float {
+    0% { 
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+    100% { 
+        opacity: 0;
+        transform: translateY(-100px) scale(0.5);
+    }
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+    .modern-container {
+        padding: 1rem;
+    }
+    
+    .doctor-header {
+        padding: 1.5rem;
+    }
+    
+    .header-content {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .quick-stats {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .quick-actions {
+        grid-template-columns: 1fr;
+    }
+    
+    .main-content {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %} {% endcomment %}
+
+
+
+
+
+
+
+{% comment %} {% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Espace Médecin - ESCO{% endblock %}
+
+{% block content %}
+<div class="modern-container">
+    <!-- Header avec glassmorphism -->
+    <div class="doctor-header">
+        <div class="header-content">
+            <div class="doctor-info">
+                <div class="doctor-avatar">
+                    <i class="fas fa-user-md"></i>
+                    <div class="status-indicator online"></div>
+                </div>
+                <div class="doctor-details">
+                    <h2>Dr. {{ user.first_name|default:user.username }} {{ user.last_name|default:"" }}</h2>
+                    <p class="doctor-specialty">{{ user.specialite|default:"Médecin Généraliste" }}</p>
+                    <span class="status-badge online">
+                        <i class="fas fa-circle"></i>
+                        En ligne
+                    </span>
+                </div>
+            </div>
+            <div class="quick-stats">
+                <div class="stat-card patients" data-value="0">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number counter">0</div>
+                        <div class="stat-label">Patients aujourd'hui</div>
+                    </div>
+                </div>
+                <div class="stat-card consultations" data-value="0">
+                    <div class="stat-icon">
+                        <i class="fas fa-stethoscope"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number counter">0</div>
+                        <div class="stat-label">Consultations</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions rapides -->
+    <div class="quick-actions">
+        <div class="action-card primary clickable" onclick="navigateTo('{% url 'mes_consultations_medecin' %}')">
+            <div class="action-icon">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <div class="action-content">
+                <h3>Mes Consultations</h3>
+                <p>Planning du jour et rendez-vous</p>
+                <div class="action-meta">0 aujourd'hui</div>
+            </div>
+            <div class="action-button">
+                <i class="fas fa-arrow-right"></i>
+            </div>
+        </div>
+
+        <div class="action-card secondary clickable" onclick="navigateTo('{% url 'liste_patients' %}')">
+            <div class="action-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="action-content">
+                <h3>Mes Patients</h3>
+                <p>Dossiers et historiques médicaux</p>
+            </div>
+            <div class="action-button">
+                <i class="fas fa-arrow-right"></i>
+            </div>
+        </div>
+
+        <div class="action-card accent clickable" onclick="navigateTo('{% url 'nouvelle_prescription' %}')">
+            <div class="action-icon">
+                <i class="fas fa-prescription-bottle-alt"></i>
+            </div>
+            <div class="action-content">
+                <h3>Prescriptions</h3>
+                <p>Nouvelle ordonnance médicale</p>
+            </div>
+            <div class="action-button">
+                <i class="fas fa-arrow-right"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenu principal -->
+    <div class="main-content">
+        <!-- Planning vide -->
+        <div class="content-section">
+            <div class="section-header">
+                <div class="section-title">
+                    <h3><i class="fas fa-clock me-2"></i>Planning du Jour</h3>
+                    <div class="section-subtitle">{{ today|date:"l d F Y"|default:"Mercredi 10 Juin 2025" }}</div>
+                </div>
+                <div class="section-actions">
+                    <button class="btn-icon" id="refresh-planning" title="Actualiser">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                    <button class="btn-icon" id="add-consultation" title="Ajouter consultation" onclick="navigateTo('{% url 'nouveau_rdv' %}')">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="empty-state">
+                <i class="fas fa-calendar-alt"></i>
+                <h4>Aucun rendez-vous aujourd'hui</h4>
+                <p>Vous n'avez pas de consultation programmée pour aujourd'hui</p>
+                <button class="btn-primary" onclick="navigateTo('{% url 'nouveau_rdv' %}')">
+                    <i class="fas fa-plus"></i> Planifier une consultation
+                </button>
+            </div>
+        </div>
+
+        <!-- Sidebar simplifiée -->
+        <div class="content-sidebar">
+            <!-- Actions rapides sidebar -->
+            <div class="sidebar-section">
+                <h4><i class="fas fa-rocket me-2"></i>Actions Rapides</h4>
+                <div class="sidebar-actions">
+                    <button class="sidebar-btn primary clickable" onclick="navigateTo('{% url 'nouveau_rdv' %}')">
+                        <i class="fas fa-plus"></i>
+                        Nouvelle consultation
+                    </button>
+                    <button class="sidebar-btn secondary clickable" onclick="navigateTo('/admin/main/patient/add/')">
+                        <i class="fas fa-user-plus"></i>
+                        Nouveau patient
+                    </button>
+                    <button class="sidebar-btn accent clickable" onclick="navigateTo('{% url 'nouvelle_prescription' %}')">
+                        <i class="fas fa-prescription"></i>
+                        Ordonnance rapide
+                    </button>
+                </div>
+            </div>
+
+            <!-- Section vide pour les notifications -->
+            <div class="sidebar-section">
+                <h4><i class="fas fa-bell me-2"></i>Notifications</h4>
+                <div class="empty-state small">
+                    <i class="fas fa-bell-slash"></i>
+                    <p>Aucune notification récente</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts JavaScript -->
+<script>
+function navigateTo(url) {
+    window.location.href = url;
+}
+
+// Animation des compteurs
+document.addEventListener('DOMContentLoaded', function() {
+    // Animation des compteurs
+    document.querySelectorAll('.counter').forEach(counter => {
+        counter.textContent = '0';
+    });
+    
+    // Horloge en temps réel
+    updateTime();
+    setInterval(updateTime, 1000);
+});
 
 function updateTime() {
     const now = new Date();
@@ -676,619 +1870,217 @@ function updateTime() {
         timeElement.textContent = timeString;
     }
 }
-
-function addHoverEffects() {
-    document.querySelectorAll('.clickable').forEach(element => {
-        element.style.cursor = 'pointer';
-        
-        element.addEventListener('mouseenter', function() {
-            this.style.transform = 'translateY(-8px) scale(1.02)';
-        });
-        
-        element.addEventListener('mouseleave', function() {
-            this.style.transform = 'translateY(0) scale(1)';
-        });
-    });
-}
-
-function addRippleEffect() {
-    document.querySelectorAll('.clickable').forEach(element => {
-        element.addEventListener('click', function(e) {
-            const ripple = this.querySelector('.action-ripple');
-            if (ripple) {
-                ripple.style.left = (e.clientX - this.getBoundingClientRect().left) + 'px';
-                ripple.style.top = (e.clientY - this.getBoundingClientRect().top) + 'px';
-                ripple.classList.add('animate');
-                
-                setTimeout(() => {
-                    ripple.classList.remove('animate');
-                }, 600);
-            }
-        });
-    });
-}
-
-// Raccourcis clavier
-document.addEventListener('keydown', function(e) {
-    if (e.ctrlKey || e.metaKey) {
-        switch(e.key) {
-            case '1':
-                e.preventDefault();
-                navigateTo('{% url "mes_consultations_medecin" %}');
-                break;
-            case '2':
-                e.preventDefault();
-                navigateTo('{% url "liste_patients" %}');
-                break;
-            case '3':
-                e.preventDefault();
-                navigateTo('{% url "nouvelle_prescription" %}');
-                break;
-            case '4':
-                e.preventDefault();
-                navigateTo('{% url "urgences" %}');
-                break;
-        }
-    }
-});
 </script>
 
-<!-- CSS Ultra-moderne avec animations -->
 <style>
-/* Variables CSS étendues */
-:root {
-    --primary: #6366f1;
-    --primary-dark: #4f46e5;
-    --primary-light: #8b5cf6;
-    --secondary: #8b5cf6;
-    --accent: #06b6d4;
-    --success: #10b981;
-    --warning: #f59e0b;
-    --danger: #ef4444;
-    --info: #3b82f6;
-    
-    --white: #ffffff;
-    --gray-50: #f9fafb;
-    --gray-100: #f3f4f6;
-    --gray-200: #e5e7eb;
-    --gray-300: #d1d5db;
-    --gray-400: #9ca3af;
-    --gray-500: #6b7280;
-    --gray-600: #4b5563;
-    --gray-700: #374151;
-    --gray-800: #1f2937;
-    --gray-900: #111827;
-    
-    --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    --gradient-glass: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
-    --gradient-glass-hover: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%);
-    
-    --shadow-glass: 0 8px 32px rgba(31, 38, 135, 0.37);
-    --shadow-modern: 0 10px 40px rgba(0, 0, 0, 0.1);
-    --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.08);
-    --shadow-hover: 0 20px 60px rgba(0, 0, 0, 0.15);
-    
-    --border-radius: 20px;
-    --border-radius-sm: 12px;
-    --border-radius-lg: 24px;
-    
-    --animation-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    --animation-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --animation-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    --animation-bounce: 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-}
-
-/* Réinitialisation et base */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    line-height: 1.6;
-    overflow-x: hidden;
-}
-
-/* Container principal */
+/* Styles de base */
 .modern-container {
     min-height: 100vh;
-    background: var(--gradient-primary);
     padding: 1.5rem;
-    font-size: 14px;
-    transition: opacity var(--animation-normal);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-/* Header glassmorphism amélioré */
 .doctor-header {
-    background: var(--gradient-glass);
-    backdrop-filter: blur(20px);
-    border-radius: var(--border-radius-lg);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: var(--shadow-glass);
-    padding: 2rem;
-    margin-bottom: 2rem;
-    transition: all var(--animation-normal);
-    position: relative;
-    overflow: hidden;
-}
-
-.doctor-header::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent), var(--success));
-    opacity: 0.8;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
 }
 
 .header-content {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 2rem;
     flex-wrap: wrap;
+    gap: 1.5rem;
 }
 
 .doctor-info {
     display: flex;
     align-items: center;
-    gap: 1.5rem;
+    gap: 1rem;
 }
 
 .doctor-avatar {
-    width: 80px;
-    height: 80px;
-    background: var(--gradient-glass-hover);
-    border-radius: var(--border-radius);
+    width: 70px;
+    height: 70px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
-    backdrop-filter: blur(10px);
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    position: relative;
-    transition: all var(--animation-normal);
-}
-
-.doctor-avatar:hover {
-    transform: scale(1.05) rotate(5deg);
-    box-shadow: var(--shadow-hover);
 }
 
 .doctor-avatar i {
-    font-size: 2rem;
-    color: var(--white);
+    font-size: 1.75rem;
+    color: white;
 }
 
 .status-indicator {
-    position: absolute;
-    bottom: -2px;
-    right: -2px;
-    width: 20px;
-    height: 20px;
+    width: 16px;
+    height: 16px;
+    background: #10b981;
     border-radius: 50%;
-    border: 3px solid var(--white);
-}
-
-.status-indicator.online {
-    background: var(--success);
-    animation: pulse-green 2s infinite;
-}
-
-@keyframes pulse-green {
-    0%, 100% { 
-        transform: scale(1); 
-        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); 
-    }
-    50% { 
-        transform: scale(1.1); 
-        box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); 
-    }
+    border: 2px solid white;
+    position: relative;
+    bottom: -25px;
+    right: -25px;
 }
 
 .doctor-details h2 {
-    color: var(--white);
-    font-size: 1.75rem;
-    font-weight: 700;
-    margin: 0 0 0.5rem 0;
-    text-shadow: 0 2px 8px rgba(0,0,0,0.2);
-    letter-spacing: -0.025em;
+    color: white;
+    font-size: 1.5rem;
+    margin: 0;
 }
 
 .doctor-specialty {
-    color: rgba(255, 255, 255, 0.9);
-    font-size: 1rem;
-    margin: 0 0 0.75rem 0;
-    font-weight: 500;
+    color: rgba(255, 255, 255, 0.8);
+    margin: 0.25rem 0;
 }
 
 .status-badge {
-    background: var(--success);
-    color: var(--white);
-    padding: 0.4rem 0.8rem;
-    border-radius: var(--border-radius-sm);
+    background: #10b981;
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
     font-size: 0.75rem;
-    font-weight: 600;
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
 }
 
-.status-badge i.pulse {
-    animation: pulse-dot 2s infinite;
-}
-
-@keyframes pulse-dot {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.5; transform: scale(0.8); }
-}
-
-/* Stats améliorées */
 .quick-stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    display: flex;
     gap: 1rem;
-    min-width: 0;
 }
 
 .stat-card {
     background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border-radius: var(--border-radius);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    padding: 1.25rem;
-    transition: all var(--animation-normal);
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    position: relative;
-    overflow: hidden;
+    border-radius: 16px;
+    padding: 1rem;
+    min-width: 120px;
+    text-align: center;
 }
-
-.stat-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: var(--primary);
-    transform: scaleX(0);
-    transition: transform var(--animation-normal);
-}
-
-.stat-card:hover {
-    transform: translateY(-4px);
-    background: rgba(255, 255, 255, 0.15);
-    box-shadow: var(--shadow-hover);
-}
-
-.stat-card:hover::before {
-    transform: scaleX(1);
-}
-
-.stat-card.patients::before { background: linear-gradient(90deg, var(--info), var(--primary)); }
-.stat-card.urgences::before { background: linear-gradient(90deg, var(--danger), var(--warning)); }
-.stat-card.consultations::before { background: linear-gradient(90deg, var(--success), var(--accent)); }
-.stat-card.revenus::before { background: linear-gradient(90deg, var(--warning), var(--accent)); }
 
 .stat-icon {
-    width: 50px;
-    height: 50px;
+    width: 40px;
+    height: 40px;
     background: rgba(255, 255, 255, 0.2);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--white);
-    font-size: 1.25rem;
-    transition: all var(--animation-normal);
-}
-
-.stat-card:hover .stat-icon {
-    transform: scale(1.1) rotate(10deg);
-}
-
-.stat-content {
-    flex: 1;
+    margin: 0 auto 0.5rem;
+    color: white;
 }
 
 .stat-number {
-    color: var(--white);
-    font-size: 1.75rem;
-    font-weight: 700;
-    line-height: 1;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    display: block;
-    margin-bottom: 0.25rem;
+    color: white;
+    font-size: 1.5rem;
+    font-weight: bold;
 }
 
 .stat-label {
     color: rgba(255, 255, 255, 0.8);
     font-size: 0.75rem;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
 }
 
-.stat-trend {
-    font-size: 0.7rem;
-    padding: 0.2rem 0.5rem;
-    border-radius: 8px;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    margin-top: 0.5rem;
-}
-
-.stat-trend.up {
-    background: rgba(16, 185, 129, 0.2);
-    color: var(--success);
-}
-
-.stat-trend.urgent {
-    background: rgba(239, 68, 68, 0.2);
-    color: var(--danger);
-    animation: blink 1s infinite;
-}
-
-.stat-trend.stable {
-    background: rgba(107, 114, 128, 0.2);
-    color: var(--gray-400);
-}
-
-/* Actions rapides SUPER améliorées */
 .quick-actions {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
 }
 
 .action-card {
-    background: var(--gradient-glass);
-    backdrop-filter: blur(20px);
-    border-radius: var(--border-radius-lg);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    padding: 1.5rem;
-    transition: all var(--animation-normal);
-    position: relative;
-    overflow: hidden;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 1.25rem;
     display: flex;
     align-items: center;
     gap: 1rem;
+    transition: transform 0.2s;
     cursor: pointer;
-    user-select: none;
-}
-
-.action-card::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: var(--gradient-glass-hover);
-    opacity: 0;
-    transition: opacity var(--animation-normal);
-    pointer-events: none;
-}
-
-.action-card:hover::after {
-    opacity: 1;
 }
 
 .action-card:hover {
-    transform: translateY(-8px) scale(1.02);
-    box-shadow: var(--shadow-hover);
-}
-
-.action-card:active {
-    transform: translateY(-4px) scale(0.98);
-}
-
-.action-bg {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: var(--gradient-glass-hover);
-    opacity: 0;
-    transition: opacity var(--animation-normal);
-    pointer-events: none;
-}
-
-.action-card:hover .action-bg {
-    opacity: 1;
+    transform: translateY(-5px);
+    background: rgba(255, 255, 255, 0.15);
 }
 
 .action-icon {
-    width: 70px;
-    height: 70px;
-    border-radius: var(--border-radius);
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.75rem;
-    color: var(--white);
-    flex-shrink: 0;
-    position: relative;
-    z-index: 2;
-    transition: all var(--animation-normal);
+    color: white;
+    font-size: 1.25rem;
 }
 
-.action-card:hover .action-icon {
-    transform: scale(1.1) rotate(5deg);
-}
-
-.action-card.primary .action-icon {
-    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-    box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
-}
-
-.action-card.secondary .action-icon {
-    background: linear-gradient(135deg, var(--secondary), var(--primary-light));
-    box-shadow: 0 4px 20px rgba(139, 92, 246, 0.4);
-}
-
-.action-card.accent .action-icon {
-    background: linear-gradient(135deg, var(--accent), #0891b2);
-    box-shadow: 0 4px 20px rgba(6, 182, 212, 0.4);
-}
-
-.action-card.warning .action-icon {
-    background: linear-gradient(135deg, var(--warning), #d97706);
-    box-shadow: 0 4px 20px rgba(245, 158, 11, 0.4);
-}
-
-.pulse-icon {
-    animation: pulse-icon 2s infinite;
-}
-
-@keyframes pulse-icon {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.1); }
-}
+.action-card.primary .action-icon { background: #6366f1; }
+.action-card.secondary .action-icon { background: #8b5cf6; }
+.action-card.accent .action-icon { background: #06b6d4; }
 
 .action-content {
     flex: 1;
-    position: relative;
-    z-index: 2;
 }
 
 .action-content h3 {
-    color: var(--white);
-    font-size: 1.25rem;
-    font-weight: 700;
-    margin: 0 0 0.5rem 0;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    color: white;
+    margin: 0 0 0.25rem;
+    font-size: 1rem;
 }
 
 .action-content p {
-    color: rgba(255, 255, 255, 0.8);
-    font-size: 0.875rem;
-    margin: 0 0 0.75rem 0;
-    line-height: 1.4;
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0 0 0.5rem;
+    font-size: 0.85rem;
 }
 
 .action-meta {
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 0.8rem;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.urgent-meta {
-    color: var(--warning);
-    animation: blink 2s infinite;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.75rem;
 }
 
 .action-button {
-    width: 50px;
-    height: 50px;
+    width: 36px;
+    height: 36px;
     background: rgba(255, 255, 255, 0.2);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--white);
-    transition: all var(--animation-fast);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    position: relative;
-    z-index: 2;
-    pointer-events: none;
+    color: white;
 }
 
-.action-button.urgent {
-    background: rgba(239, 68, 68, 0.3);
-    border-color: rgba(239, 68, 68, 0.5);
-    animation: pulse-urgent 2s infinite;
-}
-
-@keyframes pulse-urgent {
-    0%, 100% { 
-        transform: scale(1); 
-        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); 
-    }
-    50% { 
-        transform: scale(1.1); 
-        box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); 
-    }
-}
-
-.action-ripple {
-    position: absolute;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.3);
-    transform: scale(0);
-    pointer-events: none;
-    width: 20px;
-    height: 20px;
-}
-
-.action-ripple.animate {
-    animation: ripple 0.6s linear;
-}
-
-.action-ripple.urgent {
-    background: rgba(239, 68, 68, 0.4);
-}
-
-@keyframes ripple {
-    to {
-        transform: scale(4);
-        opacity: 0;
-    }
-}
-
-/* Main content amélioré */
 .main-content {
     display: grid;
-    grid-template-columns: 1fr 400px;
-    gap: 2rem;
-    align-items: start;
+    grid-template-columns: 1fr 300px;
+    gap: 1.5rem;
 }
 
 .content-section {
-    background: var(--gradient-glass);
-    backdrop-filter: blur(20px);
-    border-radius: var(--border-radius-lg);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: var(--shadow-glass);
-    overflow: hidden;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 1.5rem;
 }
 
 .section-header {
-    padding: 1.5rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-bottom: 1rem;
 }
 
 .section-title h3 {
-    color: var(--white);
-    font-size: 1.25rem;
-    font-weight: 700;
-    margin: 0 0 0.25rem 0;
+    color: white;
+    margin: 0;
     display: flex;
     align-items: center;
     gap: 0.5rem;
-}
-
-.section-subtitle {
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 0.875rem;
-    text-transform: capitalize;
 }
 
 .section-actions {
@@ -1297,306 +2089,60 @@ body {
 }
 
 .btn-icon {
-    width: 40px;
-    height: 40px;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--white);
-    cursor: pointer;
-    transition: all var(--animation-fast);
-    backdrop-filter: blur(10px);
-}
-
-.btn-icon:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: scale(1.1);
-}
-
-.btn-icon.rotate {
-    animation: rotate 1s linear;
-}
-
-@keyframes rotate {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-
-/* Timeline consultations ULTRA améliorée */
-.consultation-timeline {
-    padding: 1rem 0;
-    max-height: 700px;
-    overflow-y: auto;
-}
-
-.consultation-item {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 1.5rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    transition: all var(--animation-fast);
-    position: relative;
-    margin-bottom: 0.5rem;
-    border-radius: var(--border-radius-sm);
-}
-
-.consultation-item::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 4px;
-    background: var(--gray-500);
-    transition: all var(--animation-fast);
-    border-radius: 0 2px 2px 0;
-}
-
-.consultation-item.current::before { 
-    background: linear-gradient(180deg, var(--success), var(--accent));
-    width: 6px;
-}
-.consultation-item.upcoming::before { 
-    background: linear-gradient(180deg, var(--info), var(--primary));
-}
-.consultation-item.scheduled::before { 
-    background: linear-gradient(180deg, var(--primary), var(--secondary));
-}
-.consultation-item.break::before { 
-    background: linear-gradient(180deg, var(--warning), var(--accent));
-}
-
-.consultation-item:hover {
-    background: rgba(255, 255, 255, 0.05);
-    transform: translateX(8px);
-}
-
-.consultation-time {
-    flex-shrink: 0;
-    text-align: center;
-    min-width: 90px;
-}
-
-.time-badge {
-    background: var(--gray-600);
-    color: var(--white);
-    padding: 0.6rem 0.8rem;
-    border-radius: var(--border-radius-sm);
-    font-size: 0.875rem;
-    font-weight: 600;
-    display: block;
-    margin-bottom: 0.5rem;
-    transition: all var(--animation-fast);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.time-badge.current { 
-    background: linear-gradient(135deg, var(--success), var(--accent));
-    animation: pulse-current 2s infinite;
-}
-.time-badge.upcoming { 
-    background: linear-gradient(135deg, var(--info), var(--primary));
-}
-.time-badge.scheduled { 
-    background: linear-gradient(135deg, var(--primary), var(--secondary));
-}
-.time-badge.break { 
-    background: linear-gradient(135deg, var(--warning), var(--accent));
-}
-
-@keyframes pulse-current {
-    0%, 100% { 
-        transform: scale(1); 
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); 
-    }
-    50% { 
-        transform: scale(1.05); 
-        box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4); 
-    }
-}
-
-.time-duration {
-    color: rgba(255, 255, 255, 0.6);
-    font-size: 0.75rem;
-    font-weight: 500;
-}
-
-.consultation-details {
-    flex: 1;
-    min-width: 0;
-}
-
-.patient-name {
-    color: var(--white);
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-}
-
-.consultation-type {
-    color: rgba(255, 255, 255, 0.8);
-    font-size: 0.875rem;
-    margin-bottom: 0.75rem;
-    font-weight: 500;
-}
-
-.patient-meta {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    flex-wrap: wrap;
-}
-
-.patient-age,
-.patient-room,
-.patient-vital,
-.patient-new,
-.patient-routine {
-    color: rgba(255, 255, 255, 0.6);
-    font-size: 0.75rem;
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    padding: 0.2rem 0.5rem;
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.1);
-}
-
-.patient-new {
-    color: var(--warning);
-    background: rgba(245, 158, 11, 0.2);
-}
-
-.patient-routine {
-    color: var(--success);
-    background: rgba(16, 185, 129, 0.2);
-}
-
-.patient-vital {
-    color: var(--success);
-    background: rgba(16, 185, 129, 0.2);
-}
-
-.patient-alert {
-    color: var(--warning);
-    font-size: 0.875rem;
-    cursor: help;
-    padding: 0.2rem 0.5rem;
-    border-radius: 8px;
-    background: rgba(245, 158, 11, 0.2);
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-}
-
-.patient-alert.blink {
-    animation: blink 2s infinite;
-}
-
-.break-location {
-    color: rgba(255, 255, 255, 0.6);
-    font-size: 0.75rem;
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-}
-
-.consultation-actions {
-    display: flex;
-    gap: 0.5rem;
-    align-items: center;
-    flex-wrap: wrap;
-}
-
-.btn-action {
-    padding: 0.6rem 1rem;
-    border: none;
-    border-radius: var(--border-radius-sm);
-    font-size: 0.75rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all var(--animation-fast);
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    backdrop-filter: blur(10px);
-    white-space: nowrap;
-}
-
-.btn-action.current {
-    background: linear-gradient(135deg, var(--success), var(--accent));
-    color: var(--white);
-    animation: pulse-btn 2s infinite;
-}
-
-.btn-action.upcoming {
-    background: linear-gradient(135deg, var(--info), var(--primary));
-    color: var(--white);
-}
-
-.btn-action.neutral {
-    background: rgba(255, 255, 255, 0.1);
-    color: var(--white);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.btn-action:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-@keyframes pulse-btn {
-    0%, 100% { 
-        transform: scale(1); 
-        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); 
-    }
-    50% { 
-        transform: scale(1.05); 
-        box-shadow: 0 0 0 5px rgba(16, 185, 129, 0); 
-    }
-}
-
-.btn-action-small {
     width: 36px;
     height: 36px;
     background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--white);
+    color: white;
     cursor: pointer;
-    transition: all var(--animation-fast);
-    backdrop-filter: blur(10px);
+    border: none;
 }
 
-.btn-action-small:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: scale(1.1);
+.empty-state {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: rgba(255, 255, 255, 0.7);
 }
 
-/* Animations d'entrée */
-.animate-slide-in {
-    animation: slideIn 0.6s ease-out;
+.empty-state i {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: rgba(255, 255, 255, 0.5);
 }
 
-@keyframes slideIn {
-    from {
-        opacity: 0;
-        transform: translateX(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
+.empty-state h4 {
+    color: white;
+    margin: 0.5rem 0;
 }
 
-/* Sidebar ULTRA améliorée */
+.empty-state p {
+    margin: 0.5rem 0 1.5rem;
+}
+
+.empty-state.small {
+    padding: 1rem;
+}
+
+.empty-state.small i {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.btn-primary {
+    background: #6366f1;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem 1.25rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
 .content-sidebar {
     display: flex;
     flex-direction: column;
@@ -1604,283 +2150,12 @@ body {
 }
 
 .sidebar-section {
-    background: var(--gradient-glass);
-    backdrop-filter: blur(20px);
-    border-radius: var(--border-radius-lg);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: var(--shadow-glass);
-    overflow: hidden;
-}
-
-.sidebar-section .section-header {
-    padding: 1.25rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.sidebar-section h3,
-.sidebar-section h4 {
-    color: var(--white);
-    font-size: 1rem;
-    font-weight: 700;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.alert-badge {
-    background: var(--danger);
-    color: var(--white);
-    padding: 0.25rem 0.6rem;
-    border-radius: 12px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    min-width: 20px;
-    text-align: center;
-    animation: pulse-badge 2s infinite;
-}
-
-@keyframes pulse-badge {
-    0%, 100% { 
-        transform: scale(1); 
-        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); 
-    }
-    50% { 
-        transform: scale(1.1); 
-        box-shadow: 0 0 0 5px rgba(239, 68, 68, 0); 
-    }
-}
-
-/* Patients prioritaires améliorés */
-.priority-patients {
-    padding: 1rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-.patient-card {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: var(--border-radius);
-    padding: 1rem;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    transition: all var(--animation-fast);
-    border-left: 4px solid var(--gray-500);
-    position: relative;
-    overflow: hidden;
-}
-
-.patient-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: var(--gradient-glass-hover);
-    opacity: 0;
-    transition: opacity var(--animation-normal);
-}
-
-.patient-card:hover::before {
-    opacity: 1;
-}
-
-.patient-card:hover {
     background: rgba(255, 255, 255, 0.1);
-    transform: translateX(8px);
+    border-radius: 16px;
+    padding: 1.25rem;
 }
 
-.patient-card.critical {
-    border-left-color: var(--danger);
-    box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
-}
-
-.patient-card.monitoring {
-    border-left-color: var(--warning);
-    box-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
-}
-
-.patient-card.routine {
-    border-left-color: var(--success);
-    box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
-}
-
-.patient-status {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    flex-shrink: 0;
-    position: relative;
-    z-index: 2;
-}
-
-.critical-pulse {
-    background: var(--danger);
-    animation: pulse-critical 1.5s infinite;
-}
-
-.warning-pulse {
-    background: var(--warning);
-    animation: pulse-warning 2s infinite;
-}
-
-.success-pulse {
-    background: var(--success);
-    animation: pulse-success 3s infinite;
-}
-
-@keyframes pulse-critical {
-    0%, 100% { 
-        transform: scale(1); 
-        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.9); 
-    }
-    50% { 
-        transform: scale(1.3); 
-        box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); 
-    }
-}
-
-@keyframes pulse-warning {
-    0%, 100% { 
-        transform: scale(1); 
-        box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); 
-    }
-    50% { 
-        transform: scale(1.2); 
-        box-shadow: 0 0 0 6px rgba(245, 158, 11, 0); 
-    }
-}
-
-@keyframes pulse-success {
-    0%, 100% { 
-        transform: scale(1); 
-        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); 
-    }
-    50% { 
-        transform: scale(1.1); 
-        box-shadow: 0 0 0 4px rgba(16, 185, 129, 0); 
-    }
-}
-
-.patient-avatar {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--white);
-    flex-shrink: 0;
-    overflow: hidden;
-    position: relative;
-    z-index: 2;
-    transition: all var(--animation-normal);
-}
-
-.patient-avatar.critical {
-    background: linear-gradient(135deg, var(--danger), #dc2626);
-}
-
-.patient-avatar.monitoring {
-    background: linear-gradient(135deg, var(--warning), #d97706);
-}
-
-.patient-avatar.routine {
-    background: linear-gradient(135deg, var(--success), #059669);
-}
-
-.patient-card:hover .patient-avatar {
-    transform: scale(1.1);
-}
-
-.patient-avatar img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.patient-info {
-    flex: 1;
-    min-width: 0;
-    position: relative;
-    z-index: 2;
-}
-
-.patient-name {
-    color: var(--white);
-    font-size: 0.9rem;
-    font-weight: 600;
-    margin-bottom: 0.25rem;
-}
-
-.patient-condition {
-    color: rgba(255, 255, 255, 0.8);
-    font-size: 0.8rem;
-    margin-bottom: 0.25rem;
-    font-weight: 500;
-}
-
-.patient-room,
-.patient-time {
-    color: rgba(255, 255, 255, 0.6);
-    font-size: 0.7rem;
-    line-height: 1.2;
-}
-
-.patient-actions {
-    flex-shrink: 0;
-    position: relative;
-    z-index: 2;
-}
-
-.btn-patient {
-    width: 40px;
-    height: 40px;
-    border: none;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--white);
-    cursor: pointer;
-    transition: all var(--animation-fast);
-    backdrop-filter: blur(10px);
-    font-size: 0.9rem;
-}
-
-.btn-patient.critical {
-    background: linear-gradient(135deg, var(--danger), #dc2626);
-    animation: pulse-btn-critical 2s infinite;
-}
-
-.btn-patient.monitoring {
-    background: linear-gradient(135deg, var(--warning), #d97706);
-}
-
-.btn-patient.routine {
-    background: linear-gradient(135deg, var(--success), #059669);
-}
-
-.btn-patient:hover {
-    transform: scale(1.15);
-    box-shadow: var(--shadow-hover);
-}
-
-@keyframes pulse-btn-critical {
-    0%, 100% { 
-        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); 
-    }
-    50% { 
-        box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); 
-    }
-}
-
-/* Actions sidebar améliorées */
 .sidebar-actions {
-    padding: 1rem;
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
@@ -1888,527 +2163,67 @@ body {
 
 .sidebar-btn {
     padding: 0.75rem 1rem;
+    border-radius: 8px;
     border: none;
-    border-radius: var(--border-radius-sm);
-    font-size: 0.875rem;
-    font-weight: 600;
     cursor: pointer;
-    transition: all var(--animation-fast);
     display: flex;
     align-items: center;
     gap: 0.75rem;
     text-align: left;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    position: relative;
-    overflow: hidden;
+    color: white;
 }
 
-.sidebar-btn::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transition: left 0.5s;
-}
+.sidebar-btn.primary { background: #6366f1; }
+.sidebar-btn.secondary { background: #8b5cf6; }
+.sidebar-btn.accent { background: #06b6d4; }
 
-.sidebar-btn:hover::before {
-    left: 100%;
-}
-
-.sidebar-btn.primary {
-    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-    color: var(--white);
-}
-
-.sidebar-btn.secondary {
-    background: linear-gradient(135deg, var(--secondary), var(--primary-light));
-    color: var(--white);
-}
-
-.sidebar-btn.accent {
-    background: linear-gradient(135deg, var(--accent), #0891b2);
-    color: var(--white);
-}
-
-.sidebar-btn.info {
-    background: linear-gradient(135deg, var(--info), var(--primary));
-    color: var(--white);
-}
-
-.sidebar-btn.neutral {
-    background: rgba(255, 255, 255, 0.1);
-    color: var(--white);
-}
-
-.sidebar-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-hover);
-}
-
-/* Notifications améliorées */
-.notifications {
-    padding: 1rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    max-height: 350px;
-    overflow-y: auto;
-}
-
-.notification-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.75rem;
-    padding: 1rem;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: var(--border-radius-sm);
-    border-left: 3px solid var(--gray-500);
-    transition: all var(--animation-fast);
-    position: relative;
-}
-
-.notification-item::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: var(--gradient-glass-hover);
-    opacity: 0;
-    transition: opacity var(--animation-normal);
-    border-radius: var(--border-radius-sm);
-}
-
-.notification-item:hover::before {
-    opacity: 1;
-}
-
-.notification-item:hover {
-    background: rgba(255, 255, 255, 0.1);
-    transform: translateX(4px);
-}
-
-.notification-item.urgent {
-    border-left-color: var(--danger);
-    animation: notification-urgent 3s infinite;
-}
-
-.notification-item.info {
-    border-left-color: var(--info);
-}
-
-.notification-item.success {
-    border-left-color: var(--success);
-}
-
-@keyframes notification-urgent {
-    0%, 90%, 100% { background: rgba(255, 255, 255, 0.05); }
-    95% { background: rgba(239, 68, 68, 0.1); }
-}
-
-.notification-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--white);
-    font-size: 0.875rem;
-    flex-shrink: 0;
-    position: relative;
-    z-index: 2;
-}
-
-.notification-icon.urgent {
-    background: linear-gradient(135deg, var(--danger), #dc2626);
-}
-
-.notification-icon.info {
-    background: linear-gradient(135deg, var(--info), var(--primary));
-}
-
-.notification-icon.success {
-    background: linear-gradient(135deg, var(--success), #059669);
-}
-
-.notification-icon.urgent.pulse {
-    animation: pulse-notification 2s infinite;
-}
-
-@keyframes pulse-notification {
-    0%, 100% { 
-        transform: scale(1); 
-        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); 
-    }
-    50% { 
-        transform: scale(1.1); 
-        box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); 
-    }
-}
-
-.notification-content {
-    flex: 1;
-    min-width: 0;
-    position: relative;
-    z-index: 2;
-}
-
-.notification-title {
-    color: var(--white);
-    font-size: 0.875rem;
-    font-weight: 600;
-    margin-bottom: 0.25rem;
-}
-
-.notification-text {
-    color: rgba(255, 255, 255, 0.8);
-    font-size: 0.8rem;
-    margin-bottom: 0.25rem;
-    line-height: 1.3;
-}
-
-.notification-time {
-    color: rgba(255, 255, 255, 0.6);
-    font-size: 0.7rem;
-}
-
-.notification-action {
-    width: 32px;
-    height: 32px;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--white);
-    cursor: pointer;
-    transition: all var(--animation-fast);
-    flex-shrink: 0;
-    position: relative;
-    z-index: 2;
-}
-
-.notification-action:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: scale(1.1);
-}
-
-/* Section météo et infos */
-.weather-section {
-    background: var(--gradient-glass);
-}
-
-.info-cards {
-    padding: 1rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-}
-
-.info-card {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.75rem;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: var(--border-radius-sm);
-    transition: all var(--animation-fast);
-}
-
-.info-card:hover {
-    background: rgba(255, 255, 255, 0.1);
-    transform: translateX(4px);
-}
-
-.info-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--white);
-    flex-shrink: 0;
-}
-
-.info-card.weather .info-icon {
-    background: linear-gradient(135deg, var(--warning), #d97706);
-}
-
-.info-card.time .info-icon {
-    background: linear-gradient(135deg, var(--info), var(--primary));
-}
-
-.info-card.hospital .info-icon {
-    background: linear-gradient(135deg, var(--success), #059669);
-}
-
-.info-content {
-    flex: 1;
-}
-
-.info-title {
-    color: rgba(255, 255, 255, 0.8);
-    font-size: 0.75rem;
-    font-weight: 500;
-    margin-bottom: 0.25rem;
-}
-
-.info-value {
-    color: var(--white);
-    font-size: 0.875rem;
-    font-weight: 600;
-}
-
-/* Toast notifications */
-.toast {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: var(--gradient-glass);
-    backdrop-filter: blur(20px);
-    border-radius: var(--border-radius);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    padding: 1rem;
-    color: var(--white);
-    z-index: 9999;
-    transform: translateX(400px);
-    transition: transform var(--animation-normal);
-    box-shadow: var(--shadow-glass);
-}
-
-.toast.show {
-    transform: translateX(0);
-}
-
-.toast-content {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.toast-success {
-    border-left: 4px solid var(--success);
-}
-
-.toast-error {
-    border-left: 4px solid var(--danger);
-}
-
-.toast-warning {
-    border-left: 4px solid var(--warning);
-}
-
-.toast-info {
-    border-left: 4px solid var(--info);
-}
-
-/* Animations générales */
-@keyframes blink {
-    0%, 50% { opacity: 1; }
-    51%, 100% { opacity: 0.3; }
-}
-
-.blink {
-    animation: blink 2s infinite;
-}
-
-.pulse {
-    animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-}
-
-/* Responsive design */
-@media (max-width: 1400px) {
-    .main-content {
-        grid-template-columns: 1fr 350px;
-    }
-}
-
-@media (max-width: 1200px) {
+/* Responsive */
+@media (max-width: 768px) {
     .main-content {
         grid-template-columns: 1fr;
     }
     
-    .content-sidebar {
-        order: -1;
-    }
-    
     .quick-stats {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media (max-width: 768px) {
-    .modern-container {
-        padding: 1rem;
-    }
-    
-    .header-content {
-        flex-direction: column;
-        text-align: center;
-        gap: 1.5rem;
-    }
-    
-    .quick-stats {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 0.75rem;
+        flex-wrap: wrap;
     }
     
     .quick-actions {
         grid-template-columns: 1fr;
     }
-    
-    .action-card {
-        padding: 1rem;
-        gap: 0.75rem;
-    }
-    
-    .action-icon {
-        width: 50px;
-        height: 50px;
-        font-size: 1.25rem;
-    }
-    
-    .consultation-item {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.75rem;
-        padding: 1rem;
-    }
-    
-    .consultation-actions {
-        width: 100%;
-        justify-content: flex-start;
-    }
-    
-    .patient-card {
-        flex-direction: column;
-        text-align: center;
-        gap: 0.5rem;
-    }
-    
-    .patient-info {
-        text-align: center;
-    }
-    
-    .sidebar-actions {
-        padding: 0.75rem;
-        gap: 0.5rem;
-    }
-    
-    .sidebar-btn {
-        padding: 0.6rem 0.8rem;
-        font-size: 0.8rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .modern-container {
-        padding: 0.75rem;
-    }
-    
-    .doctor-header {
-        padding: 1.5rem;
-    }
-    
-    .quick-stats {
-        grid-template-columns: 1fr;
-    }
-    
-    .stat-card {
-        padding: 1rem;
-    }
-    
-    .action-card {
-        padding: 1rem;
-    }
-    
-    .consultation-item {
-        padding: 0.75rem;
-    }
-    
-    .time-badge {
-        padding: 0.5rem 0.6rem;
-        font-size: 0.8rem;
-    }
-    
-    .btn-action {
-        padding: 0.5rem 0.75rem;
-        font-size: 0.7rem;
-    }
-    
-    .btn-action-small {
-        width: 32px;
-        height: 32px;
-    }
-}
-
-/* Scrollbar styling */
-.consultation-timeline::-webkit-scrollbar,
-.notifications::-webkit-scrollbar {
-    width: 6px;
-}
-
-.consultation-timeline::-webkit-scrollbar-track,
-.notifications::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 3px;
-}
-
-.consultation-timeline::-webkit-scrollbar-thumb,
-.notifications::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 3px;
-    transition: background var(--animation-fast);
-}
-
-.consultation-timeline::-webkit-scrollbar-thumb:hover,
-.notifications::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.4);
-}
-
-/* Focus states pour l'accessibilité */
-.clickable:focus,
-.btn-icon:focus,
-.btn-action:focus,
-.btn-patient:focus,
-.sidebar-btn:focus {
-    outline: 2px solid var(--primary);
-    outline-offset: 2px;
-}
-
-/* Print styles */
-@media print {
-    .modern-container {
-        background: white;
-        color: black;
-    }
-    
-    .action-card,
-    .sidebar-section {
-        background: white;
-        border: 1px solid #ccc;
-    }
-    
-    .doctor-header {
-        background: white;
-        border: 1px solid #ccc;
-    }
 }
 </style>
-{% endblock %}
+{% endblock %} {% endcomment %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 {% comment %} {% extends 'base.html' %}

@@ -275,59 +275,167 @@ def home(request):
     """Page d'accueil temporaire"""
     return HttpResponse("ESCO - Système de gestion hospitalière")
 
+# Décorateur personnalisé pour les permissions
+def medecin_ou_admin_required(view_func):
+    def _wrapped_view(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('login')
+        
+        # Permettre l'accès aux médecins et administrateurs
+        if (hasattr(request.user, 'role') and request.user.role == 'docteur') or request.user.is_superuser:
+            return view_func(request, *args, **kwargs)
+        
+        raise PermissionDenied("Vous n'avez pas les permissions pour accéder à cette page.")
+    return _wrapped_view
+# Appliquer le décorateur corrigé à la vue
+# Décorateur personnalisé pour les permissions
+def medecin_ou_admin_required(view_func):
+    def _wrapped_view(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('login')
+        
+        # Debug - ajoutons quelques logs
+        print(f"DEBUG - Utilisateur: {request.user.username}")
+        print(f"DEBUG - Role: {getattr(request.user, 'role', 'Pas de rôle')}")
+        print(f"DEBUG - Is superuser: {request.user.is_superuser}")
+        
+        # Permettre l'accès aux médecins et administrateurs
+        user_role = getattr(request.user, 'role', None)
+        if user_role == 'docteur' or request.user.is_superuser or user_role == 'administrateur':
+            return view_func(request, *args, **kwargs)
+        
+        raise PermissionDenied(f"Vous n'avez pas les permissions pour accéder à cette page. Votre rôle: {user_role}")
+    return _wrapped_view
 
-# ===== VUES PATIENTS COMPLÈTES =====
+# Appliquer le décorateur corrigé à la vue
+@medecin_ou_admin_required
+def nouveau_rdv(request):
+    if request.method == 'POST':
+        form = RendezVousForm(request.POST)
+        if form.is_valid():
+            rdv = form.save(commit=False)
+            # Si c'est un médecin, l'assigner automatiquement
+            if hasattr(request.user, 'role') and request.user.role == 'docteur':
+                rdv.medecin = request.user
+            rdv.save()
+            messages.success(request, 'Rendez-vous ajouté avec succès!')
+            return redirect('dashboard_medecin')  # Rediriger vers le dashboard médecin
+        else:
+            messages.error(request, 'Erreur lors de l\'ajout du rendez-vous.')
+            print("Erreurs de formulaire:", form.errors)
+    else:
+        form = RendezVousForm()
+        
+        # Filtrer les choix selon le rôle
+        if hasattr(request.user, 'role') and request.user.role == 'docteur':
+            # Pour les médecins : pré-sélectionner le médecin et filtrer les patients
+            form.fields['medecin'].queryset = CustomUser.objects.filter(id=request.user.id)
+            form.fields['medecin'].initial = request.user
+            form.fields['medecin'].widget.attrs['readonly'] = True
+            
+            # Tous les patients disponibles pour commencer
+            form.fields['patient'].queryset = CustomUser.objects.filter(role='patient')
+        else:
+            # Pour les admins : tous les médecins et patients
+            form.fields['medecin'].queryset = CustomUser.objects.filter(role='docteur')
+            form.fields['patient'].queryset = CustomUser.objects.filter(role='patient')
+    
+    return render(request, 'main/nouveau_rdv.html', {'form': form})
+
 @login_required
 def nouveau_rdv(request):
-    """Créer un nouveau rendez-vous"""
-    if request.user.role != 'patient':
-        messages.error(request, 'Accès réservé aux patients.')
-        return redirect('dashboard')
-
-    if request.method == 'POST':
-        # Traitement manuel des données du formulaire
-        medecin_id = request.POST.get('medecin')
-        date_rdv = request.POST.get('date_rdv')
-        heure_rdv = request.POST.get('heure_rdv')
-        motif = request.POST.get('motif')
-        
-        # Validation
-        errors = []
-        if not medecin_id:
-            errors.append('Veuillez sélectionner un médecin.')
-        if not date_rdv:
-            errors.append('Veuillez sélectionner une date.')
-        if not heure_rdv:
-            errors.append('Veuillez sélectionner une heure.')
-        if not motif:
-            errors.append('Veuillez saisir un motif.')
-            
-        if errors:
-            for error in errors:
-                messages.error(request, error)
-        else:
-            try:
-                # Créer le rendez-vous
-                medecin = CustomUser.objects.get(id=medecin_id, role='docteur')
-                rdv = RendezVous.objects.create(
-                    patient=request.user,
-                    medecin=medecin,
-                    date_rdv=date_rdv,
-                    heure_rdv=heure_rdv,
-                    motif=motif,
-                    status='programme'
-                )
-                messages.success(request, 'Votre rendez-vous a été programmé avec succès!')
-                return redirect('mes_rdv')
-            except Exception as e:
-                messages.error(request, f'Erreur lors de la création du rendez-vous: {str(e)}')
-
-    # Récupérer tous les médecins actifs
-    medecins = CustomUser.objects.filter(role='docteur', is_active=True)
+    # Vérification manuelle des permissions
+    user_role = getattr(request.user, 'role', None)
+    print(f"DEBUG - Role de l'utilisateur: {user_role}")  # Pour déboguer
     
-    return render(request, 'main/nouveau_rdv.html', {
-        'medecins': medecins
-    })
+    if not (user_role == 'docteur' or request.user.is_superuser):
+        messages.error(request, f"Accès refusé. Votre rôle: {user_role}")
+        return redirect('dashboard_medecin')
+    
+    if request.method == 'POST':
+        form = RendezVousForm(request.POST)
+        if form.is_valid():
+            rdv = form.save(commit=False)
+            # Si c'est un médecin, l'assigner automatiquement
+            if user_role == 'docteur':
+                rdv.medecin = request.user
+            rdv.save()
+            messages.success(request, 'Rendez-vous ajouté avec succès!')
+            return redirect('dashboard_medecin')
+        else:
+            messages.error(request, 'Erreur lors de l\'ajout du rendez-vous.')
+            print("Erreurs de formulaire:", form.errors)
+    else:
+        form = RendezVousForm()
+        
+        # Filtrer les choix selon le rôle
+        if user_role == 'docteur':
+            # Pour les médecins : pré-sélectionner le médecin et filtrer les patients
+            form.fields['medecin'].queryset = CustomUser.objects.filter(id=request.user.id)
+            form.fields['medecin'].initial = request.user
+            form.fields['medecin'].widget.attrs['readonly'] = True
+            
+            # Tous les patients disponibles
+            form.fields['patient'].queryset = CustomUser.objects.filter(role='patient')
+        else:
+            # Pour les admins : tous les médecins et patients
+            form.fields['medecin'].queryset = CustomUser.objects.filter(role='docteur')
+            form.fields['patient'].queryset = CustomUser.objects.filter(role='patient')
+    
+    return render(request, 'main/nouveau_rdv.html', {'form': form})
+# @login_required
+# def nouveau_rdv(request):
+#     # Vérification manuelle des permissions
+#     user_role = getattr(request.user, 'role', None)
+#     print(f"DEBUG - Role de l'utilisateur: {user_role}")  # Pour déboguer
+    
+#     if not (user_role == 'docteur' or request.user.is_superuser):
+#         messages.error(request, f"Accès refusé. Votre rôle: {user_role}")
+#         return redirect('dashboard_medecin')
+#     if request.method == 'POST':
+#         # Traitement manuel des données du formulaire
+#         medecin_id = request.POST.get('medecin')
+#         date_rdv = request.POST.get('date_rdv')
+#         heure_rdv = request.POST.get('heure_rdv')
+#         motif = request.POST.get('motif')
+        
+#         # Validation
+#         errors = []
+#         if not medecin_id:
+#             errors.append('Veuillez sélectionner un médecin.')
+#         if not date_rdv:
+#             errors.append('Veuillez sélectionner une date.')
+#         if not heure_rdv:
+#             errors.append('Veuillez sélectionner une heure.')
+#         if not motif:
+#             errors.append('Veuillez saisir un motif.')
+            
+#         if errors:
+#             for error in errors:
+#                 messages.error(request, error)
+#         else:
+#             try:
+#                 # Créer le rendez-vous
+#                 medecin = CustomUser.objects.get(id=medecin_id, role='docteur')
+#                 rdv = RendezVous.objects.create(
+#                     patient=request.user,
+#                     medecin=medecin,
+#                     date_rdv=date_rdv,
+#                     heure_rdv=heure_rdv,
+#                     motif=motif,
+#                     status='programme'
+#                 )
+#                 messages.success(request, 'Votre rendez-vous a été programmé avec succès!')
+#                 return redirect('mes_rdv')
+#             except Exception as e:
+#                 messages.error(request, f'Erreur lors de la création du rendez-vous: {str(e)}')
+
+#     # Récupérer tous les médecins actifs
+#     medecins = CustomUser.objects.filter(role='docteur', is_active=True)
+    
+#     return render(request, 'main/nouveau_rdv.html', {
+#         'medecins': medecins
+#     })
 # Dans views.py
 @login_required
 def mes_rdv(request):
@@ -655,7 +763,11 @@ def nouveau_rdv(request):
     if request.user.role != 'patient':
         messages.error(request, 'Accès réservé aux patients.')
         return redirect('dashboard')
-
+    if request.user.role not in ['docteur', 'medecin', 'doctor']:
+        # Créer automatiquement le rôle si nécessaire
+        if hasattr(request.user, 'role'):
+            request.user.role = 'docteur'
+            request.user.save()
     if request.method == 'POST':
         # Traitement manuel des données du formulaire
         medecin_id = request.POST.get('medecin')
@@ -963,41 +1075,55 @@ def dashboard_patient(request):
         messages.error(request, f"Erreur lors du chargement du dashboard: {str(e)}")
         return redirect('home')
 
-@role_required(['docteur'])
+@login_required
 def dashboard_medecin(request):
-    try:
-        medecin, created = Medecin.objects.get_or_create(user=request.user)
-        today = timezone.now().date()
-
-        from django.db.models.functions import TruncDate
-
-        rdv_aujourdhui = RendezVous.objects.annotate(
-            date_only=TruncDate('date_rdv')
-        ).filter(
-            medecin=request.user,
-            date_only=today
-        ).count()
-
-        patients_total = RendezVous.objects.filter(
-            medecin=request.user
-        ).values('patient').distinct().count()
-
-        consultations_mois = Consultation.objects.filter(
-            rdv__medecin=request.user,
-            rdv__date_rdv__month=today.month
-        ).count()
-
-        context = {
-            'user': request.user,
-            'medecin': medecin,
-            'rdv_aujourdhui': rdv_aujourdhui,
-            'patients_total': patients_total,
-            'consultations_mois': consultations_mois,
-        }
-        return render(request, 'dashboard_medecin.html', context)
-    except Exception as e:
-        messages.error(request, f"Erreur lors du chargement du dashboard: {str(e)}")
-        return redirect('home')
+    """Dashboard pour les médecins - VERSION SIMPLE"""
+    if request.user.role != 'docteur':
+        messages.error(request, 'Accès réservé aux médecins.')
+        return redirect('dashboard')
+    
+    # Récupérer ou créer le profil médecin
+    medecin, created = Medecin.objects.get_or_create(user=request.user)
+    
+    from django.utils import timezone
+    today = timezone.now().date()
+    current_week = timezone.now().isocalendar()[1]
+    current_month = timezone.now().month
+    current_year = timezone.now().year
+    
+    # Calculs simples
+    rdv_aujourd_hui = RendezVous.objects.filter(
+        medecin=request.user, 
+        date_rdv=today
+    ).order_by('heure_rdv')
+    
+    rdv_semaine = RendezVous.objects.filter(
+        medecin=request.user,
+        date_rdv__week=current_week,
+        date_rdv__year=current_year
+    ).order_by('date_rdv', 'heure_rdv')
+    
+    total_patients = RendezVous.objects.filter(
+        medecin=request.user
+    ).values('patient').distinct().count()
+    
+    consultations_mois = Consultation.objects.filter(
+        rdv__medecin=request.user,
+        created_at__month=current_month,
+        created_at__year=current_year
+    ).count()
+    
+    context = {
+        'medecin': medecin,
+        'today': today,
+        'rdv_aujourd_hui': rdv_aujourd_hui,
+        'rdv_semaine': rdv_semaine,
+        'rdv_count': rdv_aujourd_hui.count(),
+        'total_patients': total_patients,
+        'consultations_mois': consultations_mois,
+    }
+    
+    return render(request, 'dashboard_medecin.html', context)
 
 
 @role_required(['infirmier'])
