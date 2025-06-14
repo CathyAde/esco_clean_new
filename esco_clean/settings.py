@@ -83,9 +83,10 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Internationalization
 LANGUAGE_CODE = 'fr-fr'
-TIME_ZONE = 'Europe/Paris'
 USE_I18N = True
 USE_TZ = True
+TIME_ZONE = 'Africa/Brazzaville'  # dans settings.py
+
 
 # Static files (CSS, JavaScript, Images)
 # settings.py

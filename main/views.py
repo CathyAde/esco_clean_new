@@ -24,6 +24,7 @@ from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
 from io import BytesIO
 import datetime
 from datetime import datetime, time
+from django.utils.timezone import make_aware, is_naive
 @login_required
 def download_my_dossier_pdf(request):
     """Télécharger le dossier médical en PDF avec header ESCO"""
@@ -344,46 +345,25 @@ def nouveau_rdv(request):
 
 @login_required
 def nouveau_rdv(request):
-    # Vérification manuelle des permissions
-    user_role = getattr(request.user, 'role', None)
-    print(f"DEBUG - Role de l'utilisateur: {user_role}")  # Pour déboguer
-    
-    if not (user_role == 'docteur' or request.user.is_superuser):
-        messages.error(request, f"Accès refusé. Votre rôle: {user_role}")
-        return redirect('dashboard_medecin')
-    
+    user = request.user
+    medecins = CustomUser.objects.filter(role='docteur', is_active=True)
+
     if request.method == 'POST':
-        form = RendezVousForm(request.POST)
+        form = RendezVousForm(request.POST, medecins=medecins)
         if form.is_valid():
             rdv = form.save(commit=False)
-            # Si c'est un médecin, l'assigner automatiquement
-            if user_role == 'docteur':
-                rdv.medecin = request.user
+            rdv.patient = user  # ou selon rôle
             rdv.save()
-            messages.success(request, 'Rendez-vous ajouté avec succès!')
-            return redirect('dashboard_medecin')
-        else:
-            messages.error(request, 'Erreur lors de l\'ajout du rendez-vous.')
-            print("Erreurs de formulaire:", form.errors)
+            messages.success(request, "Rendez-vous enregistré avec succès.")
+            return redirect('dashboard_patient')
     else:
-        form = RendezVousForm()
-        
-        # Filtrer les choix selon le rôle
-        if user_role == 'docteur':
-            # Pour les médecins : pré-sélectionner le médecin et filtrer les patients
-            form.fields['medecin'].queryset = CustomUser.objects.filter(id=request.user.id)
-            form.fields['medecin'].initial = request.user
-            form.fields['medecin'].widget.attrs['readonly'] = True
-            
-            # Tous les patients disponibles
-            form.fields['patient'].queryset = CustomUser.objects.filter(role='patient')
-        else:
-            # Pour les admins : tous les médecins et patients
-            form.fields['medecin'].queryset = CustomUser.objects.filter(role='docteur')
-            form.fields['patient'].queryset = CustomUser.objects.filter(role='patient')
-    
-    return render(request, 'main/nouveau_rdv.html', {'form': form})
-# @login_required
+        form = RendezVousForm(medecins=medecins)
+
+    context = {
+        'form': form,
+    }
+    return render(request, 'nouveau_rdv.html', context)
+
 # def nouveau_rdv(request):
 #     # Vérification manuelle des permissions
 #     user_role = getattr(request.user, 'role', None)
@@ -1201,7 +1181,9 @@ def nouveau_rdv(request):
             # Combiner date et heure
             datetime_str = f"{date_rdv} {heure_rdv}"
             date_rdv_complete = datetime.strptime(datetime_str, '%Y-%m-%d %H:%M')
-            
+            if is_naive(date_rdv_complete):
+                date_rdv_complete = make_aware(date_rdv_complete)
+
             # Vérifier si la date est dans le futur
             if date_rdv_complete <= timezone.now():
                 messages.error(request, 'La date du rendez-vous doit être dans le futur.')
