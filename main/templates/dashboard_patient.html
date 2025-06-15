@@ -303,7 +303,7 @@
         </div>
         
         <div class="col-md-3 col-sm-6 mb-3">
-            <div class="stat-card-glass animate-slide-in" onclick="navigateTo('{% url 'mes_consultations' %}')" style="animation-delay: 0.2s">
+            <div class="stat-card-glass animate-slide-in" onclick="navigateTo('{% url 'consultations' %}')" style="animation-delay: 0.2s">
                 <div class="stat-icon-modern">
                     <i class="fas fa-stethoscope"></i>
                 </div>
@@ -381,7 +381,7 @@
             </div>
             
             <div class="col-md-3 col-sm-6 mb-3">
-                <a href="{% url 'mes_consultations' %}" class="action-card-modern" onclick="trackAction('consultations')">
+                <a href="{% url 'consultations' %}" class="action-card-modern" onclick="trackAction('consultations')">
                     <div class="action-icon-modern action-icon-info">
                         <i class="fas fa-stethoscope"></i>
                     </div>
@@ -538,7 +538,7 @@
                     </div>
                     
                     <div class="text-center mt-3">
-                        <a href="{% url 'mes_consultations' %}" class="btn-glass">
+                        <a href="{% url 'consultations' %}" class="btn-glass">
                             <i class="fas fa-history"></i>
                             Historique complet
                         </a>
@@ -742,7 +742,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     break;
                 case '3':
                     e.preventDefault();
-                    navigateTo('{% url "mes_consultations" %}');
+                    navigateTo('{% url "consultations" %}');
                     break;
                 case '4':
                     e.preventDefault();
@@ -864,7 +864,7 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
         
         <div class="col-md-3 col-sm-6 mb-3">
-            <a href="{% url 'mes_consultations' %}" class="action-card d-block" style="text-decoration: none; transition: all 0.3s ease;">
+            <a href="{% url 'consultations' %}" class="action-card d-block" style="text-decoration: none; transition: all 0.3s ease;">
                 <div class="card h-100 border-0 shadow-sm" style="border-radius: 12px; overflow: hidden;">
                     <div class="card-body text-center p-4">
                         <div class="action-icon" style="width: 60px; height: 60px; margin: 0 auto 1rem; background: linear-gradient(135deg, #3b82f6, #1d4ed8); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;">
@@ -986,7 +986,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
                 
                 <div class="text-center mt-3">
-                    <a href="{% url 'mes_consultations' %}" class="btn btn-outline-primary">
+                    <a href="{% url 'consultations' %}" class="btn btn-outline-primary">
                         <i class="fas fa-history me-2"></i>Voir l'historique complet
                     </a>
                 </div>

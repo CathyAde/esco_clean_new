@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Mes Consultations - ESCO{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-primary">
+            <i class="fas fa-notes-medical me-2"></i>Mes Consultations
+        </h2>
+        <a href="{% url 'dashboard_patient' %}" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left"></i> Retour
+        </a>
+    </div>
+
+    <!-- 👇 Statistiques de debug propres en haut -->
+    <div class="mb-4">
+        <h5 class="text-muted">Consultations trouvées : {{ consultations_list|length }}</h5>
+    </div>
+
+    {% if consultations_list %}
+        <div class="row g-4">
+            {% for c in consultations_list %}
+                <div class="col-md-6">
+                    <div class="card shadow-sm border-0 h-100">
+                        <div class="card-body">
+                            <h5 class="card-title text-primary">
+                                Consultation du {{ c.rdv.date_rdv|date:"d/m/Y" }}
+                            </h5>
+                            <p><strong>Médecin :</strong> Dr. {{ c.rdv.medecin.get_full_name }}</p>
+                            <p><strong>Symptômes :</strong> {{ c.symptomes|default:"Non renseigné" }}</p>
+                            <p><strong>Diagnostic :</strong> {{ c.diagnostic|default:"Non renseigné" }}</p>
+                            <p><strong>Traitement :</strong> {{ c.traitement|default:"Non renseigné" }}</p>
+                            <p><strong>Observations :</strong> {{ c.observations|default:"-" }}</p>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center mt-5">
+            <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+            <h4 class="text-muted">Aucune consultation trouvée.</h4>
+            <p>Vous n'avez encore aucune consultation enregistrée.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

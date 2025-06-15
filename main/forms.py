@@ -1,6 +1,18 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from .models import CustomUser, RendezVous, Patient, Medecin, Infirmier, Secretaire
+from .models import Consultation
+
+class ConsultationForm(forms.ModelForm):
+    class Meta:
+        model = Consultation
+        fields = ['symptomes', 'diagnostic', 'traitement', 'observations']
+        widgets = {
+            'symptomes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'diagnostic': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'traitement': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'observations': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+        }
 
 
 class CustomUserCreationForm(UserCreationForm):

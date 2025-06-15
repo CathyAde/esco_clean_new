@@ -1,0 +1,11 @@
+<h1>Debug RDV pour {{ user.username }}</h1>
+<p>Rôle: {{ user.role }}</p>
+<p>Total RDV: {{ rdv_list|length }}</p>
+
+<ul>
+{% for rdv in rdv_list %}
+    <li>{{ rdv.date_rdv }} à {{ rdv.heure_rdv|time:"H:i" }} - Dr. {{ rdv.medecin.get_full_name }} - {{ rdv.motif }}</li>
+{% empty %}
+    <li>Aucun RDV trouvé</li>
+{% endfor %}
+</ul>

@@ -55,7 +55,7 @@
 
     <!-- Actions rapides -->
     <div class="quick-actions">
-        <div class="action-card primary clickable" onclick="navigateTo('{% url 'mes_consultations_medecin' %}')">
+        <div class="action-card primary clickable" onclick="navigateTo('{% url 'consultations_medecin' %}')">
             <div class="action-icon">
                 <i class="fas fa-calendar-check"></i>
             </div>
@@ -883,7 +883,7 @@ function createParticle(x, y) {
 
     <!-- Actions rapides -->
     <div class="quick-actions">
-        <div class="action-card primary clickable" onclick="navigateTo('{% url 'mes_consultations_medecin' %}')">
+        <div class="action-card primary clickable" onclick="navigateTo('{% url 'consultations_medecin' %}')">
             <div class="action-icon">
                 <i class="fas fa-calendar-check"></i>
             </div>
@@ -1725,7 +1725,7 @@ function createParticle(x, y) {
 
     <!-- Actions rapides -->
     <div class="quick-actions">
-        <div class="action-card primary clickable" onclick="navigateTo('{% url 'mes_consultations_medecin' %}')">
+        <div class="action-card primary clickable" onclick="navigateTo('{% url 'consultations_medecin' %}')">
             <div class="action-icon">
                 <i class="fas fa-calendar-check"></i>
             </div>
@@ -2290,7 +2290,7 @@ function updateTime() {
                 <p>Planning du jour et rendez-vous</p>
                 <div class="action-meta">{{ rdv_count|default:"12" }} aujourd'hui</div>
             </div>
-            <a href="{% url 'mes_consultations_medecin' %}" class="action-button">
+            <a href="{% url 'consultations_medecin' %}" class="action-button">
     <i class="fas fa-arrow-right"></i>
 </a>
         </div>

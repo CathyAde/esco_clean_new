@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block title %}Ajouter une consultation{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h2 class="text-primary mb-4">
+        <i class="fas fa-file-medical-alt me-2"></i> Consultation pour {{ rdv.patient.get_full_name }}
+    </h2>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+
+        <div class="mb-3">
+            <label class="form-label">Symptômes</label>
+            {{ form.symptomes }}
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Diagnostic</label>
+            {{ form.diagnostic }}
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Traitement</label>
+            {{ form.traitement }}
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Observations</label>
+            {{ form.observations }}
+        </div>
+
+        <button type="submit" class="btn btn-success">
+            <i class="fas fa-check"></i> Enregistrer la consultation
+        </button>
+        <a href="{% url 'dashboard_medecin' %}" class="btn btn-secondary ms-2">
+            <i class="fas fa-times"></i> Annuler
+        </a>
+    </form>
+</div>
+{% endblock %}
