@@ -8,11 +8,12 @@ urlpatterns = [
     path('login/', views.login_view, name='login'),
     path('inscription/', views.inscription, name='register'),
     path('logout/', views.logout_view, name='logout'),
-    
+    path('tous-rdv/', views.tous_les_rdv, name='tous_rdv'),
     # Dashboard principal
     path('dashboard/', views.dashboard, name='dashboard'),
     path('mon-dossier-medical/', views.mon_dossier_medical, name='mon_dossier_medical'),
-    # Dashboards par rôle
+    path('medecin/prescription/imprimer/<int:prescription_id>/', views.imprimer_prescription, name='imprimer_prescription'),
+    path('medecin/nouvelle-consultation/', views.nouvelle_consultation, name='nouvelle_consultation'),
     path('dashboard/patient/', views.dashboard_patient, name='dashboard_patient'),
     path('dashboard/medecin/', views.dashboard_medecin, name='dashboard_medecin'),
     path('dashboard/infirmier/', views.dashboard_infirmier, name='dashboard_infirmier'),

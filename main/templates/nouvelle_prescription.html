@@ -30,12 +30,19 @@
             <h3 style="color: white; margin: 0 0 1rem 0; font-size: 1.25rem;">
                 <i class="fas fa-user" style="margin-right: 0.5rem;"></i>Sélectionner un Patient
             </h3>
-            <select style="width: 100%; padding: 0.75rem; border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 12px; background: rgba(255, 255, 255, 0.1); color: white; backdrop-filter: blur(10px); font-size: 1rem;">
-                <option value="">Choisir un patient...</option>
-                <option value="1">Marie Dubois</option>
-                <option value="2">Pierre Martin</option>
-                <option value="3">Sophie Laurent</option>
-            </select>
+            <select name="patient_id" class="form-control" required>
+    <option value="">Choisir un patient...</option>
+    {% for patient in patients %}
+        <option value="{{ patient.id }}">
+            {% if patient.first_name and patient.last_name %}
+                {{ patient.first_name }} {{ patient.last_name }}
+            {% else %}
+                {{ patient.username }}
+            {% endif %}
+            {% if patient.user_id %} ({{ patient.user_id }}){% endif %}
+        </option>
+    {% endfor %}
+</select>
         </div>
 
         <div style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(20px); border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.2); padding: 2rem;">

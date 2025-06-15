@@ -94,34 +94,57 @@ class CustomUserCreationForm(UserCreationForm):
             print(f"Erreur lors de la création du profil spécialisé: {e}")
 
 
+# Dans main/forms.py - REMPLACEZ complètement la classe RendezVousForm
 class RendezVousForm(forms.ModelForm):
+    
+    heure_rdv = forms.TimeField(
+        widget=forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'}),
+        required=True
+    )
+     
     class Meta:
         model = RendezVous
-        fields = ['medecin', 'date_rdv', 'heure_rdv', 'motif']
+        fields = ['patient', 'medecin', 'date_rdv', 'heure_rdv', 'motif']  # ⭐ Ajouter 'patient'
         widgets = {
             'date_rdv': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
             'heure_rdv': forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'}),
-            'motif': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'motif': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
+            'patient': forms.Select(attrs={'class': 'form-select'}),  # ⭐ Ajouter le widget patient
+            'medecin': forms.Select(attrs={'class': 'form-select'}),
         }
 
     def __init__(self, *args, **kwargs):
-        medecins = kwargs.pop('medecins', None)  # 👈 extraire les médecins passés en argument
+        medecins = kwargs.pop('medecins', None)
         super().__init__(*args, **kwargs)
 
-        # Si des médecins sont passés à la vue
+        # Queryset pour les médecins
         if medecins is not None:
             self.fields['medecin'].queryset = medecins
         else:
             self.fields['medecin'].queryset = CustomUser.objects.filter(role='docteur', is_active=True)
 
+        # Queryset pour les patients ⭐ AJOUTER CETTE LIGNE
+        self.fields['patient'].queryset = CustomUser.objects.filter(role='patient', is_active=True)
+
+        # Labels
         self.fields['medecin'].label = "Choisir un médecin"
+        self.fields['patient'].label = "Choisir un patient"  # ⭐ AJOUTER ce label
         self.fields['medecin'].empty_label = "-- Sélectionner un médecin --"
+        self.fields['patient'].empty_label = "-- Sélectionner un patient --"  # ⭐ AJOUTER ceci
+        
         self.fields['medecin'].widget.attrs.update({
             'class': 'form-select',
             'required': 'required'
         })
+        self.fields['patient'].widget.attrs.update({  # ⭐ AJOUTER ceci
+            'class': 'form-select',
+            'required': 'required'
+        })
+        
+        # Fonction pour afficher les noms des médecins
         self.fields['medecin'].label_from_instance = lambda obj: f"Dr. {obj.get_full_name()} - {obj.specialite or 'Généraliste'}"
-
+        # Fonction pour afficher les noms des patients ⭐ AJOUTER ceci
+        self.fields['patient'].label_from_instance = lambda obj: f"{obj.get_full_name() or obj.username}"
     
     
 
@@ -145,149 +168,4 @@ class ProfileUpdateForm(forms.ModelForm):
         }
 
         
-        
-        # from django import forms
-# from django.contrib.auth.forms import UserCreationForm
-# from .models import CustomUser, RendezVous, Patient, Medecin, Infirmier, Secretaire
-
-# class CustomUserCreationForm(UserCreationForm):
-#     email = forms.EmailField(required=True)
-#     first_name = forms.CharField(max_length=30, required=True, label="Prénom")
-#     last_name = forms.CharField(max_length=30, required=True, label="Nom")
-#     telephone = forms.CharField(max_length=15, required=False)
-#     role = forms.ChoiceField(choices=CustomUser.ROLES, required=True, label="Rôle")
-    
-#     # Champs conditionnels selon le rôle
-#     specialite = forms.CharField(max_length=100, required=False, label="Spécialité")
-#     numero_licence = forms.CharField(max_length=50, required=False, label="Numéro de licence")
-#     service = forms.CharField(max_length=100, required=False, label="Service")
-    
-#     class Meta:
-#         model = CustomUser
-#         fields = ('username', 'email', 'first_name', 'last_name', 'telephone', 'role', 'password1', 'password2')
-    
-#     def __init__(self, *args, **kwargs):
-#         super().__init__(*args, **kwargs)
-#         self.fields['username'].help_text = None
-#         self.fields['password1'].help_text = None
-#         self.fields['password2'].help_text = None
-    
-#     def clean(self):
-#         cleaned_data = super().clean()
-#         role = cleaned_data.get('role')
-        
-#         # Validation selon le rôle
-#         if role in ['docteur', 'infirmier'] and not cleaned_data.get('specialite'):
-#             if role == 'docteur':
-#                 self.add_error('specialite', 'La spécialité est requise pour les médecins.')
-#             elif role == 'infirmier':
-#                 self.add_error('service', 'Le service est requis pour les infirmiers.')
-        
-#         return cleaned_data
-    
-#     def save(self, commit=True):
-#         user = super().save(commit=False)
-#         user.email = self.cleaned_data['email']
-#         user.first_name = self.cleaned_data['first_name']
-#         user.last_name = self.cleaned_data['last_name']
-#         user.telephone = self.cleaned_data['telephone']
-#         user.role = self.cleaned_data['role']
-#         user.specialite = self.cleaned_data.get('specialite', '')
-#         user.numero_licence = self.cleaned_data.get('numero_licence', '')
-        
-#         if commit:
-#             user.save()
-#             # Créer le profil spécialisé selon le rôle
-#             self._create_specialized_profile(user)
-        
-#         return user
-    
-#     def _create_specialized_profile(self, user):
-#         """Crée le profil spécialisé selon le rôle de l'utilisateur"""
-#         if user.role == 'patient':
-#             Patient.objects.create(user=user)
-#         elif user.role == 'docteur':
-#             Medecin.objects.create(
-#                 user=user,
-#                 specialite=self.cleaned_data.get('specialite', '')
-#             )
-#         elif user.role == 'infirmier':
-#             Infirmier.objects.create(
-#                 user=user,
-#                 service=self.cleaned_data.get('service', '')
-#             )
-#         elif user.role == 'secretaire':
-#             Secretaire.objects.create(
-#                 user=user,
-#                 service=self.cleaned_data.get('service', '')
-#             )
-
-# class RendezVousForm(forms.ModelForm):
-#     date_rdv = forms.DateField(
-#         widget=forms.DateInput(attrs={'type': 'date'}),
-#         label="Date"
-#     )
-#     heure_rdv = forms.TimeField(
-#         widget=forms.TimeInput(attrs={'type': 'time'}),
-#         label="Heure"
-#     )
-    
-#     class Meta:
-#         model = RendezVous
-#         fields = ['medecin', 'motif']
-#         widgets = {
-#             'motif': forms.Textarea(attrs={'rows': 3}),
-#         }
-    
-#     def __init__(self, *args, **kwargs):
-#         super().__init__(*args, **kwargs)
-#         # Filtrer pour ne montrer que les médecins actifs
-#         self.fields['medecin'].queryset = CustomUser.objects.filter(role='docteur', is_active=True)
-#         self.fields['medecin'].empty_label = "Choisir un médecin..."
-
-# class ProfileUpdateForm(forms.ModelForm):
-#     class Meta:
-#         model = CustomUser
-#         fields = ['first_name', 'last_name', 'email', 'telephone', 'adresse']
-#         widgets = {
-#             'adresse': forms.Textarea(attrs={'rows': 3}),
-#         }
-#         labels = {
-#             'first_name': 'Prénom',
-#             'last_name': 'Nom',
-#             'email': 'Email',
-#             'telephone': 'Téléphone',
-#             'adresse': 'Adresse',
-#         }# # main/forms.py
-# # from django import forms
-# # from django.contrib.auth.forms import UserCreationForm
-# # from .models import CustomUser
-
-# # class CustomUserCreationForm(UserCreationForm):
-# #     email = forms.EmailField(required=True)
-# #     telephone = forms.CharField(max_length=15, required=False)
-# #     adresse = forms.CharField(widget=forms.Textarea, required=False)
-    
-# #     ROLE_CHOICES = [
-# #         ('patient', 'Patient'),
-# #         ('docteur', 'Docteur'),
-# #         ('infirmier', 'Infirmier'),
-# #         ('secretaire', 'Secrétaire'),
-# #     ]
-    
-# #     role = forms.ChoiceField(choices=ROLE_CHOICES, required=True)
-
-# #     class Meta:
-# #         model = CustomUser
-# #         fields = ('username', 'email', 'password1', 'password2', 'role', 'telephone', 'adresse')
-
-# #     def save(self, commit=True):
-# #         user = super().save(commit=False)
-# #         user.email = self.cleaned_data['email']
-# #         user.role = self.cleaned_data['role']
-# #         user.telephone = self.cleaned_data['telephone']
-# #         user.adresse = self.cleaned_data['adresse']
-        
-# #         if commit:
-# #             user.save()
-# #         return user
+     

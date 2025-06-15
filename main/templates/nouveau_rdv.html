@@ -1,9 +1,8 @@
 {% extends 'base.html' %}
 {% load static %}
-{% load form_filters %}
-
 
 {% block title %}Prise de rendez-vous - ESCO{% endblock %}
+
 {% block content %}
 <div class="container-fluid py-4">
     <div class="row justify-content-center">
@@ -15,6 +14,7 @@
                     </h2>
                 </div>
                 <div class="card-body p-4">
+
                     {% if messages %}
                         {% for message in messages %}
                             <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
@@ -23,98 +23,88 @@
                             </div>
                         {% endfor %}
                     {% endif %}
+
                     <form method="post">
                         {% csrf_token %}
-                        <!-- Patient (caché pour les patients) -->
+
+                        <!-- Section Patient -->
                         {% if user.role != 'patient' %}
-                        <div class="mb-4">
-                            <label for="{{ form.patient.id_for_label }}" class="form-label fw-bold">
-                                Patient <span class="text-danger">*</span>
-                            </label>
-                            <select name="patient" id="{{ form.patient.id_for_label }}" class="form-select" required>
-                                <option value="">-- Choisir un patient --</option>
-                                {% for patient in form.patient.field.queryset %}
-                                    <option value="{{ patient.id }}" {% if form.patient.value == patient.id %}selected{% endif %}>
-                                        {{ patient.get_full_name|default:patient.username }}
-                                    </option>
-                                {% endfor %}
-                            </select>
-                            {% if form.patient.errors %}
-                                <div class="text-danger">{{ form.patient.errors }}</div>
-                            {% endif %}
-                        </div>
+                            <div class="mb-4">
+                                <label for="id_patient" class="form-label fw-bold">
+                                    Patient <span class="text-danger">*</span>
+                                </label>
+                                <select name="patient" id="id_patient" class="form-select" required>
+                                    <option value="">-- Choisir un patient --</option>
+                                    {% for patient in patients %}
+                                        <option value="{{ patient.id }}">
+                                            {{ patient.get_full_name|default:patient.username }}
+                                            {% if patient.user_id %} ({{ patient.user_id }}){% endif %}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
                         {% else %}
                             <input type="hidden" name="patient" value="{{ user.id }}">
                         {% endif %}
-                        <!-- Médecin -->
+
+                        <!-- Section Médecin -->
                         {% if user.role != 'docteur' %}
-                        <div class="mb-4">
-                            <label for="{{ form.medecin.id_for_label }}" class="form-label fw-bold">
-                                Choisir un médecin <span class="text-danger">*</span>
-                            </label>
-                            <select name="medecin" id="{{ form.medecin.id_for_label }}" class="form-select" required>
-                                <option value="">-- Sélectionner un médecin --</option>
-                                {% for medecin in form.medecin.field.queryset %}
-                                    <option value="{{ medecin.id }}" {% if form.medecin.value == medecin.id %}selected{% endif %}>
-                                        Dr. {{ medecin.get_full_name|default:medecin.username }}
-                                        {% if medecin.specialite %} - {{ medecin.specialite }}{% endif %}
-                                    </option>
-                                {% endfor %}
-                            </select>
-                            {% if form.medecin.errors %}
-                                <div class="text-danger">{{ form.medecin.errors }}</div>
-                            {% endif %}
-                        </div>
+                            <div class="mb-4">
+                                <label for="id_medecin" class="form-label fw-bold">
+                                    Choisir un médecin <span class="text-danger">*</span>
+                                </label>
+                                <select name="medecin" id="id_medecin" class="form-select" required>
+                                    <option value="">-- Sélectionner un médecin --</option>
+                                    {% for medecin in medecins %}
+                                        <option value="{{ medecin.id }}">
+                                            Dr. {{ medecin.get_full_name|default:medecin.username }}
+                                            {% if medecin.specialite %} - {{ medecin.specialite }}{% endif %}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
                         {% else %}
                             <input type="hidden" name="medecin" value="{{ user.id }}">
                         {% endif %}
+
                         <!-- Date et heure -->
                         <div class="row mb-4">
                             <div class="col-md-6">
-                                <label for="{{ form.date_rdv.id_for_label }}" class="form-label fw-bold">
+                                <label for="id_date_rdv" class="form-label fw-bold">
                                     Date <span class="text-danger">*</span>
                                 </label>
                                 <input type="date" 
                                        name="date_rdv" 
-                                       id="{{ form.date_rdv.id_for_label }}" 
+                                       id="id_date_rdv" 
                                        class="form-control" 
-                                       value="{{ form.date_rdv.value|default:'' }}"
                                        required>
-                                {% if form.date_rdv.errors %}
-                                    <div class="text-danger">{{ form.date_rdv.errors }}</div>
-                                {% endif %}
                             </div>
                             <div class="col-md-6">
-                                <label for="{{ form.heure_rdv.id_for_label }}" class="form-label fw-bold">
+                                <label for="id_heure_rdv" class="form-label fw-bold">
                                     Heure <span class="text-danger">*</span>
                                 </label>
                                 <input type="time" 
                                        name="heure_rdv" 
-                                       id="{{ form.heure_rdv.id_for_label }}" 
+                                       id="id_heure_rdv" 
                                        class="form-control" 
-                                       value="{{ form.heure_rdv.value|default:'' }}"
                                        required>
-                                {% if form.heure_rdv.errors %}
-                                    <div class="text-danger">{{ form.heure_rdv.errors }}</div>
-                                {% endif %}
                             </div>
                         </div>
+
                         <!-- Motif -->
                         <div class="mb-4">
-                            <label for="{{ form.motif.id_for_label }}" class="form-label fw-bold">
+                            <label for="id_motif" class="form-label fw-bold">
                                 Motif de consultation <span class="text-danger">*</span>
                             </label>
                             <textarea name="motif" 
-                                      id="{{ form.motif.id_for_label }}" 
+                                      id="id_motif" 
                                       rows="4" 
                                       class="form-control" 
                                       required
-                                      placeholder="Ex. : douleur abdominale, contrôle tension, etc.">{{ form.motif.value|default:'' }}</textarea>
-                            {% if form.motif.errors %}
-                                <div class="text-danger">{{ form.motif.errors }}</div>
-                            {% endif %}
+                                      placeholder="Ex. : douleur abdominale, contrôle tension, etc."></textarea>
                             <small class="text-muted">Soyez aussi précis que possible pour une meilleure prise en charge.</small>
                         </div>
+
                         <!-- Informations importantes -->
                         <div class="alert alert-info">
                             <h5 class="fw-bold">À savoir</h5>
@@ -125,6 +115,7 @@
                                 <li>Urgence ? Appelez le 15 immédiatement.</li>
                             </ul>
                         </div>
+
                         <!-- Boutons -->
                         <div class="d-flex justify-content-between">
                             <a href="{% if user.role == 'patient' %}{% url 'dashboard_patient' %}{% else %}{% url 'dashboard_medecin' %}{% endif %}" class="btn btn-secondary">
@@ -140,6 +131,7 @@
         </div>
     </div>
 </div>
+
 <script>
 // Définir la date minimum à aujourd'hui
 document.addEventListener('DOMContentLoaded', function() {

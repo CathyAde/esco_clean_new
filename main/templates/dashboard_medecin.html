@@ -36,10 +36,18 @@
                     <div class="stat-icon">
                         <i class="fas fa-stethoscope"></i>
                     </div>
-                    <div class="stat-content">
-                        <div class="stat-number counter">{{ consultations_mois|default:0 }}</div>
-                        <div class="stat-label">Consultations</div>
-                    </div>
+                    <div class="action-card accent clickable" onclick="navigateTo('{% url 'nouvelle_consultation' %}')">
+    <div class="action-icon">
+        <i class="fas fa-stethoscope"></i>
+    </div>
+    <div class="action-content">
+        <h3>Nouvelle Consultation</h3>
+        <p>Enregistrer une consultation</p>
+    </div>
+    <div class="action-button">
+        <i class="fas fa-arrow-right"></i>
+    </div>
+</div>
                 </div>
             </div>
         </div>
@@ -105,37 +113,16 @@
                     </button>
                 </div>
             </div>
-            
             <div class="empty-state">
-                <i class="fas fa-calendar-alt"></i>
-                <h4>Aucun rendez-vous aujourd'hui</h4>
-                <p>Vous n'avez pas de consultation programmée pour aujourd'hui</p>
-                <button class="btn-primary" onclick="navigateTo('{% url 'nouveau_rdv' %}')">
-                    <i class="fas fa-plus"></i> Planifier une consultation
-                </button>
-            </div>
+    <i class="fas fa-calendar-alt"></i>
+    <h4>Aucun rendez-vous aujourd'hui</h4>
+    <p>Vous n'avez pas de consultation programmée pour aujourd'hui</p>
+</div>
         </div>
 
         <!-- Sidebar simplifiée -->
         <div class="content-sidebar">
-            <!-- Actions rapides sidebar -->
-            <div class="sidebar-section">
-                <h4><i class="fas fa-rocket me-2"></i>Actions Rapides</h4>
-                <div class="sidebar-actions">
-                    <button class="sidebar-btn primary clickable" onclick="navigateTo('{% url 'nouveau_rdv' %}')">
-                        <i class="fas fa-plus"></i>
-                        Nouvelle consultation
-                    </button>
-                    <button class="sidebar-btn secondary clickable" onclick="navigateTo('/admin/main/patient/add/')">
-                        <i class="fas fa-user-plus"></i>
-                        Nouveau patient
-                    </button>
-                    <button class="sidebar-btn accent clickable" onclick="navigateTo('{% url 'nouvelle_prescription' %}')">
-                        <i class="fas fa-prescription"></i>
-                        Ordonnance rapide
-                    </button>
-                </div>
-            </div>
+           
 
             <!-- Section vide pour les notifications -->
             <div class="sidebar-section">
