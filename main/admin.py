@@ -1,9 +1,10 @@
+
 # main/admin.py
 from django.contrib import admin
 from django.contrib.admin import AdminSite, SimpleListFilter
 from django.utils.html import format_html
+# Dans admin.py ligne 6
 from .models import CustomUser, Patient, Medecin, Infirmier, Secretaire, RendezVous, Consultation, SoinsInfirmier, Planning
-
 class ESCOAdminSite(AdminSite):
     site_header = '🏥 ESCO - Administration Médicale'
     site_title = 'ESCO Admin'
@@ -49,47 +50,84 @@ class PatientAvecRdvFilter(SimpleListFilter):
         return queryset
 
 # ===== ADMIN CLASSES =====
+# Ajoute/remplace dans admin.py
+from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.forms import UserCreationForm, UserChangeForm
+
+class CustomUserCreationForm(UserCreationForm):
+    class Meta(UserCreationForm.Meta):
+        model = CustomUser
+        fields = UserCreationForm.Meta.fields + ('email', 'first_name', 'last_name', 'role')
+
+class CustomUserChangeForm(UserChangeForm):
+    class Meta(UserChangeForm.Meta):
+        model = CustomUser
+
 @admin.register(CustomUser, site=admin_site)
-class CustomUserAdmin(admin.ModelAdmin):
-    list_display = ('user_id_display', 'username', 'get_full_name', 'email', 'role', 'is_active', 'date_joined')
-    list_filter = ('role', 'is_active', 'date_joined')
-    search_fields = ('username', 'email', 'first_name', 'last_name', 'user_id')
-    readonly_fields = ('user_id', 'date_joined', 'last_login')
+class CustomUserAdmin(UserAdmin):
+    add_form = CustomUserCreationForm
+    form = CustomUserChangeForm
     
-    def user_id_display(self, obj):
-        return format_html(
-            '<span style="background: linear-gradient(135deg, #7c3aed, #a855f7); color: white; '
-            'padding: 0.25rem 0.75rem; border-radius: 20px; font-weight: 600; font-size: 0.8rem;">{}</span>',
-            obj.user_id or 'Non défini'
-        )
-    user_id_display.short_description = 'ID Utilisateur'
-    
-    def get_full_name(self, obj):
-        return obj.get_full_name() or obj.username
-    get_full_name.short_description = 'Nom complet'
-    
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        # Si l'utilisateur connecté est un médecin, ne montrer que lui-même
-        if hasattr(request.user, 'role') and request.user.role == 'docteur' and not request.user.is_superuser:
-            return qs.filter(id=request.user.id)
-        return qs
-    
-    fieldsets = (
-        ('Informations de base', {
-            'fields': ('username', 'password', 'user_id')
-        }),
-        ('Informations personnelles', {
-            'fields': ('first_name', 'last_name', 'email', 'telephone', 'adresse', 'date_naissance')
-        }),
-        ('Rôle et permissions', {
-            'fields': ('role', 'specialite', 'numero_licence', 'is_active', 'is_staff', 'is_superuser')
-        }),
-        ('Dates importantes', {
-            'fields': ('date_joined', 'last_login'),
-            'classes': ('collapse',)
+    # Configuration pour la création
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': ('username', 'email', 'password1', 'password2', 'role', 'first_name', 'last_name'),
         }),
     )
+    
+    # Configuration pour la modification
+    fieldsets = UserAdmin.fieldsets + (
+        ('Informations ESCO', {
+            'fields': ('role', 'user_id', 'telephone', 'adresse', 'specialite')
+        }),
+    )
+    
+    list_display = ('username', 'email', 'first_name', 'last_name', 'role', 'is_active')
+    list_filter = ('role', 'is_active', 'is_staff')
+    search_fields = ('username', 'email', 'first_name', 'last_name')
+
+# @admin.register(CustomUser, site=admin_site)
+# class CustomUserAdmin(admin.ModelAdmin):
+#     list_display = ('user_id_display', 'username', 'get_full_name', 'email', 'role', 'is_active', 'date_joined')
+#     list_filter = ('role', 'is_active', 'date_joined')
+#     search_fields = ('username', 'email', 'first_name', 'last_name', 'user_id')
+#     readonly_fields = ('user_id', 'date_joined', 'last_login')
+    
+#     def user_id_display(self, obj):
+#         return format_html(
+#             '<span style="background: linear-gradient(135deg, #7c3aed, #a855f7); color: white; '
+#             'padding: 0.25rem 0.75rem; border-radius: 20px; font-weight: 600; font-size: 0.8rem;">{}</span>',
+#             obj.user_id or 'Non défini'
+#         )
+#     user_id_display.short_description = 'ID Utilisateur'
+    
+#     def get_full_name(self, obj):
+#         return obj.get_full_name() or obj.username
+#     get_full_name.short_description = 'Nom complet'
+    
+#     def get_queryset(self, request):
+#         qs = super().get_queryset(request)
+#         # Si l'utilisateur connecté est un médecin, ne montrer que lui-même
+#         if hasattr(request.user, 'role') and request.user.role == 'docteur' and not request.user.is_superuser:
+#             return qs.filter(id=request.user.id)
+#         return qs
+    
+#     fieldsets = (
+#         ('Informations de base', {
+#             'fields': ('username', 'password', 'user_id')
+#         }),
+#         ('Informations personnelles', {
+#             'fields': ('first_name', 'last_name', 'email', 'telephone', 'adresse', 'date_naissance')
+#         }),
+#         ('Rôle et permissions', {
+#             'fields': ('role', 'specialite', 'numero_licence', 'is_active', 'is_staff', 'is_superuser')
+#         }),
+#         ('Dates importantes', {
+#             'fields': ('date_joined', 'last_login'),
+#             'classes': ('collapse',)
+#         }),
+#     )
 
 @admin.register(Patient, site=admin_site)
 class PatientAdmin(admin.ModelAdmin):
@@ -946,7 +984,3 @@ admin.site.index_title = "Système de Gestion Hospitalière"
 # # admin_site.register(Secretaire)
 # # admin_site.register(SoinsInfirmier)
 # # admin_site.register(Planning)
-
-
-
-

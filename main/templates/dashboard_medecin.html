@@ -82,6 +82,33 @@
             </div>
         </div>
 
+        <!-- Ajoute cette action card -->
+<div class="action-card success clickable" onclick="navigateTo('{% url 'nouveau_rdv' %}')">
+    <div class="action-icon">
+        <i class="fas fa-calendar-plus"></i>
+    </div>
+    <div class="action-content">
+        <h3>Nouveau RDV</h3>
+        <p>Planifier un rendez-vous patient</p>
+    </div>
+    <div class="action-button">
+        <i class="fas fa-arrow-right"></i>
+    </div>
+</div>
+
+<!-- Dans dashboard_medecin.html, ajoute cette card d'action -->
+<div class="action-card warning clickable" onclick="navigateTo('{% url 'mes_prescriptions' %}')">
+    <div class="action-icon">
+        <i class="fas fa-prescription-bottle"></i>
+    </div>
+    <div class="action-content">
+        <h3>Mes Prescriptions</h3>
+        <p>Historique des ordonnances</p>
+    </div>
+    <div class="action-button">
+        <i class="fas fa-arrow-right"></i>
+    </div>
+</div>
         <div class="action-card accent clickable" onclick="navigateTo('{% url 'nouvelle_prescription' %}')">
             <div class="action-icon">
                 <i class="fas fa-prescription-bottle-alt"></i>

@@ -10,10 +10,14 @@ from django.http import HttpResponse, Http404
 from django.core.exceptions import PermissionDenied
 from datetime import datetime, timedelta
 from django.db.models.functions import TruncDate
+from django.core.paginator import Paginator
 import io
+from datetime import datetime
 # Imports des modèles et formulaires
 from .models import CustomUser, Patient, Prescription, RendezVous, SoinsInfirmier, Consultation, Medecin, Infirmier, Secretaire
-from .forms import CustomUserCreationForm, RendezVousForm, ProfileUpdateForm
+from .forms import CustomUserCreationForm, ProfilMedicalForm, RendezVousForm, ProfileUpdateForm
+
+# Imports pour PDF
 from django.http import HttpResponse
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter, A4
@@ -24,205 +28,63 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
 from io import BytesIO
 import datetime
-from datetime import datetime, timedelta  # ← Vérifiez que vous avez cette ligne
+from datetime import datetime, time
 from django.utils.timezone import make_aware, is_naive
+# Dans views.py - CORRECT ✅
+from .models import Consultation, RendezVous, CustomUser
 
+# ==================== DÉCORATEURS ====================
 
-@login_required
-def ajouter_consultation(request, rdv_id):
-    rdv = get_object_or_404(RendezVous, id=rdv_id)
-
-    if request.user != rdv.medecin:
-        messages.error(request, "Vous n'avez pas l'autorisation d'ajouter une consultation pour ce RDV.")
-        return redirect('dashboard_medecin')
-
-    if hasattr(rdv, 'consultation'):
-        messages.warning(request, "Une consultation est déjà enregistrée pour ce rendez-vous.")
-        return redirect('dashboard_medecin')
-
-    if request.method == 'POST':
-        form = ConsultationForm(request.POST)
-        if form.is_valid():
-            consultation = form.save(commit=False)
-            consultation.rdv = rdv
-            consultation.save()
-            messages.success(request, "Consultation enregistrée avec succès.")
-            return redirect('dashboard_medecin')
-    else:
-        form = ConsultationForm()
-
-    return render(request, 'main/ajouter_consultation.html', {
-        'form': form,
-        'rdv': rdv
-    })
-
-@login_required
-def download_my_dossier_pdf(request):
-    if request.user.role != 'patient':
-        messages.error(request, 'Accès réservé aux patients.')
-        return redirect('home')
-    
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="dossier_medical_{request.user.username}_{datetime.date.today().strftime("%Y%m%d")}.pdf"'
-    
-    buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=50, bottomMargin=50)
-    styles = getSampleStyleSheet()
-    story = []
-    
-    # Couleurs
-    purple_color = HexColor('#7c3aed')
-    
-    # **HEADER AVEC LE NOM CORRECT DE LA CLINIQUE**
-    header_style = ParagraphStyle(
-        'ESCOHeader',
-        parent=styles['Heading1'],
-        fontSize=24,
-        spaceAfter=5,
-        textColor=purple_color,
-        alignment=TA_CENTER,
-        fontName='Helvetica-Bold'
-    )
-    
-    clinic_style = ParagraphStyle(
-        'ClinicInfo',
-        parent=styles['Normal'],
-        fontSize=11,
-        spaceAfter=15,
-        alignment=TA_CENTER,
-        fontName='Helvetica'
-    )
-    
-    # Header corrigé avec le bon nom
-    story.append(Paragraph("🏥 ESPACE SANTÉ FAMILLE", header_style))
-    story.append(Paragraph("Centre Médical - Soins de Qualité Supérieure", clinic_style))
-    story.append(Paragraph("📍 [Votre Adresse] | ☎️ [Votre Téléphone] | 🌐 www.espacesantefamille.com", clinic_style))
-    story.append(Spacer(1, 20))
-    
-    # Ligne de séparation
-    story.append(Paragraph("<hr/>", styles['Normal']))
-    story.append(Spacer(1, 15))
-    
-    # Titre du document
-    title_style = ParagraphStyle(
-        'DocumentTitle',
-        parent=styles['Heading2'],
-        fontSize=18,
-        spaceAfter=20,
-        textColor=purple_color,
-        alignment=TA_CENTER,
-        fontName='Helvetica-Bold'
-    )
-    
-    story.append(Paragraph(f"DOSSIER MÉDICAL - {request.user.get_full_name().upper()}", title_style))
-    
-    # Informations patient complètes
-    patient_info = [
-        ["Informations Patient", ""],
-        ["ID Patient:", request.user.user_id or "Non défini"],
-        ["Nom complet:", request.user.get_full_name() or request.user.username],
-        ["Email:", request.user.email or "Non renseigné"],
-        ["Téléphone:", request.user.telephone or "Non renseigné"],
-        ["Date de naissance:", request.user.date_naissance.strftime("%d/%m/%Y") if request.user.date_naissance else "Non renseignée"],
-        ["Adresse:", request.user.adresse or "Non renseignée"],
-    ]
-    
-    # Ajouter les informations du profil Patient si disponible
-    try:
-        patient_profile = Patient.objects.get(user=request.user)
-        patient_info.extend([
-            ["Groupe sanguin:", patient_profile.groupe_sanguin or "Non renseigné"],
-            ["Profession:", patient_profile.profession or "Non renseignée"],
-            ["Poids:", f"{patient_profile.poids} kg" if patient_profile.poids else "Non renseigné"],
-            ["Taille:", f"{patient_profile.taille} cm" if patient_profile.taille else "Non renseignée"],
-            ["Allergies:", patient_profile.allergies or "Aucune connue"],
-            ["Antécédents:", patient_profile.antecedents or "Aucun"],
-        ])
-    except Patient.DoesNotExist:
-        pass
-    
-    # Créer le tableau
-    table = Table(patient_info, colWidths=[3*inch, 3*inch])
-    table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (1, 0), purple_color),
-        ('TEXTCOLOR', (0, 0), (1, 0), HexColor('#ffffff')),
-        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, -1), 10),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
-        ('GRID', (0, 0), (-1, -1), 1, HexColor('#cccccc')),
-    ]))
-    
-    story.append(table)
-    story.append(Spacer(1, 20))
-    
-    # Historique des rendez-vous
-    rdv_list = RendezVous.objects.filter(patient=request.user).order_by('-date_rdv')
-    if rdv_list.exists():
-        story.append(Paragraph("HISTORIQUE DES RENDEZ-VOUS", styles['Heading3']))
-        rdv_data = [["Date", "Médecin", "Motif", "Statut"]]
-        for rdv in rdv_list[:10]:  # Limiter à 10 derniers RDV
-            rdv_data.append([
-                rdv.date_rdv.strftime("%d/%m/%Y"),
-                f"Dr. {rdv.medecin.get_full_name()}" if rdv.medecin else "Non assigné",
-                rdv.motif[:50] + "..." if len(rdv.motif) > 50 else rdv.motif,
-                rdv.get_status_display() if hasattr(rdv, 'get_status_display') else "Programmé"
-            ])
-        
-        rdv_table = Table(rdv_data, colWidths=[1.5*inch, 2*inch, 2*inch, 1.5*inch])
-        rdv_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), purple_color),
-            ('TEXTCOLOR', (0, 0), (-1, 0), HexColor('#ffffff')),
-            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, -1), 8),
-            ('GRID', (0, 0), (-1, -1), 1, HexColor('#cccccc')),
-        ]))
-        story.append(rdv_table)
-    
-    # Footer
-    story.append(Spacer(1, 30))
-    footer_style = ParagraphStyle(
-        'Footer',
-        parent=styles['Normal'],
-        fontSize=8,
-        alignment=TA_CENTER,
-        textColor=HexColor('#666666')
-    )
-    story.append(Paragraph(f"Document généré le {datetime.date.today().strftime('%d/%m/%Y')} - Espace Santé Famille", footer_style))
-    
-    # Construire le PDF
-    doc.build(story)
-    pdf = buffer.getvalue()
-    buffer.close()
-    response.write(pdf)
-    return response
-
-# Décorateur personnalisé pour les permissions
-def medecin_ou_admin_required(view_func):
+def patient_required(view_func):
+    """Décorateur pour restreindre l'accès aux patients uniquement"""
     def _wrapped_view(request, *args, **kwargs):
         if not request.user.is_authenticated:
             return redirect('login')
         
-        # Permettre l'accès aux médecins et administrateurs
-        if (hasattr(request.user, 'role') and request.user.role == 'docteur') or request.user.is_superuser:
+        if hasattr(request.user, 'role') and request.user.role == 'patient':
             return view_func(request, *args, **kwargs)
         
-        raise PermissionDenied("Vous n'avez pas les permissions pour accéder à cette page.")
+        messages.error(request, 'Accès réservé aux patients.')
+        return redirect('dashboard')
     return _wrapped_view
-# Appliquer le décorateur corrigé à la vue
-# Décorateur personnalisé pour les permissions
+
+# Dans views.py, ajoute :
+
+@login_required
+def profil_medical(request):
+    """Vue pour modifier le profil médical du patient"""
+    if not (hasattr(request.user, 'role') and request.user.role == 'patient'):
+        messages.error(request, 'Accès réservé aux patients.')
+        return redirect('dashboard')
+    
+    if request.method == 'POST':
+        form = ProfilMedicalForm(request.POST, instance=request.user)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.profil_complete = True
+            user.derniere_maj_profil = timezone.now()
+            user.save()
+            
+            messages.success(request, 'Votre profil médical a été mis à jour avec succès!')
+            return redirect('dashboard_patient')
+        else:
+            messages.error(request, 'Veuillez corriger les erreurs ci-dessous.')
+    else:
+        form = ProfilMedicalForm(instance=request.user)
+    
+    context = {
+        'form': form,
+        'user': request.user,
+    }
+    
+    return render(request, 'profil_medical.html', context)
+
 def medecin_ou_admin_required(view_func):
+    """Décorateur pour médecins et admins"""
     def _wrapped_view(request, *args, **kwargs):
         if not request.user.is_authenticated:
             return redirect('login')
         
-        # Debug - ajoutons quelques logs
-        print(f"DEBUG - Utilisateur: {request.user.username}")
-        print(f"DEBUG - Role: {getattr(request.user, 'role', 'Pas de rôle')}")
-        print(f"DEBUG - Is superuser: {request.user.is_superuser}")
-        
-        # Permettre l'accès aux médecins et administrateurs
         user_role = getattr(request.user, 'role', None)
         if user_role == 'docteur' or request.user.is_superuser or user_role == 'administrateur':
             return view_func(request, *args, **kwargs)
@@ -230,1562 +92,1013 @@ def medecin_ou_admin_required(view_func):
         raise PermissionDenied(f"Vous n'avez pas les permissions pour accéder à cette page. Votre rôle: {user_role}")
     return _wrapped_view
 
-@login_required
-def nouveau_rdv(request):
-    user_role = getattr(request.user, 'role', None)
-
-    if user_role not in ['patient', 'docteur', 'administrateur', 'secretaire'] and not request.user.is_superuser:
-        messages.error(request, f"Accès refusé. Votre rôle: {user_role}")
-        return redirect('dashboard')
-
-    if request.method == 'POST':
-        try:
-            # Pour patient connecté
-            if user_role == 'patient':
-                patient = request.user
-                medecin_id = request.POST.get('medecin')
-            else:
-                patient_id = request.POST.get('patient')
-                medecin_id = request.POST.get('medecin')
-                patient = get_object_or_404(CustomUser, id=patient_id, role='patient')
-
-            date_rdv = request.POST.get('date_rdv')
-            heure_rdv = request.POST.get('heure_rdv')
-            motif = request.POST.get('motif')
-
-            # Validation
-            if not all([medecin_id, date_rdv, heure_rdv, motif]):
-                messages.error(request, "Tous les champs sont obligatoires.")
-                return redirect('nouveau_rdv')
-
-            medecin = get_object_or_404(CustomUser, id=medecin_id, role='docteur')
-
-            RendezVous.objects.create(
-                patient=patient,
-                medecin=medecin,
-                date_rdv=date_rdv,
-                heure_rdv=heure_rdv,
-                motif=motif,
-                status='programme'
-            )
-
-            messages.success(request, f"Rendez-vous créé avec Dr. {medecin.get_full_name()} !")
-            return redirect('dashboard_patient' if user_role == 'patient' else 'dashboard')
-
-        except Exception as e:
-            messages.error(request, f"Erreur lors de la création du rendez-vous : {str(e)}")
-            print(f"Erreur RDV : {e}")
-
-    medecins = CustomUser.objects.filter(role='docteur', is_active=True)
-    patients = CustomUser.objects.filter(role='patient', is_active=True)
-
-    return render(request, 'main/nouveau_rdv.html', {
-        'medecins': medecins,
-        'patients': patients,
-        'user_role': user_role
-    })
-
-# @login_required
-# def nouveau_rdv(request):
-#     # AUTORISER PATIENTS, MÉDECINS ET ADMINS
-#     user_role = getattr(request.user, 'role', None)
-#     if not (user_role in ['patient', 'docteur', 'administrateur', 'secretaire'] or request.user.is_superuser):
-#         messages.error(request, f"Accès refusé. Votre rôle: {user_role}")
-#         return redirect('dashboard')
-    
-#     # Debug
-#     print(f"DEBUG - Utilisateur: {request.user.username}, Rôle: {user_role}")
-    
-#     if request.method == 'POST':
-#         print("=== DONNÉES POST REÇUES ===")
-#         for key, value in request.POST.items():
-#             print(f"{key}: {value}")
-#         print("==========================")
-        
-#         try:
-#             patient_id = request.POST.get('patient')
-#             medecin_id = request.POST.get('medecin')
-#             date_rdv = request.POST.get('date_rdv')
-#             heure_rdv = request.POST.get('heure_rdv')
-#             motif = request.POST.get('motif')
-            
-#             # Validation
-#             if not all([medecin_id, date_rdv, heure_rdv, motif]):
-#                 messages.error(request, 'Tous les champs sont obligatoires.')
-#                 return redirect('nouveau_rdv')
-            
-#             # Auto-assignation pour les patients
-#             if user_role == 'patient':
-#                 patient = request.user
-#                 medecin = get_object_or_404(CustomUser, id=medecin_id, role='docteur')
-#             else:
-#                 patient = get_object_or_404(CustomUser, id=patient_id, role='patient')
-#                 medecin = get_object_or_404(CustomUser, id=medecin_id, role='docteur')
-            
-#             # Créer le RDV
-#             rdv = RendezVous.objects.create(
-#                 patient=patient,
-#                 medecin=medecin,
-#                 date_rdv=date_rdv,
-#                 heure_rdv=heure_rdv,
-#                 motif=motif,
-#                 status='programme'
-#             )
-            
-#             messages.success(request, f'Rendez-vous créé avec succès avec Dr. {medecin.get_full_name()}!')
-            
-#             # Redirection selon le rôle
-#             if user_role == 'patient':
-#                 return redirect('dashboard_patient')
-#             elif user_role == 'docteur':
-#                 return redirect('dashboard_medecin')
-#             else:
-#                 return redirect('dashboard')
-                
-#         except Exception as e:
-#             messages.error(request, f'Erreur lors de la création: {str(e)}')
-#             print(f"Erreur: {e}")
-    
-#     # Récupérer les listes pour le formulaire
-#     medecins = CustomUser.objects.filter(role='docteur', is_active=True).order_by('first_name', 'last_name')
-#     patients = CustomUser.objects.filter(role='patient', is_active=True).order_by('first_name', 'last_name')
-    
-#     # Configuration du template selon le rôle
-#     context = {
-#         'medecins': medecins,
-#         'patients': patients,
-#         'user_role': user_role,
-#         'is_patient': user_role == 'patient'
-#     }
-    
-#     return render(request, 'nouveau_rdv.html', context)
-
-
-@login_required
-def mes_rdv(request):
-    if request.user.role != 'patient':
-        messages.error(request, 'Accès réservé aux patients.')
-        return redirect('dashboard')
-
-    rdv_list = RendezVous.objects.filter(
-        patient=request.user
-    ).order_by('-date_rdv', '-heure_rdv')
-
-    return render(request, 'mes_rdv.html', {
-        'rdv_list': rdv_list
-    })
-
-@login_required
-def debug_rdv_patient(request):
-    rdv_list = RendezVous.objects.filter(patient=request.user).order_by('-date_rdv')
-    print(f"RDV pour {request.user.username}: {rdv_list.count()}")
-    
-    for rdv in rdv_list:
-        print(f"- {rdv.date_rdv} à {rdv.heure_rdv} avec Dr. {rdv.medecin.get_full_name()}")
-    
-    return render(request, 'debug.html', {'rdv_list': rdv_list})
-@login_required
-def consultations(request):
-    if request.user.role != 'patient':
-        messages.error(request, 'Accès réservé aux patients.')
-        return redirect('dashboard_patient')
-
-    consultations_list = Consultation.objects.filter(
-        rdv__patient=request.user
-    ).order_by('-rdv__date_rdv')
-    
-    return render(request, 'consultations.html', {
-        'consultations_list': consultations_list
-    })
-
-@login_required
-def nouvelle_consultation(request):
-    # Autoriser médecins et admins
-    user_role = getattr(request.user, 'role', None)
-    if not (user_role in ['docteur', 'administrateur'] or request.user.is_superuser):
-        messages.error(request, 'Accès réservé aux médecins.')
-        return redirect('dashboard')
-    
-    # Récupérer les RDV en attente de consultation pour ce médecin
-    rdv_list = RendezVous.objects.filter(
-        medecin=request.user,
-        status='programme'  # Ou le statut que vous utilisez
-    ).order_by('date_rdv', 'heure_rdv')
-    
-    print(f"DEBUG - RDV trouvés pour consultation: {rdv_list.count()}")
-    for rdv in rdv_list:
-        print(f"- RDV {rdv.id}: {rdv.patient.get_full_name()} le {rdv.date_rdv}")
-    
-    if request.method == 'POST':
-        try:
-            rdv_id = request.POST.get('rdv_id')
-            symptomes = request.POST.get('symptomes')
-            diagnostic = request.POST.get('diagnostic')
-            traitement = request.POST.get('traitement')
-            observations = request.POST.get('observations')
-            
-            if not rdv_id:
-                messages.error(request, 'Veuillez sélectionner un rendez-vous.')
-                return redirect('nouvelle_consultation')
-            
-            rdv = get_object_or_404(RendezVous, id=rdv_id, medecin=request.user)
-            
-            # Créer la consultation
-            consultation = Consultation.objects.create(
-                rdv=rdv,
-                symptomes=symptomes or '',
-                diagnostic=diagnostic or '',
-                traitement=traitement or '',
-                observations=observations or ''
-            )
-            
-            # Optionnel : Mettre à jour le statut du RDV
-            rdv.status = 'termine'
-            rdv.save()
-            
-            messages.success(request, f'Consultation enregistrée pour {rdv.patient.get_full_name()}!')
-            return redirect('dashboard_medecin')
-            
-        except Exception as e:
-            messages.error(request, f'Erreur: {str(e)}')
-            print(f"Erreur consultation: {e}")
-    
-    return render(request, 'nouvelle_consultation.html', {
-        'rdv_list': rdv_list
-    })
-@login_required
-def mon_dossier_medical(request):
-    """Vue pour voir le dossier médical complet"""
-    if request.user.role != 'patient':
-        messages.error(request, 'Accès réservé aux patients.')
-        return redirect('home')
-    
-    try:
-        # Récupérer ou créer le profil patient
-        patient, created = Patient.objects.get_or_create(user=request.user)
-        
-        # Récupérer toutes les données médicales
-        rdv_list = RendezVous.objects.filter(patient=request.user).order_by('-date_rdv')
-        consultations_list = Consultation.objects.filter(rdv__patient=request.user).order_by('-rdv__date_rdv')
-        soins_list = SoinsInfirmier.objects.filter(patient=request.user).order_by('-date_soin')
-        
-        context = {
-            'patient': patient,
-            'rdv_list': rdv_list,
-            'consultations_list': consultations_list,
-            'soins_list': soins_list,
-            'user': request.user
-        }
-        return render(request, 'mon_dossier.html', context)
-    except Exception as e:
-        messages.error(request, f"Erreur lors du chargement du dossier: {str(e)}")
-        return redirect('dashboard_patient')
-
-@login_required
-def mes_infos(request):
-    """Vue pour voir les informations personnelles"""
-    if request.user.role != 'patient':
-        messages.error(request, 'Accès réservé aux patients.')
-        return redirect('home')
-    
-    try:
-        patient, created = Patient.objects.get_or_create(user=request.user)
-        
-        # Statistiques du patient
-        stats = {
-            'rdv_total': RendezVous.objects.filter(patient=request.user).count(),
-            'rdv_futurs': RendezVous.objects.filter(
-                patient=request.user, 
-                date_rdv__gte=timezone.now().date()
-            ).count(),
-            'consultations_total': Consultation.objects.filter(rdv__patient=request.user).count(),
-            'soins_total': SoinsInfirmier.objects.filter(patient=request.user).count(),
-        }
-        
-        context = {
-            'patient': patient,
-            'user': request.user,
-            'stats': stats
-        }
-        return render(request, 'mes_infos.html', context)
-    except Exception as e:
-        messages.error(request, f"Erreur lors du chargement des informations: {str(e)}")
-        return redirect('dashboard_patient')
-
-@login_required
-def modifier_profil(request):
-    """Vue pour modifier le profil"""
-    if request.user.role != 'patient':
-        messages.error(request, 'Accès réservé aux patients.')
-        return redirect('home')
-    
-    try:
-        patient, created = Patient.objects.get_or_create(user=request.user)
-        
-        if request.method == 'POST':
-            form = ProfileUpdateForm(request.POST, instance=request.user)
-            if form.is_valid():
-                form.save()
-                messages.success(request, 'Profil mis à jour avec succès!')
-                return redirect('mes_infos')
-            else:
-                messages.error(request, 'Veuillez corriger les erreurs ci-dessous.')
-        else:
-            form = ProfileUpdateForm(instance=request.user)
-        
-        context = {
-            'form': form,
-            'patient': patient,
-            'user': request.user
-        }
-        return render(request, 'modifier_profil.html', context)
-    except Exception as e:
-        messages.error(request, f"Erreur lors de la modification du profil: {str(e)}")
-        return redirect('dashboard_patient')
-
-# Alias pour compatibilité
-consultations = consultations
-mon_dossier = mon_dossier_medical# ===== VUES PATIENTS COMPLÈTES =====
-
-@login_required
-def nouveau_rdv(request):
-    # AUTORISER TOUS LES UTILISATEURS CONNECTÉS (temporaire pour debug)
-    print(f"DEBUG - Utilisateur: {request.user.username}")
-    print(f"DEBUG - Rôle: {getattr(request.user, 'role', 'AUCUN RÔLE')}")
-    print(f"DEBUG - Is authenticated: {request.user.is_authenticated}")
-    
-    if request.method == 'POST':
-        print("=== DONNÉES POST REÇUES ===")
-        for key, value in request.POST.items():
-            print(f"{key}: {value}")
-        print("==========================")
-        
-        try:
-            patient_id = request.POST.get('patient')
-            medecin_id = request.POST.get('medecin')
-            date_rdv = request.POST.get('date_rdv')
-            heure_rdv = request.POST.get('heure_rdv')
-            motif = request.POST.get('motif')
-            
-            # Validation
-            if not all([medecin_id, date_rdv, heure_rdv, motif]):
-                messages.error(request, 'Tous les champs sont obligatoires.')
-                return redirect('nouveau_rdv')
-            
-            # Récupérer les objets
-            user_role = getattr(request.user, 'role', None)
-            
-            if user_role == 'patient' or not patient_id:
-                # Si c'est un patient OU si aucun patient sélectionné, utiliser l'utilisateur connecté
-                patient = request.user
-            else:
-                patient = get_object_or_404(CustomUser, id=patient_id, role='patient')
-            
-            medecin = get_object_or_404(CustomUser, id=medecin_id, role='docteur')
-            
-            # Créer le RDV
-            rdv = RendezVous.objects.create(
-                patient=patient,
-                medecin=medecin,
-                date_rdv=date_rdv,
-                heure_rdv=heure_rdv,
-                motif=motif,
-                status='programme'
-            )
-            
-            messages.success(request, f'Rendez-vous créé avec succès avec Dr. {medecin.get_full_name()}!')
-            print(f"RDV créé: {rdv.id} - {rdv.patient.username} avec {rdv.medecin.username}")
-            
-            # Redirection selon le rôle
-            if user_role == 'patient':
-                return redirect('dashboard_patient')
-            elif user_role == 'docteur':
-                return redirect('dashboard_medecin')
-            else:
-                return redirect('dashboard')
-                
-        except Exception as e:
-            messages.error(request, f'Erreur lors de la création: {str(e)}')
-            print(f"Erreur: {e}")
-    
-    # Récupérer les listes pour le formulaire
-    medecins = CustomUser.objects.filter(role='docteur', is_active=True).order_by('first_name', 'last_name')
-    patients = CustomUser.objects.filter(role='patient', is_active=True).order_by('first_name', 'last_name')
-    
-    # Configuration du template selon le rôle
-    user_role = getattr(request.user, 'role', None)
-    context = {
-        'medecins': medecins,
-        'patients': patients,
-        'user_role': user_role,
-        'is_patient': user_role == 'patient'
-    }
-    
-    return render(request, 'nouveau_rdv.html', context)
-@login_required
-def debug_rdv(request):
-    rdv_list = RendezVous.objects.filter(medecin=request.user).order_by('-date_rdv')
-    print(f"RDV trouvés pour {request.user.username}: {rdv_list.count()}")
-    for rdv in rdv_list:
-        print(f"- {rdv.date_rdv} à {rdv.heure_rdv} avec {rdv.patient.get_full_name()}")
-    
-    return render(request, 'debug_rdv.html', {
-        'rdv_list': rdv_list,
-    })
-@login_required
-def mes_rdv(request):
-    print("User connecté :", request.user, "ID:", request.user.id)
-    print("Role :", request.user.role)
-    
-    rdv_list = RendezVous.objects.filter(patient=request.user).order_by('-date_rdv')
-    print("RDV trouvés :", rdv_list.count())
-    for r in rdv_list:
-        print(f"RDV: {r.date_rdv} avec Dr. {r.medecin.username}")
-    
-    return render(request, 'mes_rdv.html', {'rdv_list': rdv_list})
-
-@login_required
-def consultations_medecin(request):
-    if not (hasattr(request.user, 'role') and request.user.role == 'docteur'):
-        messages.error(request, 'Accès réservé aux médecins.')
-        return redirect('dashboard')
-    
-    # Récupérer les consultations via le RDV (relation indirecte)
-    consultations = Consultation.objects.filter(rdv__medecin=request.user).order_by('-created_at')
-    
-    # Récupérer les RDV du médecin
-    rdv_avec_consultations = RendezVous.objects.filter(
-        medecin=request.user
-    ).order_by('-date_rdv')
-    
-    return render(request, 'consultations_medecin.html', {
-        'consultations_list': consultations,
-        'rdv_list': rdv_avec_consultations,
-    })
-    
-@login_required
-def mes_consultations(request):
-    if request.user.role != 'patient':
-        messages.error(request, 'Accès réservé aux patients.')
-        return redirect('dashboard_patient')
-
-    try:
-        consultations_list = Consultation.objects.filter(rdv__patient=request.user)
-        print("Consultations trouvées :", consultations_list.count())
-
-
-        return render(request, 'consultations.html', {
-            'consultations_list': consultations_list,
-            'user': request.user
-        })
-    except Exception as e:
-        messages.error(request, f"Erreur lors du chargement des consultations: {str(e)}")
-        return redirect('dashboard_patient')
-
-    
-    
-    
-# @login_required
-# def consultations_medecin(request):
-#     if request.user.role != 'docteur':
-#         messages.error(request, 'Accès réservé aux médecins.')
-#         return redirect('dashboard')
-    
-#     # CORRECTION : Récupérer les RDV du médecin avec leurs consultations
-#     rdv_avec_consultations = RendezVous.objects.filter(
-#         medecin=request.user
-#     ).select_related('patient').prefetch_related('consultation_set').order_by('-date_rdv', '-heure_rdv')
-    
-#     # Ou si vous voulez seulement les consultations terminées :
-#     consultations = Consultation.objects.filter(
-#         rdv__medecin=request.user
-#     ).select_related('rdv__patient', 'rdv__medecin').order_by('-created_at')
-    
-#     return render(request, 'consultations_medecin.html', {
-#         'rdv_list': rdv_avec_consultations,
-#         'consultations_list': consultations  # Si vous voulez utiliser les consultations directement
-#     })
-@login_required
-def liste_patients(request):
-    if request.user.role != 'docteur':
-        messages.error(request, 'Accès réservé aux médecins.')
-        return redirect('dashboard')
-    
-    # CORRECTION : Récupérer les patients avec leurs RDV chez ce médecin
-    patients_avec_rdv = CustomUser.objects.filter(
-        role='patient',
-        rdv_patient__medecin=request.user  # Patients qui ont des RDV avec ce médecin
-    ).distinct().order_by('first_name', 'last_name')
-    
-    # OU si vous voulez tous les patients :
-    # patients = CustomUser.objects.filter(role='patient', is_active=True).order_by('first_name', 'last_name')
-    
-    return render(request, 'liste_patients.html', {
-        'patients': patients_avec_rdv
-    })
-
-@login_required
-def nouvelle_prescription(request):
-    """Créer une nouvelle prescription"""
-    if request.user.role != 'docteur':
-        messages.error(request, 'Accès réservé aux médecins.')
-        return redirect('home')
-    
-    # Logique pour créer une prescription
-    return render(request, 'nouvelle_prescription.html')
-
-@login_required
-def urgences(request):
-    """Voir les patients en urgence"""
-    if request.user.role != 'docteur':
-        messages.error(request, 'Accès réservé aux médecins.')
-        return redirect('home')
-    
-    # Patients prioritaires/urgents
-    urgences = RendezVous.objects.filter(
-        medecin=request.user,
-        status='urgent'
-    ).order_by('-date_rdv')
-    
-    context = {
-        'urgences': urgences,
-    }
-    return render(request, 'urgences.html', context)
-
-@login_required
-def mon_dossier_medical(request):
-    """Vue pour voir le dossier médical complet"""
-    if request.user.role != 'patient':
-        messages.error(request, 'Accès réservé aux patients.')
-        return redirect('home')
-    
-    try:
-        # Récupérer ou créer le profil patient
-        patient, created = Patient.objects.get_or_create(user=request.user)
-        
-        # Récupérer toutes les données médicales
-        rdv_list = RendezVous.objects.filter(patient=request.user).order_by('-date_rdv')
-        consultations_list = Consultation.objects.filter(rdv__patient=request.user).order_by('-rdv__date_rdv')
-        soins_list = SoinsInfirmier.objects.filter(patient=request.user).order_by('-date_soin')
-        
-        context = {
-            'patient': patient,
-            'rdv_list': rdv_list,
-            'consultations_list': consultations_list,
-            'soins_list': soins_list,
-            'user': request.user
-        }
-        return render(request, 'mon_dossier.html', context)
-    except Exception as e:
-        messages.error(request, f"Erreur lors du chargement du dossier: {str(e)}")
-        return redirect('dashboard_patient')
-
-@login_required
-def mes_infos(request):
-    """Vue pour voir les informations personnelles"""
-    if request.user.role != 'patient':
-        messages.error(request, 'Accès réservé aux patients.')
-        return redirect('home')
-    
-    try:
-        patient, created = Patient.objects.get_or_create(user=request.user)
-        
-        # Statistiques du patient
-        stats = {
-            'rdv_total': RendezVous.objects.filter(patient=request.user).count(),
-            'rdv_futurs': RendezVous.objects.filter(
-                patient=request.user, 
-                date_rdv__gte=timezone.now().date()
-            ).count(),
-            'consultations_total': Consultation.objects.filter(rdv__patient=request.user).count(),
-            'soins_total': SoinsInfirmier.objects.filter(patient=request.user).count(),
-        }
-        
-        context = {
-            'patient': patient,
-            'user': request.user,
-            'stats': stats
-        }
-        return render(request, 'mes_infos.html', context)
-    except Exception as e:
-        messages.error(request, f"Erreur lors du chargement des informations: {str(e)}")
-        return redirect('dashboard_patient')
-
-@login_required
-def modifier_profil(request):
-    """Modifier le profil utilisateur avec informations médicales"""
-    if request.user.role != 'patient':
-        messages.error(request, 'Accès réservé aux patients.')
-        return redirect('dashboard')
-    
-    # Récupérer ou créer le profil patient
-    patient, created = Patient.objects.get_or_create(user=request.user)
-    
-    if request.method == 'POST':
-        form = ProfileUpdateForm(request.POST, instance=request.user, patient=patient)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Votre profil a été mis à jour avec succès!')
-            return redirect('mon_dossier_medical')
-        else:
-            messages.error(request, 'Veuillez corriger les erreurs ci-dessous.')
-    else:
-        form = ProfileUpdateForm(instance=request.user, patient=patient)
-    
-    return render(request, 'main/modifier_profil.html', {
-        'form': form,
-        'patient': patient
-    })
-# Alias pour compatibilité
-consultations = consultations
-mon_dossier = mon_dossier_medical
-
-
-@login_required
-def nouveau_rdv(request):
-    """Créer un nouveau rendez-vous"""
-    if request.user.role != 'patient':
-        messages.error(request, 'Accès réservé aux patients.')
-        return redirect('dashboard')
-    if request.user.role not in ['docteur', 'medecin', 'doctor']:
-        # Créer automatiquement le rôle si nécessaire
-        if hasattr(request.user, 'role'):
-            request.user.role = 'docteur'
-            request.user.save()
-    if request.method == 'POST':
-        # Traitement manuel des données du formulaire
-        medecin_id = request.POST.get('medecin')
-        date_rdv = request.POST.get('date_rdv')
-        heure_rdv = request.POST.get('heure_rdv')
-        motif = request.POST.get('motif')
-        
-        # Validation
-        errors = []
-        if not medecin_id:
-            errors.append('Veuillez sélectionner un médecin.')
-        if not date_rdv:
-            errors.append('Veuillez sélectionner une date.')
-        if not heure_rdv:
-            errors.append('Veuillez sélectionner une heure.')
-        if not motif:
-            errors.append('Veuillez saisir un motif.')
-            
-        if errors:
-            for error in errors:
-                messages.error(request, error)
-        else:
-            try:
-                # Convertir les chaînes en objets datetime/time
-                date_obj = datetime.strptime(date_rdv, '%Y-%m-%d').date()
-                heure_obj = datetime.strptime(heure_rdv, '%H:%M').time()
-                
-                # Créer le rendez-vous
-                medecin = CustomUser.objects.get(id=medecin_id, role='docteur')
-                rdv = RendezVous.objects.create(
-                    patient=request.user,
-                    medecin=medecin,
-                    date_rdv=date_obj,
-                    heure_rdv=heure_obj,
-                    motif=motif,
-                    status='programme'
-                )
-                messages.success(request, 'Votre rendez-vous a été programmé avec succès!')
-                return redirect('mes_rdv')
-            except ValueError as e:
-                messages.error(request, 'Format de date ou d\'heure incorrect.')
-            except Exception as e:
-                messages.error(request, f'Erreur lors de la création du rendez-vous: {str(e)}')
-
-    # Récupérer tous les médecins actifs
-    medecins = CustomUser.objects.filter(role='docteur', is_active=True)
-    
-    return render(request, 'main/nouveau_rdv.html', {
-        'medecins': medecins
-    })
-
-@login_required
-def mes_rdv(request):
-    user = request.user
-
-    if user.role == 'patient':
-        rendez_vous = RendezVous.objects.filter(patient=user).order_by('-date_rdv')
-    elif user.role == 'docteur':
-        rendez_vous = RendezVous.objects.filter(medecin=user).order_by('-date_rdv')
-    else:
-        rendez_vous = RendezVous.objects.none()  # Aucun rdv affiché pour les autres
-
-    return render(request, 'mes_rdv.html', {'rendez_vous': rendez_vous})
-
-
-@login_required
-def consultations(request):
-    """Vue pour voir les consultations"""
-    consultations_list = []
-    
-    # Si c'est un patient
-    if request.user.role == 'patient':
-        consultations_list = Consultation.objects.filter(rdv__patient=request.user)
-    # Si c'est un médecin
-    elif request.user.role == 'docteur':
-        consultations_list = Consultation.objects.filter(rdv__medecin=request.user)
-    
-    context = {
-        'consultations_list': consultations_list
-    }
-    return render(request, 'consultations.html', context)
-
-@login_required
-def mon_dossier(request):
-    """Vue pour voir le dossier médical"""
-    dossier_data = {}
-    
-    if request.user.role == 'patient':
-        # Récupérer ou créer le profil patient
-        patient, created = Patient.objects.get_or_create(user=request.user)
-        dossier_data = {
-            'patient': patient,
-            'consultations': Consultation.objects.filter(rdv__patient=request.user)[:5],
-            'rdv': RendezVous.objects.filter(patient=request.user)[:5]
-        }
-    
-    return render(request, 'mon_dossier.html', dossier_data)
-# ===== DÉCORATEURS PERSONNALISÉS =====
-
-def role_required(allowed_roles):
-    """Décorateur pour vérifier le rôle de l'utilisateur"""
-    def decorator(view_func):
-        def _wrapped_view(request, *args, **kwargs):
-            if not request.user.is_authenticated:
-                return redirect('login')
-            if request.user.role not in allowed_roles:
-                raise PermissionDenied("Vous n'avez pas les permissions pour accéder à cette page.")
-            return view_func(request, *args, **kwargs)
-        return _wrapped_view
-    return decorator
-
-# ===== PAGES PUBLIQUES =====
+# ==================== VUES PRINCIPALES ====================
 
 def home(request):
+    """Page d'accueil"""
     return render(request, 'home.html')
 
-def login_view(request):
+def custom_login(request):
+    """Vue de connexion personnalisée"""
     if request.method == 'POST':
-        form = AuthenticationForm(data=request.POST)
+        form = AuthenticationForm(request, data=request.POST)
         if form.is_valid():
             username = form.cleaned_data.get('username')
             password = form.cleaned_data.get('password')
             user = authenticate(username=username, password=password)
             if user is not None:
                 login(request, user)
-                # Redirection selon le rôle
-                next_url = request.GET.get('next')
-                if next_url:
-                    return redirect(next_url)
+                messages.success(request, f'Bonjour {user.get_full_name() or user.username}!')
                 
-                if user.role == 'patient':
-                    return redirect('dashboard_patient')
-                elif user.role == 'docteur':
-                    return redirect('dashboard_medecin')
-                elif user.role == 'infirmier':
-                    return redirect('dashboard_infirmier')
-                elif user.role == 'secretaire':
-                    return redirect('dashboard_secretaire')
-                elif user.is_staff or user.role == 'administrateur':
-                    return redirect('/admin/')
-                else:
-                    return redirect('home')
+                # Redirection selon le rôle
+                if hasattr(user, 'role'):
+                    if user.role == 'patient':
+                        return redirect('dashboard_patient')
+                    elif user.role == 'docteur':
+                        return redirect('dashboard_medecin')
+                    elif user.role == 'administrateur':
+                        return redirect('dashboard_admin')
+                    elif user.role == 'infirmier':
+                        return redirect('dashboard_infirmier')
+                    elif user.role == 'secretaire':
+                        return redirect('dashboard_secretaire')
+                
+                return redirect('dashboard')
             else:
                 messages.error(request, 'Nom d\'utilisateur ou mot de passe incorrect.')
         else:
-            messages.error(request, 'Veuillez corriger les erreurs ci-dessous.')
+            messages.error(request, 'Erreur dans le formulaire.')
     else:
         form = AuthenticationForm()
     
     return render(request, 'login.html', {'form': form})
 
+def custom_logout(request):
+    """Vue de déconnexion"""
+    logout(request)
+    messages.success(request, 'Vous avez été déconnecté avec succès.')
+    return redirect('home')
+
 def inscription(request):
+    """Vue d'inscription"""
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
-            try:
-                user = form.save()
-                username = form.cleaned_data.get('username')
-                role = form.cleaned_data.get('role')
-                
-                # Message de succès personnalisé selon le rôle
-                role_messages = {
-                    'patient': f'✅ Compte patient créé pour {username}! Votre ID patient est {user.user_id}.',
-                    'docteur': f'✅ Compte médecin créé pour Dr. {username}! Votre ID médecin est {user.user_id}.',
-                    'infirmier': f'✅ Compte infirmier créé pour {username}! Votre ID infirmier est {user.user_id}.',
-                    'secretaire': f'✅ Compte secrétaire créé pour {username}! Votre ID secrétaire est {user.user_id}.',
-                    'administrateur': f'✅ Compte administrateur créé pour {username}!'
-                }
-                
-                message = role_messages.get(role, f'✅ Compte créé pour {username}!')
-                messages.success(request, message)
-                messages.info(request, '🔑 Vous pouvez maintenant vous connecter avec vos identifiants.')
-                
-                return redirect('login')
-                
-            except Exception as e:
-                messages.error(request, f'❌ Erreur lors de la création du compte: {str(e)}')
-                print(f"Erreur d'inscription: {e}")  # Pour le débogage
+            user = form.save()
+            messages.success(request, 'Compte créé avec succès! Vous pouvez maintenant vous connecter.')
+            return redirect('login')
         else:
-            # Afficher les erreurs du formulaire
-            messages.error(request, '❌ Veuillez corriger les erreurs ci-dessous.')
-            print(f"Erreurs du formulaire: {form.errors}")  # Pour le débogage
+            messages.error(request, 'Erreur lors de la création du compte.')
     else:
         form = CustomUserCreationForm()
     
     return render(request, 'inscription.html', {'form': form})
 
-# Redirection améliorée après connexion
-def login_view(request):
-    if request.method == 'POST':
-        form = AuthenticationForm(data=request.POST)
-        if form.is_valid():
-            username = form.cleaned_data.get('username')
-            password = form.cleaned_data.get('password')
-            user = authenticate(username=username, password=password)
-            
-            if user is not None:
-                login(request, user)
-                
-                # Messages de bienvenue personnalisés
-                welcome_messages = {
-                    'patient': f'Bienvenue {user.get_full_name() or user.username}! Accédez à votre espace patient.',
-                    'docteur': f'Bienvenue Dr. {user.get_full_name() or user.username}! Votre espace médecin vous attend.',
-                    'infirmier': f'Bienvenue {user.get_full_name() or user.username}! Consultez vos soins du jour.',
-                    'secretaire': f'Bienvenue {user.get_full_name() or user.username}! Gérez les rendez-vous.',
-                    'administrateur': f'Bienvenue Administrateur {user.username}! Accès complet au système.'
-                }
-                
-                message = welcome_messages.get(user.role, f'Bienvenue {user.username}!')
-                messages.success(request, message)
-                
-                # Redirection selon le rôle avec gestion des erreurs
-                next_url = request.GET.get('next')
-                if next_url:
-                    return redirect(next_url)
-                
-                try:
-                    if user.role == 'patient':
-                        return redirect('dashboard_patient')
-                    elif user.role == 'docteur':
-                        return redirect('dashboard_medecin')
-                    elif user.role == 'infirmier':
-                        return redirect('dashboard_infirmier')
-                    elif user.role == 'secretaire':
-                        return redirect('dashboard_secretaire')
-                    elif user.is_staff or user.role == 'administrateur':
-                        return redirect('/admin/')
-                    else:
-                        messages.warning(request, 'Rôle non reconnu, redirection vers l\'accueil.')
-                        return redirect('home')
-                except Exception as e:
-                    messages.error(request, f'Erreur de redirection: {str(e)}')
-                    return redirect('home')
-            else:
-                messages.error(request, 'Nom d\'utilisateur ou mot de passe incorrect.')
-        else:
-            messages.error(request, 'Veuillez corriger les erreurs ci-dessous.')
-    else:
-        form = AuthenticationForm()
-    
-    return render(request, 'login.html', {'form': form})
-def logout_view(request):
-    logout(request)
-    messages.info(request, 'Vous avez été déconnecté avec succès.')
-    return redirect('home')
-
-# ===== DASHBOARDS =====
-
 @login_required
 def dashboard(request):
-    """Redirection automatique selon le rôle"""
-    try:
-        if request.user.is_staff or request.user.role == 'administrateur':
-            return redirect('/admin/')
+    """Dashboard général - redirige selon le rôle"""
+    if hasattr(request.user, 'role'):
+        if request.user.role == 'patient':
+            return redirect('dashboard_patient')
         elif request.user.role == 'docteur':
             return redirect('dashboard_medecin')
+        elif request.user.role == 'administrateur':
+            return redirect('dashboard_admin')
         elif request.user.role == 'infirmier':
             return redirect('dashboard_infirmier')
         elif request.user.role == 'secretaire':
             return redirect('dashboard_secretaire')
-        elif request.user.role == 'patient':
-            return redirect('dashboard_patient')
-        else:
-            messages.error(request, "Rôle utilisateur non reconnu.")
-            return redirect('home')
-    except Exception as e:
-        messages.error(request, f"Erreur lors de la redirection: {str(e)}")
-        return redirect('home')
+    
+    return render(request, 'dashboard.html')
+
+# ==================== DASHBOARDS ====================
+
 @login_required
 def dashboard_patient(request):
-    if request.user.role != 'patient':
+    """Dashboard pour les patients"""
+    if not (hasattr(request.user, 'role') and request.user.role == 'patient'):
         messages.error(request, 'Accès réservé aux patients.')
         return redirect('dashboard')
     
-    # Récupérer les RDV du patient
-    rdv_list = RendezVous.objects.filter(patient=request.user).order_by('-date_rdv')
+    # Récupérer les données du patient
+    prochains_rdv = RendezVous.objects.filter(
+        patient=request.user,
+        date_rdv__gte=timezone.now().date()
+    ).order_by('date_rdv')
     
-    # RDV à venir (aujourd'hui et après)
-    today = timezone.now().date()
-    rdv_a_venir = rdv_list.filter(date_rdv__gte=today).order_by('date_rdv')
+    rdv_total = RendezVous.objects.filter(patient=request.user).count()
+    consultations_total = Consultation.objects.filter(rdv__patient=request.user).count()
     
-    # Dernières consultations
-    consultations = Consultation.objects.filter(rdv__patient=request.user).order_by('-created_at')[:5]
-    
-    # Statistiques
-    total_rdv = rdv_list.count()
-    
-    # RDV cette semaine (correction de l'erreur)
-    now = timezone.now()
-    start_week = now - timedelta(days=now.weekday())  # Début de semaine (lundi)
-    end_week = start_week + timedelta(days=6)  # Fin de semaine (dimanche)
-    
-    rdv_cette_semaine = rdv_list.filter(
-        date_rdv__gte=start_week.date(),
-        date_rdv__lte=end_week.date()
-    ).count()
-    
-    # Prochain RDV (le plus proche)
-    prochain_rdv = rdv_a_venir.first()
+    dernieres_consultations = Consultation.objects.filter(
+        rdv__patient=request.user
+    ).order_by('-created_at')[:3]
     
     context = {
-        'rdv_list': rdv_list,
-        'rdv_a_venir': rdv_a_venir,
-        'consultations': consultations,
-        'total_rdv': total_rdv,
-        'rdv_cette_semaine': rdv_cette_semaine,
-        'prochains_rdv_count': rdv_a_venir.count(),
-        'prochain_rdv': prochain_rdv,
+        'prochains_rdv': prochains_rdv[:5],
+        'prochains_rdv_count': prochains_rdv.count(),
+        'rdv_total': rdv_total,
+        'consultations_total': consultations_total,
+        'dernieres_consultations': dernieres_consultations,
     }
     
     return render(request, 'dashboard_patient.html', context)
-# @role_required(['patient'])
-# def dashboard_patient(request):
-#     try:
-#         # Récupérer ou créer le profil patient
-#         patient, created = Patient.objects.get_or_create(user=request.user)
-        
-#         # Statistiques pour le patient
-#         rdv_futurs = RendezVous.objects.filter(
-#             patient=request.user, 
-#             date_rdv__gte=timezone.now()
-#         )
-        
-#         rdv_passes = RendezVous.objects.filter(
-#             patient=request.user, 
-#             date_rdv__lt=timezone.now()
-#         )
-        
-#         consultations = Consultation.objects.filter(
-#             rdv__patient=request.user
-#         )
-        
-#         context = {
-#             'user': request.user,
-#             'patient': patient,
-#             'rdv_count': rdv_futurs.count(),
-#             'rdv_futurs': rdv_futurs[:5],  # 5 prochains RDV
-#             'rdv_passes': rdv_passes[:5],  # 5 derniers RDV
-#             'consultations_count': consultations.count(),
-#             'ordonnances_count': consultations.filter(traitement__isnull=False).count(),
-#         }
-#         return render(request, 'dashboard_patient.html', context)
-#     except Exception as e:
-#         messages.error(request, f"Erreur lors du chargement du dashboard: {str(e)}")
-#         return redirect('home')
 
 @login_required
 def dashboard_medecin(request):
-    """Dashboard pour les médecins - VERSION SIMPLE"""
-    if request.user.role != 'docteur':
+    """Dashboard pour les médecins"""
+    if not (hasattr(request.user, 'role') and request.user.role == 'docteur'):
         messages.error(request, 'Accès réservé aux médecins.')
         return redirect('dashboard')
     
-    # Récupérer ou créer le profil médecin
-    medecin, created = Medecin.objects.get_or_create(user=request.user)
-    
-    from django.utils import timezone
+    # Données aujourd'hui
     today = timezone.now().date()
-    current_week = timezone.now().isocalendar()[1]
-    current_month = timezone.now().month
-    current_year = timezone.now().year
-    
-    # Calculs simples
     rdv_aujourd_hui = RendezVous.objects.filter(
-        medecin=request.user, 
+        medecin=request.user,
         date_rdv=today
     ).order_by('heure_rdv')
     
-    rdv_semaine = RendezVous.objects.filter(
+    # Statistiques générales
+    stats = {
+        'rdv_total': RendezVous.objects.filter(medecin=request.user).count(),
+        'rdv_aujourd_hui': rdv_aujourd_hui.count(),
+        'patients_total': RendezVous.objects.filter(
+            medecin=request.user
+        ).values('patient').distinct().count(),
+        'consultations_total': Consultation.objects.filter(
+            rdv__medecin=request.user
+        ).count(),
+        'consultations_mois': Consultation.objects.filter(
+            rdv__medecin=request.user,
+            created_at__month=today.month,
+            created_at__year=today.year
+        ).count(),
+    }
+    
+    # Prochains RDV (5 prochains)
+    prochains_rdv = RendezVous.objects.filter(
         medecin=request.user,
-        date_rdv__week=current_week,
-        date_rdv__year=current_year
-    ).order_by('date_rdv', 'heure_rdv')
+        date_rdv__gte=today,
+        status__in=['programme', 'confirme']
+    ).order_by('date_rdv', 'heure_rdv')[:5]
     
-    total_patients = RendezVous.objects.filter(
-        medecin=request.user
-    ).values('patient').distinct().count()
-    
-    consultations_mois = Consultation.objects.filter(
-        rdv__medecin=request.user,
-        created_at__month=current_month,
-        created_at__year=current_year
-    ).count()
+    # Dernières consultations
+    dernieres_consultations = Consultation.objects.filter(
+        rdv__medecin=request.user
+    ).order_by('-created_at')[:3]
     
     context = {
-        'medecin': medecin,
-        'today': today,
         'rdv_aujourd_hui': rdv_aujourd_hui,
-        'rdv_semaine': rdv_semaine,
-        'rdv_count': rdv_aujourd_hui.count(),
-        'total_patients': total_patients,
-        'consultations_mois': consultations_mois,
+        'prochains_rdv': prochains_rdv,
+        'dernieres_consultations': dernieres_consultations,
+        'stats': stats,
+        'today': today,
+        # Variables pour compatibilité template
+        'rdv_count': stats['rdv_aujourd_hui'],
+        'rdv_total': stats['rdv_total'],
+        'patients_total': stats['patients_total'],
+        'consultations_mois': stats['consultations_mois'],
     }
     
     return render(request, 'dashboard_medecin.html', context)
 
+@login_required
+def dashboard_admin(request):
+    """Dashboard pour les administrateurs"""
+    if not (request.user.is_superuser or (hasattr(request.user, 'role') and request.user.role == 'administrateur')):
+        messages.error(request, 'Accès réservé aux administrateurs.')
+        return redirect('dashboard')
+    
+    return render(request, 'dashboard_admin.html')
 
-@role_required(['infirmier'])
+@login_required
 def dashboard_infirmier(request):
-    try:
-        # Récupérer ou créer le profil infirmier
-        infirmier, created = Infirmier.objects.get_or_create(user=request.user)
-        
-        today = timezone.now().date()
-        context = {
-            'user': request.user,
-            'infirmier': infirmier,
-            'soins_aujourdhui': SoinsInfirmier.objects.filter(
-                infirmier=request.user,
-                date_soin__date=today
-            ).count(),
-            'patients_suivis': SoinsInfirmier.objects.filter(
-                infirmier=request.user
-            ).values('patient').distinct().count(),
-        }
-        return render(request, 'dashboard_infirmier.html', context)
-    except Exception as e:
-        messages.error(request, f"Erreur lors du chargement du dashboard: {str(e)}")
-        return redirect('home')
+    """Dashboard pour les infirmiers"""
+    if not (hasattr(request.user, 'role') and request.user.role == 'infirmier'):
+        messages.error(request, 'Accès réservé aux infirmiers.')
+        return redirect('dashboard')
+    
+    return render(request, 'dashboard_infirmier.html')
 
-@role_required(['secretaire'])
+@login_required
 def dashboard_secretaire(request):
-    try:
-        # Récupérer ou créer le profil secrétaire
-        secretaire, created = Secretaire.objects.get_or_create(user=request.user)
-        
-        today = timezone.now().date()
+    """Dashboard pour les secrétaires"""
+    if not (hasattr(request.user, 'role') and request.user.role == 'secretaire'):
+        messages.error(request, 'Accès réservé aux secrétaires.')
+        return redirect('dashboard')
+    
+    return render(request, 'dashboard_secretaire.html')
 
-        # Utilisation de TruncDate pour filtrer par jour
-        rdv_aujourdhui = RendezVous.objects.annotate(
-            date_only=TruncDate('date_rdv')
-        ).filter(
-            date_only=today
-        ).count()
+# ==================== RENDEZ-VOUS ====================
 
-        nouveaux_patients = Patient.objects.annotate(
-            created_only=TruncDate('created_at')
-        ).filter(
-            created_only=today
-        ).count()
-
-        context = {
-            'user': request.user,
-            'secretaire': secretaire,
-            'rdv_aujourdhui': rdv_aujourdhui,
-            'nouveaux_patients': nouveaux_patients,
-        }
-        return render(request, 'dashboard_secretaire.html', context)
-    except Exception as e:
-        messages.error(request, f"Erreur lors du chargement du dashboard: {str(e)}")
-        return redirect('home')
-
-# ===== PAGES PATIENTS =====
 @login_required
 def nouveau_rdv(request):
+    """Vue pour créer un nouveau rendez-vous - POUR TOUS LES RÔLES"""
     user_role = getattr(request.user, 'role', None)
-
-    # Autoriser tous les rôles sauf les infirmiers (ex. : ou selon tes besoins)
-    if user_role not in ['docteur', 'administrateur', 'secretaire', 'patient'] and not request.user.is_superuser:
+    
+    # 🔧 AUTORISER patients, médecins et admins
+    if not (user_role in ['patient', 'docteur'] or request.user.is_superuser):
         messages.error(request, f"Accès refusé. Votre rôle: {user_role}")
         return redirect('dashboard')
-
-    # Si POST : traiter la soumission
-    if request.method == 'POST':
-        try:
-            # Si patient connecté → il ne choisit pas son nom
-            if user_role == 'patient':
-                patient = request.user
-            else:
-                patient_id = request.POST.get('patient')
-                patient = get_object_or_404(CustomUser, id=patient_id, role='patient')
-
-            medecin_id = request.POST.get('medecin')
-            date_rdv = request.POST.get('date_rdv')
-            heure_rdv = request.POST.get('heure_rdv')
-            motif = request.POST.get('motif')
-
-            # Validation simple
-            if not all([patient, medecin_id, date_rdv, heure_rdv, motif]):
-                messages.error(request, "Tous les champs sont obligatoires.")
-                return redirect('nouveau_rdv')
-
-            medecin = get_object_or_404(CustomUser, id=medecin_id, role='docteur')
-
-            # Création du RDV
-            RendezVous.objects.create(
-                patient=patient,
-                medecin=medecin,
-                date_rdv=date_rdv,
-                heure_rdv=heure_rdv,
-                motif=motif,
-                status='programme'
-            )
-
-            messages.success(request, "Rendez-vous pris avec succès.")
-
-            # Redirection personnalisée
-            if user_role == 'patient':
-                return redirect('dashboard_patient')
-            elif user_role == 'docteur':
-                return redirect('dashboard_medecin')
-            else:
-                return redirect('dashboard')
-
-        except Exception as e:
-            messages.error(request, f"Erreur lors de la création du rendez-vous : {e}")
-            print(f"Erreur création rdv : {e}")
-
-    # GET : Affichage du formulaire
-    medecins = CustomUser.objects.filter(role='docteur', is_active=True).order_by('first_name')
-    patients = CustomUser.objects.filter(role='patient', is_active=True).order_by('first_name')
-
-    return render(request, 'nouveau_rdv.html', {
-        'medecins': medecins,
-        'patients': patients,
-    })
-# @role_required(['patient'])
-# def nouveau_rdv(request):
-#     if request.method == 'POST':
-#         try:
-#             medecin_id = request.POST.get('medecin')
-#             date_rdv = request.POST.get('date_rdv')
-#             heure_rdv = request.POST.get('heure_rdv')
-#             motif = request.POST.get('motif')
-            
-#             if not all([medecin_id, date_rdv, heure_rdv, motif]):
-#                 messages.error(request, 'Tous les champs sont obligatoires.')
-#                 return redirect('nouveau_rdv')
-            
-#             medecin = get_object_or_404(CustomUser, id=medecin_id, role='docteur')
-            
-#             # Combiner date et heure
-#             datetime_str = f"{date_rdv} {heure_rdv}"
-#             date_rdv_complete = datetime.strptime(datetime_str, '%Y-%m-%d %H:%M')
-#             if is_naive(date_rdv_complete):
-#                 date_rdv_complete = make_aware(date_rdv_complete)
-
-#             # Vérifier si la date est dans le futur
-#             if date_rdv_complete <= timezone.now():
-#                 messages.error(request, 'La date du rendez-vous doit être dans le futur.')
-#                 return redirect('nouveau_rdv')
-            
-#             # Créer le rendez-vous
-#             rdv = RendezVous.objects.create(
-#                 patient=request.user,
-#                 medecin=medecin,
-#                 date_rdv=date_rdv_complete,
-#                 motif=motif
-#             )
-            
-#             messages.success(request, 'Votre rendez-vous a été programmé avec succès!')
-#             return redirect('mes_rdv')
-            
-#         except Exception as e:
-#             messages.error(request, f'Erreur lors de la création du rendez-vous: {str(e)}')
     
-#     context = {
-#         'medecins': CustomUser.objects.filter(role='docteur', is_active=True),
-#         'today': timezone.now().date(),
-#     }
-#     return render(request, 'nouveau_rdv.html', context)
-
-@role_required(['patient'])
-def mes_rdv(request):
-    try:
-        rdv_futurs = RendezVous.objects.filter(
-            patient=request.user,
-            date_rdv__gte=timezone.now()
-        ).order_by('date_rdv')
-        
-        rdv_passes = RendezVous.objects.filter(
-            patient=request.user,
-            date_rdv__lt=timezone.now()
-        ).order_by('-date_rdv')
-        
-        context = {
-            'rdv_futurs': rdv_futurs,
-            'rdv_passes': rdv_passes,
-        }
-        return render(request, 'mes_rdv.html', context)
-    except Exception as e:
-        messages.error(request, f"Erreur lors du chargement des rendez-vous: {str(e)}")
-        return redirect('dashboard_patient')
-
-@role_required(['patient'])
-def consultations(request):
-    try:
-        consultations = Consultation.objects.filter(
-            rdv__patient=request.user
-        ).order_by('-rdv__date_rdv')
-        
-        context = {
-            'consultations': consultations,
-        }
-        return render(request, 'consultations.html', context)
-    except Exception as e:
-        messages.error(request, f"Erreur lors du chargement des consultations: {str(e)}")
-        return redirect('dashboard_patient')
-
-@role_required(['patient'])
-def mes_infos(request):
-    try:
-        patient = Patient.objects.filter(user=request.user).first()
-        
-        context = {
-            'user': request.user,
-            'patient': patient,
-        }
-        return render(request, 'mes_infos.html', context)
-    except Exception as e:
-        messages.error(request, f"Erreur lors du chargement des informations: {str(e)}")
-        return redirect('dashboard_patient')
-
-@role_required(['patient'])
-def modifier_profil(request):
+    medecins = CustomUser.objects.filter(role='docteur', is_active=True)
+    patients = CustomUser.objects.filter(role='patient', is_active=True)
+    
     if request.method == 'POST':
-        form = ProfileUpdateForm(request.POST, instance=request.user)
+        form = RendezVousForm(request.POST, medecins=medecins)
         if form.is_valid():
             try:
-                form.save()
-                messages.success(request, 'Votre profil a été mis à jour avec succès!')
-                return redirect('mes_infos')
+                rdv = form.save(commit=False)
+                
+                # 🔧 Auto-assignation selon le rôle
+                if user_role == 'patient':
+                    rdv.patient = request.user
+                    # Le médecin est choisi dans le formulaire
+                elif user_role == 'docteur':
+                    rdv.medecin = request.user
+                    # Le patient est choisi dans le formulaire
+                
+                rdv.save()
+                messages.success(request, 'Rendez-vous créé avec succès!')
+                
+                # Redirection selon le rôle
+                if user_role == 'patient':
+                    return redirect('dashboard_patient')
+                else:
+                    return redirect('dashboard_medecin')
+                    
             except Exception as e:
-                messages.error(request, f'Erreur lors de la mise à jour: {str(e)}')
+                messages.error(request, f'Erreur: {str(e)}')
         else:
-            messages.error(request, 'Veuillez corriger les erreurs ci-dessous.')
+            messages.error(request, 'Erreurs dans le formulaire.')
     else:
-        form = ProfileUpdateForm(instance=request.user)
+        form = RendezVousForm(medecins=medecins)
+        
+        # 🔧 Configuration selon le rôle
+        if user_role == 'patient':
+            # Patient : masquer le champ patient, montrer médecins
+            form.fields['patient'].widget = forms.HiddenInput()
+            form.fields['patient'].initial = request.user
+        elif user_role == 'docteur':
+            # Médecin : masquer le champ médecin, montrer patients
+            form.fields['medecin'].widget = forms.HiddenInput()
+            form.fields['medecin'].initial = request.user
     
-    context = {
+    return render(request, 'nouveau_rdv.html', {
         'form': form,
-    }
-    return render(request, 'modifier_profil.html', context)
-
-# ===== FONCTIONS UTILITAIRES =====
-
-@role_required(['patient'])
-def mon_dossier_medical(request):
-    try:
-        patient = get_object_or_404(Patient, user=request.user)
-        consultations = Consultation.objects.filter(rdv__patient=request.user)
-        rdv_historique = RendezVous.objects.filter(patient=request.user).order_by('-date_rdv')
-        
-        context = {
-            'patient': patient,
-            'consultations': consultations,
-            'rdv_historique': rdv_historique,
-        }
-        return render(request, 'mon_dossier_medical.html', context)
-    except Exception as e:
-        messages.error(request, f"Erreur lors du chargement du dossier: {str(e)}")
-        return redirect('dashboard_patient')
-
-# Fonctions PDF (à implémenter selon vos besoins)
-def download_dossier_pdf(request, patient_id):
-    # Implémentation PDF
-    return HttpResponse("PDF en cours de développement", content_type="text/plain")
-
-def download_ordonnance_pdf(request, consultation_id):
-    # Implémentation PDF
-    return HttpResponse("PDF en cours de développement", content_type="text/plain")
-
-def download_my_dossier_pdf(request):
-    # Implémentation PDF
-    return HttpResponse("PDF en cours de développement", content_type="text/plain") 
-
-# AJOUTEZ CES VUES À LA FIN DE VOTRE FICHIER views.py :
-@login_required
-def tous_les_rdv(request):
-    rdv_list = RendezVous.objects.all().order_by('-date_rdv')
-    return render(request, 'tous_rdv.html', {'rdv_list': rdv_list})
-@role_required(['patient'])
-def consultations(request):
-    """Vue pour voir l'historique des consultations du patient"""
-    try:
-        # Récupérer toutes les consultations du patient connecté
-        consultations_list = Consultation.objects.filter(
-            rdv__patient=request.user
-        ).order_by('-rdv__date_rdv')
-        
-        context = {
-            'consultations_list': consultations_list,
-            'user': request.user
-        }
-        return render(request, 'consultations.html', context)
-    except Exception as e:
-        messages.error(request, f"Erreur lors du chargement des consultations: {str(e)}")
-        return redirect('dashboard_patient')
-
-@role_required(['patient'])
-def mon_dossier_medical(request):
-    """Vue pour voir le dossier médical complet du patient"""
-    try:
-        # Récupérer ou créer le profil patient
-        patient, created = Patient.objects.get_or_create(user=request.user)
-        
-        # Récupérer toutes les données médicales
-        rdv_list = RendezVous.objects.filter(patient=request.user).order_by('-date_rdv')
-        consultations_list = Consultation.objects.filter(rdv__patient=request.user).order_by('-rdv__date_rdv')
-        soins_list = SoinsInfirmier.objects.filter(patient=request.user).order_by('-date_soin')
-        
-        context = {
-            'patient': patient,
-            'rdv_list': rdv_list,
-            'consultations_list': consultations_list,
-            'soins_list': soins_list,
-            'user': request.user
-        }
-        return render(request, 'mon_dossier.html', context)
-    except Exception as e:
-        messages.error(request, f"Erreur lors du chargement du dossier: {str(e)}")
-        return redirect('dashboard_patient')
-
-@role_required(['patient'])
-def modifier_profil(request):
-    """Vue pour modifier le profil du patient"""
-    try:
-        # Récupérer ou créer le profil patient
-        patient, created = Patient.objects.get_or_create(user=request.user)
-        
-        if request.method == 'POST':
-            form = ProfileUpdateForm(request.POST, instance=request.user)
-            if form.is_valid():
-                form.save()
-                messages.success(request, 'Profil mis à jour avec succès!')
-                return redirect('dashboard_patient')
-            else:
-                messages.error(request, 'Veuillez corriger les erreurs ci-dessous.')
-        else:
-            form = ProfileUpdateForm(instance=request.user)
-        
-        context = {
-            'form': form,
-            'patient': patient,
-            'user': request.user
-        }
-        return render(request, 'modifier_profil.html', context)
-    except Exception as e:
-        messages.error(request, f"Erreur lors de la modification du profil: {str(e)}")
-        return redirect('dashboard_patient')
-
-@role_required(['patient'])
-def mes_infos(request):
-    """Vue pour voir les informations personnelles du patient"""
-    try:
-        # Récupérer ou créer le profil patient
-        patient, created = Patient.objects.get_or_create(user=request.user)
-        
-        # Statistiques du patient
-        stats = {
-            'rdv_total': RendezVous.objects.filter(patient=request.user).count(),
-            'rdv_futurs': RendezVous.objects.filter(
-                patient=request.user, 
-                date_rdv__gte=timezone.now().date()
-            ).count(),
-            'consultations_total': Consultation.objects.filter(rdv__patient=request.user).count(),
-            'soins_total': SoinsInfirmier.objects.filter(patient=request.user).count(),
-        }
-        
-        context = {
-            'patient': patient,
-            'user': request.user,
-            'stats': stats
-        }
-        return render(request, 'mes_infos.html', context)
-    except Exception as e:
-        messages.error(request, f"Erreur lors du chargement des informations: {str(e)}")
-        return redirect('dashboard_patient')
-
-# Vue pour l'export PDF du dossier médical
-@role_required(['patient'])
-def download_my_dossier_pdf(request):
-    """Télécharger le dossier médical en PDF"""
-    try:
-        from django.http import HttpResponse
-        from reportlab.pdfgen import canvas
-        from reportlab.lib.pagesizes import letter
-        import io
-        
-        # Créer le PDF en mémoire
-        buffer = io.BytesIO()
-        p = canvas.Canvas(buffer, pagesize=letter)
-        width, height = letter
-        
-        # Récupérer les données du patient
-        patient, created = Patient.objects.get_or_create(user=request.user)
-        rdv_list = RendezVous.objects.filter(patient=request.user).order_by('-date_rdv')[:10]
-        consultations_list = Consultation.objects.filter(rdv__patient=request.user).order_by('-rdv__date_rdv')[:10]
-        
-        # En-tête du PDF
-        p.setFont("Helvetica-Bold", 16)
-        p.drawString(50, height - 50, f"DOSSIER MÉDICAL - {request.user.get_full_name() or request.user.username}")
-        
-        # Informations patient
-        y = height - 100
-        p.setFont("Helvetica-Bold", 12)
-        p.drawString(50, y, "INFORMATIONS PATIENT")
-        y -= 20
-        
-        p.setFont("Helvetica", 10)
-        p.drawString(50, y, f"ID Patient: {request.user.user_id}")
-        y -= 15
-        p.drawString(50, y, f"Nom: {request.user.get_full_name() or request.user.username}")
-        y -= 15
-        p.drawString(50, y, f"Email: {request.user.email}")
-        y -= 15
-        p.drawString(50, y, f"Téléphone: {request.user.telephone or 'Non renseigné'}")
-        y -= 30
-        
-        # Rendez-vous récents
-        p.setFont("Helvetica-Bold", 12)
-        p.drawString(50, y, "RENDEZ-VOUS RÉCENTS")
-        y -= 20
-        
-        p.setFont("Helvetica", 9)
-        for rdv in rdv_list:
-            rdv_text = f"{rdv.date_rdv.strftime('%d/%m/%Y')} - Dr. {rdv.medecin.get_full_name() or rdv.medecin.username} - {rdv.motif[:50]}..."
-            p.drawString(50, y, rdv_text)
-            y -= 12
-            if y < 100:  # Nouvelle page si nécessaire
-                p.showPage()
-                y = height - 50
-        
-        # Finaliser le PDF
-        p.save()
-        buffer.seek(0)
-        
-        # Retourner la réponse HTTP
-        response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
-        response['Content-Disposition'] = f'attachment; filename="dossier_medical_{request.user.username}.pdf"'
-        return response
-        
-    except ImportError:
-        messages.error(request, 'La génération de PDF n\'est pas disponible. Veuillez installer ReportLab.')
-        return redirect('mon_dossier_medical')
-    except Exception as e:
-        messages.error(request, f"Erreur lors de la génération du PDF: {str(e)}")
-        return redirect('mon_dossier_medical')
-@login_required
-def imprimer_prescription(request, prescription_id):
-    if request.user.role != 'docteur':
-        raise PermissionDenied()
-    
-    prescription = get_object_or_404(Prescription, id=prescription_id, medecin=request.user)
-    
-    # Générer un PDF ou afficher une page d'impression
-    return render(request, 'imprimer_prescription.html', {
-        'prescription': prescription
-    })
-@login_required
-def nouvelle_consultation(request):
-    if request.user.role != 'docteur':
-        raise PermissionDenied("Accès réservé aux médecins")
-    
-    if request.method == 'POST':
-        # Logique pour créer une nouvelle consultation
-        pass
-    
-    # Récupérer les patients du médecin
-    patients = CustomUser.objects.filter(role='patient')
-    
-    return render(request, 'nouvelle_consultation.html', {
+        'user_role': user_role,
+        'medecins': medecins,
         'patients': patients
     })
+
 @login_required
-def nouvelle_prescription(request):
-    if request.user.role != 'docteur':
+def mes_rdv(request):
+    """Vue pour voir mes rendez-vous"""
+    if hasattr(request.user, 'role') and request.user.role == 'patient':
+        rdv_list = RendezVous.objects.filter(patient=request.user).order_by('-date_rdv')
+    elif hasattr(request.user, 'role') and request.user.role == 'docteur':
+        rdv_list = RendezVous.objects.filter(medecin=request.user).order_by('-date_rdv')
+    else:
+        messages.error(request, 'Accès non autorisé.')
+        return redirect('dashboard')
+    
+    return render(request, 'mes_rdv.html', {'rdv_list': rdv_list})
+
+# ==================== VUES PATIENTS ====================
+
+@patient_required
+def consultations(request):
+    """Vue pour afficher les consultations d'un patient"""
+    consultations_list = Consultation.objects.filter(
+        rdv__patient=request.user
+    ).select_related('rdv__medecin').order_by('-created_at')
+    
+    # Pagination
+    paginator = Paginator(consultations_list, 10)
+    page_number = request.GET.get('page')
+    consultations_page = paginator.get_page(page_number)
+    
+    context = {
+        'consultations_list': consultations_page,
+        'total_consultations': consultations_list.count(),
+    }
+    
+    return render(request, 'consultations.html', context)
+
+@login_required
+def mon_dossier_medical(request):
+    """Vue pour afficher le dossier médical complet du patient"""
+    if not (hasattr(request.user, 'role') and request.user.role == 'patient'):
+        messages.error(request, 'Accès réservé aux patients.')
+        return redirect('dashboard')
+    
+    # Récupérer toutes les données du patient
+    rdv_list = RendezVous.objects.filter(patient=request.user).order_by('-date_rdv')[:10]
+    
+    consultations_list = Consultation.objects.filter(
+        rdv__patient=request.user
+    ).order_by('-created_at')[:5]
+    
+    prescriptions_list = Prescription.objects.filter(
+        patient=request.user
+    ).order_by('-date_prescription')[:5]
+    
+    # Statistiques
+    stats = {
+        'total_rdv': RendezVous.objects.filter(patient=request.user).count(),
+        'total_consultations': Consultation.objects.filter(rdv__patient=request.user).count(),
+        'total_prescriptions': Prescription.objects.filter(patient=request.user).count(),
+        'prochains_rdv': RendezVous.objects.filter(
+            patient=request.user,
+            date_rdv__gte=timezone.now().date()
+        ).count(),
+    }
+    
+    # Profil médical (s'il existe)
+    patient_profile = request.user if hasattr(request.user, 'profil_complete') else None
+    
+    context = {
+        'rdv_list': rdv_list,
+        'consultations_list': consultations_list,
+        'prescriptions_list': prescriptions_list,
+        'stats': stats,
+        'patient_profile': patient_profile,
+    }
+    
+    return render(request, 'mon_dossier_medical.html', context)
+# Modifie la vue dossier_patient existante :
+
+@login_required
+def dossier_patient(request, patient_id):
+    """Vue pour afficher le dossier médical complet d'un patient"""
+    if not (hasattr(request.user, 'role') and request.user.role == 'docteur'):
         messages.error(request, 'Accès réservé aux médecins.')
         return redirect('dashboard')
     
+    try:
+        patient = CustomUser.objects.get(id=patient_id, role='patient')
+    except CustomUser.DoesNotExist:
+        messages.error(request, 'Patient non trouvé.')
+        return redirect('liste_patients')
+    
+    # Historique des RDV avec ce médecin
+    rdv_list = RendezVous.objects.filter(
+        patient=patient,
+        medecin=request.user
+    ).order_by('-date_rdv', '-heure_rdv')
+    
+    # Consultations
+    consultations_list = Consultation.objects.filter(
+        rdv__patient=patient,
+        rdv__medecin=request.user
+    ).order_by('-created_at')
+    
+    # Prescriptions
+    prescriptions_list = Prescription.objects.filter(
+        patient=patient,
+        medecin=request.user
+    ).order_by('-date_prescription')
+    
+    # Statistiques
+    stats = {
+        'total_rdv': rdv_list.count(),
+        'total_consultations': consultations_list.count(),
+        'total_prescriptions': prescriptions_list.count(),
+        'premier_rdv': rdv_list.last(),
+        'dernier_rdv': rdv_list.first(),
+    }
+    
+    # 🆕 Données médicales du patient
+    donnees_medicales = {
+        'age': patient.get_age(),
+        'imc': patient.get_imc(),
+        'tension': patient.get_tension(),
+        'profil_complete': patient.profil_complete,
+    }
+    
+    context = {
+        'patient': patient,
+        'rdv_list': rdv_list[:10],
+        'consultations_list': consultations_list[:5],
+        'prescriptions_list': prescriptions_list[:5],
+        'stats': stats,
+        'donnees_medicales': donnees_medicales,  # 🆕
+    }
+    
+    return render(request, 'dossier_patient.html', context)
+
+
+@login_required
+def profile(request):
+    """Vue pour modifier le profil"""
     if request.method == 'POST':
-        print("=== DONNÉES POST REÇUES ===")
-        for key, value in request.POST.items():
-            print(f"{key}: {value}")
-        print("==========================")
+        form = ProfileUpdateForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Profil mis à jour avec succès!')
+            return redirect('profile')
+    else:
+        form = ProfileUpdateForm(instance=request.user)
+    
+    return render(request, 'profile.html', {'form': form})
+
+@login_required
+def nouvelle_consultation(request):
+    """Vue pour créer une nouvelle consultation"""
+    if not (hasattr(request.user, 'role') and request.user.role == 'docteur'):
+        messages.error(request, 'Accès réservé aux médecins.')
+        return redirect('dashboard')
+    
+    # 🔧 Récupérer les RDV du médecin qui n'ont pas encore de consultation
+    rdv_sans_consultation = RendezVous.objects.filter(
+        medecin=request.user,
+        consultation__isnull=True  # RDV sans consultation associée
+    ).order_by('-date_rdv', '-heure_rdv')
+    
+    if request.method == 'POST':
+        rdv_id = request.POST.get('rdv_id')
+        symptomes = request.POST.get('symptomes')
+        diagnostic = request.POST.get('diagnostic')
+        traitement = request.POST.get('traitement')
+        observations = request.POST.get('observations')
         
         try:
-            patient_id = request.POST.get('patient_id')
-            contenu_prescription = request.POST.get('contenu_prescription')
-            action = request.POST.get('action')
+            rdv = RendezVous.objects.get(id=rdv_id, medecin=request.user)
             
-            # Validation
-            if not patient_id:
-                messages.error(request, 'Veuillez sélectionner un patient.')
-                return redirect('nouvelle_prescription')
+            # Vérifier qu'il n'y a pas déjà une consultation pour ce RDV
+            if hasattr(rdv, 'consultation'):
+                messages.error(request, 'Une consultation existe déjà pour ce rendez-vous.')
+                return redirect('consultations_medecin')
             
-            if not contenu_prescription:
-                messages.error(request, 'Veuillez saisir le contenu de la prescription.')
-                return redirect('nouvelle_prescription')
-            
-            # Récupérer le patient
-            patient = get_object_or_404(CustomUser, id=patient_id, role='patient')
-            
-            # Créer la prescription
-            prescription = Prescription.objects.create(
-                medecin=request.user,
-                patient=patient,
-                contenu=contenu_prescription
+            consultation = Consultation.objects.create(
+                rdv=rdv,
+                symptomes=symptomes,
+                diagnostic=diagnostic,
+                traitement=traitement,
+                observations=observations
             )
             
-            if action == 'sauvegarder':
-                messages.success(request, f'Prescription sauvegardée pour {patient.get_full_name()}!')
-                return redirect('nouvelle_prescription')
+            # Marquer le RDV comme terminé
+            rdv.status = 'termine'
+            rdv.save()
             
-            elif action == 'imprimer':
-                # Rediriger vers une vue d'impression ou générer un PDF
-                messages.success(request, f'Prescription créée pour {patient.get_full_name()}!')
-                return redirect('imprimer_prescription', prescription_id=prescription.id)
+            messages.success(request, f'Consultation enregistrée pour {rdv.patient.get_full_name()}')
+            return redirect('consultations_medecin')
             
+        except RendezVous.DoesNotExist:
+            messages.error(request, 'Rendez-vous non trouvé')
         except Exception as e:
-            messages.error(request, f'Erreur lors de la sauvegarde : {str(e)}')
-            print(f"Erreur: {e}")
+            messages.error(request, f'Erreur: {str(e)}')
     
-    # Récupérer tous les patients
-    patients = CustomUser.objects.filter(role='patient', is_active=True).order_by('first_name', 'last_name')
+    context = {
+        'rdv_list': rdv_sans_consultation,
+        'rdv_count': rdv_sans_consultation.count()
+    }
     
-    return render(request, 'nouvelle_prescription.html', {
-        'patients': patients,
-        'medecin': request.user
-    })   
+    return render(request, 'nouvelle_consultation.html', context)
+@login_required
+def liste_patients(request):
+    """Vue pour afficher la liste des patients d'un médecin"""
+    if not (hasattr(request.user, 'role') and request.user.role == 'docteur'):
+        messages.error(request, 'Accès réservé aux médecins.')
+        return redirect('dashboard')
+    
+    # 🔧 TOUS LES PATIENTS du système (pour que le médecin puisse les voir)
+    tous_patients = CustomUser.objects.filter(
+        role='patient',
+        is_active=True
+    ).order_by('last_name', 'first_name')
+    
+    # Créer les statistiques pour chaque patient
+    patients_with_stats = []
+    for patient in tous_patients:
+        # RDV avec ce médecin
+        rdv_count = RendezVous.objects.filter(
+            patient=patient,
+            medecin=request.user
+        ).count()
+        
+        # Dernière consultation
+        derniere_consultation = Consultation.objects.filter(
+            rdv__patient=patient,
+            rdv__medecin=request.user
+        ).order_by('-created_at').first()
+        
+        # Dernière prescription
+        derniere_prescription = Prescription.objects.filter(
+            patient=patient,
+            medecin=request.user
+        ).order_by('-date_prescription').first()
+        
+        # Prochain RDV
+        prochain_rdv = RendezVous.objects.filter(
+            patient=patient,
+            medecin=request.user,
+            date_rdv__gte=timezone.now().date()
+        ).order_by('date_rdv', 'heure_rdv').first()
+        
+        patients_with_stats.append({
+            'patient': patient,
+            'rdv_count': rdv_count,
+            'derniere_consultation': derniere_consultation,
+            'derniere_prescription': derniere_prescription,
+            'prochain_rdv': prochain_rdv,
+            'has_history': rdv_count > 0,  # Si le patient a un historique avec ce médecin
+        })
+    
+    # Filtrer si demandé (seulement patients avec historique)
+    filter_type = request.GET.get('filter', 'all')
+    if filter_type == 'avec_historique':
+        patients_with_stats = [p for p in patients_with_stats if p['has_history']]
+    
+    context = {
+        'patients_with_stats': patients_with_stats,
+        'total_patients': len(patients_with_stats),
+        'filter_type': filter_type,
+    }
+    
+    return render(request, 'liste_patients.html', context)
+@login_required
+def rdv_medecin(request):
+    """Vue pour afficher les rendez-vous du médecin"""
+    if not (hasattr(request.user, 'role') and request.user.role == 'docteur'):
+        messages.error(request, 'Accès réservé aux médecins.')
+        return redirect('dashboard')
+    
+    # Filtres
+    filter_status = request.GET.get('status', 'all')
+    filter_date = request.GET.get('date', 'all')
+    
+    # Base queryset
+    rdv_queryset = RendezVous.objects.filter(medecin=request.user)
+    
+    # Appliquer les filtres
+    if filter_status != 'all':
+        rdv_queryset = rdv_queryset.filter(status=filter_status)
+    
+    if filter_date == 'today':
+        rdv_queryset = rdv_queryset.filter(date_rdv=timezone.now().date())
+    elif filter_date == 'week':
+        start_week = timezone.now().date()
+        end_week = start_week + timedelta(days=7)
+        rdv_queryset = rdv_queryset.filter(date_rdv__range=[start_week, end_week])
+    
+    rdv_list = rdv_queryset.order_by('-date_rdv', '-heure_rdv')
+    
+    # Statistiques
+    stats = {
+        'total': rdv_queryset.count(),
+        'today': RendezVous.objects.filter(
+            medecin=request.user, 
+            date_rdv=timezone.now().date()
+        ).count(),
+        'programme': rdv_queryset.filter(status='programme').count(),
+        'termine': rdv_queryset.filter(status='termine').count(),
+    }
+    
+    context = {
+        'rdv_list': rdv_list,
+        'stats': stats,
+        'filter_status': filter_status,
+        'filter_date': filter_date,
+        'status_choices': RendezVous.STATUS_CHOICES,
+    }
+    
+    return render(request, 'rdv_medecin.html', context)
+@login_required
+def planning_medecin(request):
+    """Vue pour afficher le planning d'un médecin"""
+    if not (hasattr(request.user, 'role') and request.user.role == 'docteur'):
+        messages.error(request, 'Accès réservé aux médecins.')
+        return redirect('dashboard')
+    
+    # Récupérer les RDV pour les 7 prochains jours
+    today = timezone.now().date()
+    end_date = today + timedelta(days=7)
+    
+    rdv_semaine = RendezVous.objects.filter(
+        medecin=request.user,
+        date_rdv__range=[today, end_date]
+    ).select_related('patient').order_by('date_rdv', 'heure_rdv')
+    
+    # Organiser par jour
+    planning_par_jour = {}
+    for i in range(7):
+        date = today + timedelta(days=i)
+        planning_par_jour[date] = rdv_semaine.filter(date_rdv=date)
+    
+    context = {
+        'planning_par_jour': planning_par_jour,
+        'today': today,
+    }
+    
+    return render(request, 'planning_medecin.html', context)
+
+@login_required
+def consultations_medecin(request):
+    """Vue pour afficher les consultations d'un médecin"""
+    if not (hasattr(request.user, 'role') and request.user.role == 'docteur'):
+        messages.error(request, 'Accès réservé aux médecins.')
+        return redirect('dashboard')
+    
+    # Récupérer toutes les consultations du médecin
+    consultations_list = Consultation.objects.filter(
+        rdv__medecin=request.user
+    ).select_related('rdv__patient').order_by('-created_at')
+    
+    # Pagination
+    paginator = Paginator(consultations_list, 15)
+    page_number = request.GET.get('page')
+    consultations_page = paginator.get_page(page_number)
+    
+    context = {
+        'consultations_list': consultations_page,
+        'total_consultations': consultations_list.count(),
+    }
+    
+    return render(request, 'consultations_medecin.html', context)
+
+@login_required
+def mes_prescriptions(request):
+    """Vue pour afficher les prescriptions du médecin"""
+    if not (hasattr(request.user, 'role') and request.user.role == 'docteur'):
+        messages.error(request, 'Accès réservé aux médecins.')
+        return redirect('dashboard')
+    
+    # Filtres
+    patient_filter = request.GET.get('patient', '')
+    date_filter = request.GET.get('date', 'all')
+    
+    # Base queryset
+    prescriptions_queryset = Prescription.objects.filter(medecin=request.user)
+    
+    # Appliquer filtres
+    if patient_filter:
+        prescriptions_queryset = prescriptions_queryset.filter(
+            patient__id=patient_filter
+        )
+    
+    if date_filter == 'today':
+        prescriptions_queryset = prescriptions_queryset.filter(
+            date_prescription__date=timezone.now().date()
+        )
+    elif date_filter == 'week':
+        start_week = timezone.now().date()
+        end_week = start_week + timedelta(days=7)
+        prescriptions_queryset = prescriptions_queryset.filter(
+            date_prescription__date__range=[start_week, end_week]
+        )
+    elif date_filter == 'month':
+        prescriptions_queryset = prescriptions_queryset.filter(
+            date_prescription__month=timezone.now().month,
+            date_prescription__year=timezone.now().year
+        )
+    
+    prescriptions_list = prescriptions_queryset.order_by('-date_prescription')
+    
+    # Pagination
+    paginator = Paginator(prescriptions_list, 10)
+    page_number = request.GET.get('page')
+    prescriptions_page = paginator.get_page(page_number)
+    
+    # Liste des patients pour le filtre
+    patients_list = CustomUser.objects.filter(
+        role='patient',
+        prescriptions_patient__medecin=request.user
+    ).distinct().order_by('first_name', 'last_name')
+    
+    context = {
+        'prescriptions_list': prescriptions_page,
+        'patients_list': patients_list,
+        'patient_filter': patient_filter,
+        'date_filter': date_filter,
+        'total_prescriptions': prescriptions_queryset.count(),
+    }
+    
+    return render(request, 'mes_prescriptions.html', context)
+# Ajoute cette vue dans views.py après les autres vues médecin
 # @login_required
 # def nouvelle_prescription(request):
-#     if request.user.role != 'docteur':
+#     """Vue pour créer une nouvelle prescription"""
+#     if not (hasattr(request.user, 'role') and request.user.role == 'docteur'):
 #         messages.error(request, 'Accès réservé aux médecins.')
 #         return redirect('dashboard')
     
 #     if request.method == 'POST':
-#         # Traitement du formulaire
-#         pass
+#         # Logique pour créer une prescription
+#         patient_id = request.POST.get('patient_id')
+#         medicaments = request.POST.get('medicaments')
+#         instructions = request.POST.get('instructions', '')
+        
+#         try:
+#             patient = CustomUser.objects.get(id=patient_id, role='patient')
+            
+#             prescription = Prescription.objects.create(
+#                 patient=patient,
+#                 medecin=request.user,
+#                 contenu=f"Médicaments: {medicaments}\nInstructions: {instructions}",
+#                 date_prescription=timezone.now()
+#             )
+            
+#             messages.success(request, f'Prescription créée pour {patient.get_full_name()}')
+#             return redirect('dashboard_medecin')
+            
+#         except CustomUser.DoesNotExist:
+#             messages.error(request, 'Patient non trouvé')
+#         except Exception as e:
+#             messages.error(request, f'Erreur: {str(e)}')
     
-#     # CORRECTION : Récupérer tous les patients avec leurs noms
-#     patients = CustomUser.objects.filter(role='patient', is_active=True).order_by('first_name', 'last_name')
+#     # Récupérer les patients du médecin
+#     patients = CustomUser.objects.filter(
+#         role='patient',
+#         rdv_patient__medecin=request.user
+#     ).distinct()
     
 #     return render(request, 'nouvelle_prescription.html', {
-#         'patients': patients,
-#         'medecin': request.user
-#     }) /                                                                                                                                 
+#         'patients': patients
+#     })
+
+@login_required
+def nouvelle_prescription(request):
+    """Vue pour créer une nouvelle prescription"""
+    if not (hasattr(request.user, 'role') and request.user.role == 'docteur'):
+        messages.error(request, 'Accès réservé aux médecins.')
+        return redirect('dashboard')
+    
+    if request.method == 'POST':
+        patient_id = request.POST.get('patient_id')
+        medicaments = request.POST.get('medicaments')
+        instructions = request.POST.get('instructions', '')
+        
+        try:
+            patient = CustomUser.objects.get(id=patient_id, role='patient')
+            
+            prescription = Prescription.objects.create(
+                patient=patient,
+                medecin=request.user,
+                contenu=f"Médicaments: {medicaments}\nInstructions: {instructions}"
+            )
+            
+            messages.success(request, f'Prescription créée pour {patient.get_full_name()}')
+            return redirect('dashboard_medecin')
+            
+        except CustomUser.DoesNotExist:
+            messages.error(request, 'Patient non trouvé')
+        except Exception as e:
+            messages.error(request, f'Erreur: {str(e)}')
+    
+    # 🔧 MODIFICATION ICI : Afficher TOUS les patients actifs
+    patients = CustomUser.objects.filter(
+        role='patient',
+        is_active=True  # Tous les patients actifs, pas seulement ceux avec RDV
+    ).order_by('first_name', 'last_name')
+    
+    return render(request, 'nouvelle_prescription.html', {
+        'patients': patients
+    })
+    
+ # Ajoute cette vue complète à la fin de views.py :
+
+@login_required
+def download_my_dossier_pdf(request):
+    """Télécharger le dossier médical complet du patient en PDF"""
+    if not (hasattr(request.user, 'role') and request.user.role == 'patient'):
+        messages.error(request, 'Accès réservé aux patients.')
+        return redirect('dashboard')
+    
+    try:
+        from reportlab.pdfgen import canvas
+        from reportlab.lib.pagesizes import letter, A4
+        from reportlab.lib import colors
+        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+        from reportlab.lib.units import inch
+        from io import BytesIO
+        
+        # Créer le PDF
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=1*inch)
+        
+        # Styles personnalisés
+        styles = getSampleStyleSheet()
+        
+        title_style = ParagraphStyle(
+            'CustomTitle',
+            parent=styles['Heading1'],
+            fontSize=20,
+            spaceAfter=30,
+            alignment=1,  # Center
+            textColor=colors.purple,
+            fontName='Helvetica-Bold'
+        )
+        
+        heading_style = ParagraphStyle(
+            'CustomHeading',
+            parent=styles['Heading2'],
+            fontSize=14,
+            spaceAfter=15,
+            spaceBefore=20,
+            textColor=colors.blue,
+            fontName='Helvetica-Bold'
+        )
+        
+        # Contenu du PDF
+        story = []
+        
+        # En-tête avec logo virtuel
+        story.append(Paragraph("🏥 ESCO - ESPACE SANTÉ FAMILLE", title_style))
+        story.append(Paragraph("DOSSIER MÉDICAL PERSONNEL", title_style))
+        story.append(Spacer(1, 20))
+        
+        # Informations personnelles
+        story.append(Paragraph("👤 INFORMATIONS PERSONNELLES", heading_style))
+        
+        # Table des informations personnelles
+        personal_data = [
+            ['Nom complet:', request.user.get_full_name()],
+            ['Email:', request.user.email],
+            ['Téléphone:', request.user.telephone or 'Non renseigné'],
+            ['Adresse:', request.user.adresse or 'Non renseignée'],
+        ]
+        
+        if hasattr(request.user, 'date_naissance') and request.user.date_naissance:
+            personal_data.append(['Date de naissance:', request.user.date_naissance.strftime('%d/%m/%Y')])
+            if request.user.get_age():
+                personal_data.append(['Âge:', f"{request.user.get_age()} ans"])
+        
+        personal_table = Table(personal_data, colWidths=[2.5*inch, 4*inch])
+        personal_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (0, -1), colors.lightblue),
+            ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+            ('FONTNAME', (1, 0), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ]))
+        story.append(personal_table)
+        story.append(Spacer(1, 20))
+        
+        # Données médicales
+        if hasattr(request.user, 'poids') and (request.user.poids or request.user.taille or 
+                                              getattr(request.user, 'groupe_sanguin', None) or 
+                                              request.user.get_tension()):
+            story.append(Paragraph("⚕️ DONNÉES MÉDICALES", heading_style))
+            
+            medical_data = []
+            if request.user.poids:
+                medical_data.append(['Poids:', f"{request.user.poids} kg"])
+            if request.user.taille:
+                medical_data.append(['Taille:', f"{request.user.taille} cm"])
+            if request.user.get_imc():
+                imc = request.user.get_imc()
+                status_imc = ""
+                if imc < 18.5:
+                    status_imc = " (Insuffisance pondérale)"
+                elif 18.5 <= imc < 25:
+                    status_imc = " (Poids normal)"
+                elif 25 <= imc < 30:
+                    status_imc = " (Surpoids)"
+                else:
+                    status_imc = " (Obésité)"
+                medical_data.append(['IMC:', f"{imc}{status_imc}"])
+            
+            if hasattr(request.user, 'groupe_sanguin') and request.user.groupe_sanguin:
+                medical_data.append(['Groupe sanguin:', request.user.groupe_sanguin])
+            if request.user.get_tension():
+                tension = request.user.get_tension()
+                systolique = request.user.tension_systolique
+                status_tension = ""
+                if systolique:
+                    if systolique < 120:
+                        status_tension = " (Normal)"
+                    elif 120 <= systolique < 140:
+                        status_tension = " (Élevé)"
+                    else:
+                        status_tension = " (Hypertension)"
+                medical_data.append(['Tension artérielle:', f"{tension} mmHg{status_tension}"])
+                
+            if medical_data:
+                medical_table = Table(medical_data, colWidths=[2.5*inch, 4*inch])
+                medical_table.setStyle(TableStyle([
+                    ('BACKGROUND', (0, 0), (0, -1), colors.lightgreen),
+                    ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+                    ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                    ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+                    ('FONTNAME', (1, 0), (-1, -1), 'Helvetica'),
+                    ('FONTSIZE', (0, 0), (-1, -1), 10),
+                    ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+                    ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                ]))
+                story.append(medical_table)
+                story.append(Spacer(1, 20))
+        
+        # Informations médicales détaillées
+        if hasattr(request.user, 'allergies') and (request.user.allergies or 
+                                                  getattr(request.user, 'antecedents_medicaux', None) or 
+                                                  getattr(request.user, 'medicaments_actuels', None)):
+            story.append(Paragraph("📋 INFORMATIONS MÉDICALES DÉTAILLÉES", heading_style))
+            
+            if request.user.allergies:
+                story.append(Paragraph("<b>🚨 Allergies connues:</b>", styles['Normal']))
+                story.append(Paragraph(request.user.allergies, styles['Normal']))
+                story.append(Spacer(1, 10))
+                
+            if getattr(request.user, 'antecedents_medicaux', None):
+                story.append(Paragraph("<b>📖 Antécédents médicaux:</b>", styles['Normal']))
+                story.append(Paragraph(request.user.antecedents_medicaux, styles['Normal']))
+                story.append(Spacer(1, 10))
+                
+            if getattr(request.user, 'medicaments_actuels', None):
+                story.append(Paragraph("<b>💊 Médicaments actuels:</b>", styles['Normal']))
+                story.append(Paragraph(request.user.medicaments_actuels, styles['Normal']))
+                story.append(Spacer(1, 20))
+        
+        # Contact d'urgence
+        if hasattr(request.user, 'personne_urgence_nom') and (request.user.personne_urgence_nom or 
+                                                              getattr(request.user, 'personne_urgence_tel', None)):
+            story.append(Paragraph("🆘 CONTACT D'URGENCE", heading_style))
+            
+            urgence_data = []
+            if request.user.personne_urgence_nom:
+                urgence_data.append(['Nom:', request.user.personne_urgence_nom])
+            if getattr(request.user, 'personne_urgence_tel', None):
+                urgence_data.append(['Téléphone:', request.user.personne_urgence_tel])
+                
+            if urgence_data:
+                urgence_table = Table(urgence_data, colWidths=[2.5*inch, 4*inch])
+                urgence_table.setStyle(TableStyle([
+                    ('BACKGROUND', (0, 0), (0, -1), colors.orange),
+                    ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+                    ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                    ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+                    ('FONTNAME', (1, 0), (-1, -1), 'Helvetica'),
+                    ('FONTSIZE', (0, 0), (-1, -1), 10),
+                    ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+                    ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                ]))
+                story.append(urgence_table)
+                story.append(Spacer(1, 20))
+        
+        # Historique des rendez-vous
+        rdv_list = RendezVous.objects.filter(patient=request.user).order_by('-date_rdv')[:10]
+        if rdv_list:
+            story.append(Paragraph("📅 HISTORIQUE DES RENDEZ-VOUS (10 derniers)", heading_style))
+            
+            rdv_data = [['Date', 'Médecin', 'Motif', 'Statut']]
+            for rdv in rdv_list:
+                rdv_data.append([
+                    rdv.date_rdv.strftime('%d/%m/%Y'),
+                    rdv.medecin.get_full_name(),
+                    (rdv.motif[:40] + '...') if len(rdv.motif) > 40 else rdv.motif,
+                    rdv.get_status_display()
+                ])
+            
+            rdv_table = Table(rdv_data, colWidths=[1.2*inch, 1.8*inch, 2.5*inch, 1*inch])
+            rdv_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.purple),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+                ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, 0), 11),
+                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                ('FONTSIZE', (0, 1), (-1, -1), 9),
+                ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ]))
+            story.append(rdv_table)
+            story.append(Spacer(1, 20))
+        
+        # Pied de page
+        story.append(Spacer(1, 30))
+        
+        footer_style = ParagraphStyle(
+            'Footer',
+            parent=styles['Normal'],
+            fontSize=10,
+            alignment=1,  # Center
+            textColor=colors.grey
+        )
+        
+        story.append(Paragraph(f"📄 Document généré le {timezone.now().strftime('%d/%m/%Y à %H:%M')}", footer_style))
+        story.append(Paragraph("🏥 ESCO - Espace Santé Famille - Confidentiel", footer_style))
+        story.append(Paragraph("📞 Contact: contact@esco-sante.fr | ☎️ 01 23 45 67 89", footer_style))
+        
+        # Construire le PDF
+        doc.build(story)
+        
+        # Préparer la réponse
+        buffer.seek(0)
+        response = HttpResponse(buffer, content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="dossier_medical_{request.user.username}_{timezone.now().strftime("%Y%m%d")}.pdf"'
+        
+        return response
+        
+    except ImportError:
+        messages.error(request, 'Erreur: ReportLab non installé. Contactez l\'administrateur.')
+        return redirect('dashboard_patient')
+    except Exception as e:
+        messages.error(request, f'Erreur lors de la génération du PDF: {str(e)}')
+        return redirect('dashboard_patient')

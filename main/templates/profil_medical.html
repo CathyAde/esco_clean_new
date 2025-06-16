@@ -1,0 +1,354 @@
+{% extends 'base.html' %}
+
+{% block title %}Mon Profil Médical - ESCO{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-primary">
+            <i class="fas fa-user-edit me-2"></i>Mon Profil Médical
+        </h2>
+        <div>
+            <a href="{% url 'download_my_dossier_pdf' %}" class="btn btn-secondary me-2" target="_blank">
+                <i class="fas fa-download"></i> Télécharger PDF
+            </a>
+            <a href="{% url 'dashboard_patient' %}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left"></i> Retour
+            </a>
+        </div>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Statut du profil -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            {% if user.profil_complete %}
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle me-2"></i>
+                    <strong>Profil complet !</strong> Dernière mise à jour : {{ user.derniere_maj_profil|date:"d/m/Y à H:i" }}
+                </div>
+            {% else %}
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Profil incomplet :</strong> Remplissez vos informations médicales pour aider vos médecins.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <form method="post" id="profilForm">
+        {% csrf_token %}
+        
+        <!-- Informations de base -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-id-card me-2"></i>Informations de Base</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.date_naissance.id_for_label }}" class="form-label">
+                            <i class="fas fa-birthday-cake me-1"></i>{{ form.date_naissance.label }}
+                        </label>
+                        {{ form.date_naissance }}
+                        {% if form.date_naissance.errors %}
+                            <div class="text-danger small">{{ form.date_naissance.errors }}</div>
+                        {% endif %}
+                        {% if user.get_age %}
+                            <small class="text-success"><i class="fas fa-info-circle"></i> Âge actuel : {{ user.get_age }} ans</small>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.poids.id_for_label }}" class="form-label">
+                            <i class="fas fa-weight me-1"></i>{{ form.poids.label }}
+                        </label>
+                        <div class="input-group">
+                            {{ form.poids }}
+                            <span class="input-group-text">kg</span>
+                        </div>
+                        {% if form.poids.errors %}
+                            <div class="text-danger small">{{ form.poids.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.taille.id_for_label }}" class="form-label">
+                            <i class="fas fa-ruler-vertical me-1"></i>{{ form.taille.label }}
+                        </label>
+                        <div class="input-group">
+                            {{ form.taille }}
+                            <span class="input-group-text">cm</span>
+                        </div>
+                        {% if form.taille.errors %}
+                            <div class="text-danger small">{{ form.taille.errors }}</div>
+                        {% endif %}
+                        {% if user.get_imc %}
+                            <small class="text-info"><i class="fas fa-calculator"></i> IMC : {{ user.get_imc }}</small>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.groupe_sanguin.id_for_label }}" class="form-label">
+                            <i class="fas fa-tint me-1"></i>{{ form.groupe_sanguin.label }}
+                        </label>
+                        {{ form.groupe_sanguin }}
+                        {% if form.groupe_sanguin.errors %}
+                            <div class="text-danger small">{{ form.groupe_sanguin.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.tension_systolique.id_for_label }}" class="form-label">
+                            <i class="fas fa-heartbeat me-1"></i>Tension Systolique
+                        </label>
+                        <div class="input-group">
+                            {{ form.tension_systolique }}
+                            <span class="input-group-text">mmHg</span>
+                        </div>
+                        {% if form.tension_systolique.errors %}
+                            <div class="text-danger small">{{ form.tension_systolique.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.tension_diastolique.id_for_label }}" class="form-label">
+                            <i class="fas fa-heartbeat me-1"></i>Tension Diastolique
+                        </label>
+                        <div class="input-group">
+                            {{ form.tension_diastolique }}
+                            <span class="input-group-text">mmHg</span>
+                        </div>
+                        {% if form.tension_diastolique.errors %}
+                            <div class="text-danger small">{{ form.tension_diastolique.errors }}</div>
+                        {% endif %}
+                        {% if user.get_tension %}
+                            <small class="text-info"><i class="fas fa-info-circle"></i> Tension actuelle : {{ user.get_tension }} mmHg</small>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Informations médicales -->
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-notes-medical me-2"></i>Informations Médicales</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        <label for="{{ form.allergies.id_for_label }}" class="form-label">
+                            <i class="fas fa-exclamation-triangle me-1 text-warning"></i>{{ form.allergies.label }}
+                        </label>
+                        {{ form.allergies }}
+                        {% if form.allergies.errors %}
+                            <div class="text-danger small">{{ form.allergies.errors }}</div>
+                        {% endif %}
+                        <small class="text-muted">Mentionnez toutes vos allergies connues (médicaments, aliments, etc.)</small>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.antecedents_medicaux.id_for_label }}" class="form-label">
+                            <i class="fas fa-history me-1"></i>{{ form.antecedents_medicaux.label }}
+                        </label>
+                        {{ form.antecedents_medicaux }}
+                        {% if form.antecedents_medicaux.errors %}
+                            <div class="text-danger small">{{ form.antecedents_medicaux.errors }}</div>
+                        {% endif %}
+                        <small class="text-muted">Maladies passées, opérations, hospitalisations...</small>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.medicaments_actuels.id_for_label }}" class="form-label">
+                            <i class="fas fa-pills me-1"></i>{{ form.medicaments_actuels.label }}
+                        </label>
+                        {{ form.medicaments_actuels }}
+                        {% if form.medicaments_actuels.errors %}
+                            <div class="text-danger small">{{ form.medicaments_actuels.errors }}</div>
+                        {% endif %}
+                        <small class="text-muted">Tous les médicaments que vous prenez régulièrement</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact d'urgence -->
+        <div class="card mb-4">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0"><i class="fas fa-phone-alt me-2"></i>Contact d'Urgence</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Ces informations seront utilisées en cas d'urgence médicale.
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.personne_urgence_nom.id_for_label }}" class="form-label">
+                            <i class="fas fa-user me-1"></i>{{ form.personne_urgence_nom.label }}
+                        </label>
+                        {{ form.personne_urgence_nom }}
+                        {% if form.personne_urgence_nom.errors %}
+                            <div class="text-danger small">{{ form.personne_urgence_nom.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.personne_urgence_tel.id_for_label }}" class="form-label">
+                            <i class="fas fa-phone me-1"></i>{{ form.personne_urgence_tel.label }}
+                        </label>
+                        {{ form.personne_urgence_tel }}
+                        {% if form.personne_urgence_tel.errors %}
+                            <div class="text-danger small">{{ form.personne_urgence_tel.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Résumé en temps réel -->
+        <div class="card mb-4" id="resumeCard" style="display: none;">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Résumé de vos données</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <div class="metric">
+                            <h4 id="ageDisplay">-</h4>
+                            <small>Âge</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="metric">
+                            <h4 id="imcDisplay">-</h4>
+                            <small>IMC</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="metric">
+                            <h4 id="tensionDisplay">-</h4>
+                            <small>Tension</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="metric">
+                            <h4 id="groupeDisplay">-</h4>
+                            <small>Groupe sanguin</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Boutons -->
+        <div class="text-center">
+            <button type="submit" class="btn btn-success btn-lg me-3">
+                <i class="fas fa-save"></i> Enregistrer mon profil
+            </button>
+            <a href="{% url 'dashboard_patient' %}" class="btn btn-outline-secondary btn-lg">
+                <i class="fas fa-times"></i> Annuler
+            </a>
+        </div>
+    </form>
+</div>
+
+<style>
+.metric {
+    padding: 1rem;
+    border-radius: 8px;
+    background: rgba(0,0,0,0.05);
+    margin-bottom: 1rem;
+}
+
+.card-header {
+    border-radius: 0.375rem 0.375rem 0 0 !important;
+}
+
+.input-group-text {
+    background-color: #f8f9fa;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const poidsInput = document.getElementById('{{ form.poids.id_for_label }}');
+    const tailleInput = document.getElementById('{{ form.taille.id_for_label }}');
+    const naissanceInput = document.getElementById('{{ form.date_naissance.id_for_label }}');
+    const systoliqueInput = document.getElementById('{{ form.tension_systolique.id_for_label }}');
+    const diastoliqueInput = document.getElementById('{{ form.tension_diastolique.id_for_label }}');
+    const groupeInput = document.getElementById('{{ form.groupe_sanguin.id_for_label }}');
+    
+    const ageDisplay = document.getElementById('ageDisplay');
+    const imcDisplay = document.getElementById('imcDisplay');
+    const tensionDisplay = document.getElementById('tensionDisplay');
+    const groupeDisplay = document.getElementById('groupeDisplay');
+    const resumeCard = document.getElementById('resumeCard');
+    
+    function updateResume() {
+        let hasData = false;
+        
+        // Calcul âge
+        if (naissanceInput.value) {
+            const today = new Date();
+            const birthDate = new Date(naissanceInput.value);
+            const age = today.getFullYear() - birthDate.getFullYear();
+            ageDisplay.textContent = age + ' ans';
+            hasData = true;
+        } else {
+            ageDisplay.textContent = '-';
+        }
+        
+        // Calcul IMC
+        const poids = parseFloat(poidsInput.value);
+        const taille = parseFloat(tailleInput.value);
+        if (poids && taille) {
+            const imc = (poids / Math.pow(taille / 100, 2)).toFixed(1);
+            imcDisplay.textContent = imc;
+            hasData = true;
+        } else {
+            imcDisplay.textContent = '-';
+        }
+        
+        // Tension
+        const systolique = systoliqueInput.value;
+        const diastolique = diastoliqueInput.value;
+        if (systolique && diastolique) {
+            tensionDisplay.textContent = systolique + '/' + diastolique;
+            hasData = true;
+        } else {
+            tensionDisplay.textContent = '-';
+        }
+        
+        // Groupe sanguin
+        if (groupeInput.value) {
+            groupeDisplay.textContent = groupeInput.value;
+            hasData = true;
+        } else {
+            groupeDisplay.textContent = '-';
+        }
+        
+        // Afficher/masquer le résumé
+        resumeCard.style.display = hasData ? 'block' : 'none';
+    }
+    
+    // Écouter les changements
+    [poidsInput, tailleInput, naissanceInput, systoliqueInput, diastoliqueInput, groupeInput].forEach(input => {
+        if (input) {
+            input.addEventListener('input', updateResume);
+            input.addEventListener('change', updateResume);
+        }
+    });
+    
+    // Mise à jour initiale
+    updateResume();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,232 @@
+{% extends 'base.html' %}
+
+{% block title %}Dossier {{ patient.get_full_name }} - ESCO{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-primary">
+            <i class="fas fa-file-medical me-2"></i>
+            Dossier de {{ patient.get_full_name }}
+        </h2>
+        <div>
+            <a href="{% url 'nouveau_rdv' %}?patient={{ patient.id }}" class="btn btn-success me-2">
+                <i class="fas fa-calendar-plus"></i> Nouveau RDV
+            </a>
+            <a href="{% url 'liste_patients' %}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left"></i> Retour
+            </a>
+        </div>
+    </div>
+
+    <!-- Ajoute cette section dans dossier_patient.html après les informations de base -->
+
+<!-- Données médicales du patient -->
+{% if patient.profil_complete %}
+<div class="card mb-4">
+    <div class="card-header bg-success text-white">
+        <h5><i class="fas fa-heartbeat me-2"></i>Données Médicales</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            {% if patient.get_age %}
+            <div class="col-md-3">
+                <div class="text-center p-3 bg-light rounded">
+                    <h4 class="text-primary">{{ patient.get_age }}</h4>
+                    <small>Âge (ans)</small>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if patient.get_imc %}
+            <div class="col-md-3">
+                <div class="text-center p-3 bg-light rounded">
+                    <h4 class="text-info">{{ patient.get_imc }}</h4>
+                    <small>IMC</small>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if patient.get_tension %}
+            <div class="col-md-3">
+                <div class="text-center p-3 bg-light rounded">
+                    <h4 class="text-warning">{{ patient.get_tension }}</h4>
+                    <small>Tension (mmHg)</small>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if patient.groupe_sanguin %}
+            <div class="col-md-3">
+                <div class="text-center p-3 bg-light rounded">
+                    <h4 class="text-danger">{{ patient.groupe_sanguin }}</h4>
+                    <small>Groupe sanguin</small>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        {% if patient.allergies or patient.antecedents_medicaux or patient.medicaments_actuels %}
+        <hr>
+        <div class="row">
+            {% if patient.allergies %}
+            <div class="col-md-4">
+                <h6 class="text-danger"><i class="fas fa-exclamation-triangle"></i> Allergies</h6>
+                <p class="small">{{ patient.allergies }}</p>
+            </div>
+            {% endif %}
+            
+            {% if patient.antecedents_medicaux %}
+            <div class="col-md-4">
+                <h6 class="text-info"><i class="fas fa-history"></i> Antécédents</h6>
+                <p class="small">{{ patient.antecedents_medicaux|truncatewords:20 }}</p>
+            </div>
+            {% endif %}
+            
+            {% if patient.medicaments_actuels %}
+            <div class="col-md-4">
+                <h6 class="text-success"><i class="fas fa-pills"></i> Médicaments actuels</h6>
+                <p class="small">{{ patient.medicaments_actuels|truncatewords:20 }}</p>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% else %}
+<div class="alert alert-warning">
+    <i class="fas fa-exclamation-triangle me-2"></i>
+    <strong>Profil médical incomplet</strong> - Le patient n'a pas encore rempli ses informations médicales.
+</div>
+{% endif %}
+
+    <!-- Statistiques -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="text-primary">{{ stats.total_rdv }}</h3>
+                    <p>Rendez-vous</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="text-success">{{ stats.total_consultations }}</h3>
+                    <p>Consultations</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="text-warning">{{ stats.total_prescriptions }}</h3>
+                    <p>Prescriptions</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    {% if stats.premier_rdv %}
+                        <h6 class="text-info">{{ stats.premier_rdv.date_rdv|date:"d/m/Y" }}</h6>
+                    {% else %}
+                        <h6 class="text-muted">-</h6>
+                    {% endif %}
+                    <p>Premier RDV</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs pour l'historique -->
+    <ul class="nav nav-tabs" id="dossierTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="rdv-tab" data-bs-toggle="tab" data-bs-target="#rdv" type="button">
+                <i class="fas fa-calendar me-2"></i>Rendez-vous ({{ stats.total_rdv }})
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="consultations-tab" data-bs-toggle="tab" data-bs-target="#consultations" type="button">
+                <i class="fas fa-stethoscope me-2"></i>Consultations ({{ stats.total_consultations }})
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="prescriptions-tab" data-bs-toggle="tab" data-bs-target="#prescriptions" type="button">
+                <i class="fas fa-prescription me-2"></i>Prescriptions ({{ stats.total_prescriptions }})
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="dossierTabsContent">
+        <!-- Tab RDV -->
+        <div class="tab-pane fade show active" id="rdv" role="tabpanel">
+            <div class="card">
+                <div class="card-body">
+                    {% if rdv_list %}
+                        {% for rdv in rdv_list %}
+                            <div class="border-bottom py-3">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6>{{ rdv.date_rdv|date:"d/m/Y" }} à {{ rdv.heure_rdv|time:"H:i" }}</h6>
+                                        <p class="mb-1">{{ rdv.motif|truncatechars:100 }}</p>
+                                        <small class="text-muted">Status: {{ rdv.get_status_display }}</small>
+                                    </div>
+                                    <div>
+                                        <span class="badge bg-{% if rdv.status == 'termine' %}success{% elif rdv.status == 'programme' %}primary{% else %}secondary{% endif %}">
+                                            {{ rdv.get_status_display }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">Aucun rendez-vous avec ce médecin.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Consultations -->
+        <div class="tab-pane fade" id="consultations" role="tabpanel">
+            <div class="card">
+                <div class="card-body">
+                    {% if consultations_list %}
+                        {% for consultation in consultations_list %}
+                            <div class="border-bottom py-3">
+                                <h6>{{ consultation.created_at|date:"d/m/Y à H:i" }}</h6>
+                                <p><strong>Diagnostic :</strong> {{ consultation.diagnostic|truncatechars:100 }}</p>
+                                <p><strong>Traitement :</strong> {{ consultation.traitement|truncatechars:100 }}</p>
+                                {% if consultation.observations %}
+                                    <p><strong>Observations :</strong> {{ consultation.observations|truncatechars:100 }}</p>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">Aucune consultation enregistrée.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Prescriptions -->
+        <div class="tab-pane fade" id="prescriptions" role="tabpanel">
+            <div class="card">
+                <div class="card-body">
+                    {% if prescriptions_list %}
+                        {% for prescription in prescriptions_list %}
+                            <div class="border-bottom py-3">
+                                <h6>{{ prescription.date_prescription|date:"d/m/Y à H:i" }}</h6>
+                                <pre class="bg-light p-3 rounded">{{ prescription.contenu }}</pre>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">Aucune prescription émise.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

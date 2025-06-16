@@ -1,0 +1,196 @@
+{% extends 'base.html' %}
+
+{% block title %}Mes Prescriptions - ESCO{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-primary">
+            <i class="fas fa-prescription-bottle me-2"></i>Mes Prescriptions
+        </h2>
+        <div>
+            <a href="{% url 'nouvelle_prescription' %}" class="btn btn-success me-2">
+                <i class="fas fa-plus"></i> Nouvelle Prescription
+            </a>
+            <a href="{% url 'dashboard_medecin' %}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left"></i> Retour
+            </a>
+        </div>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Filtres -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5><i class="fas fa-filter me-2"></i>Filtres</h5>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label for="patient" class="form-label">Patient :</label>
+                    <select name="patient" id="patient" class="form-select">
+                        <option value="">Tous les patients</option>
+                        {% for patient in patients_list %}
+                            <option value="{{ patient.id }}" {% if patient_filter == patient.id|stringformat:"s" %}selected{% endif %}>
+                                {{ patient.get_full_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="date" class="form-label">Période :</label>
+                    <select name="date" id="date" class="form-select">
+                        <option value="all" {% if date_filter == 'all' %}selected{% endif %}>Toutes les dates</option>
+                        <option value="today" {% if date_filter == 'today' %}selected{% endif %}>Aujourd'hui</option>
+                        <option value="week" {% if date_filter == 'week' %}selected{% endif %}>Cette semaine</option>
+                        <option value="month" {% if date_filter == 'month' %}selected{% endif %}>Ce mois</option>
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="fas fa-search"></i> Filtrer
+                    </button>
+                    <a href="{% url 'mes_prescriptions' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times"></i> Reset
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Statistiques -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h4 class="text-success">{{ total_prescriptions }}</h4>
+                    <p class="mb-0">Total prescriptions trouvées</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liste des prescriptions -->
+    {% if prescriptions_list %}
+        <div class="row g-4">
+            {% for prescription in prescriptions_list %}
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0">
+                                <i class="fas fa-user me-2"></i>
+                                {{ prescription.patient.get_full_name }}
+                            </h6>
+                            <small class="text-muted">
+                                {{ prescription.date_prescription|date:"d/m/Y à H:i" }}
+                            </small>
+                        </div>
+                        <div class="card-body">
+                            <div class="prescription-content">
+                                <h6>Prescription :</h6>
+                                <div class="bg-light p-3 rounded">
+                                    <pre class="mb-0" style="white-space: pre-wrap; font-family: inherit;">{{ prescription.contenu }}</pre>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <div class="btn-group w-100" role="group">
+                                <a href="{% url 'dossier_patient' prescription.patient.id %}" class="btn btn-outline-info btn-sm">
+                                    <i class="fas fa-file-medical"></i> Dossier
+                                </a>
+                                <button class="btn btn-outline-primary btn-sm" onclick="printPrescription({{ prescription.id }})">
+                                    <i class="fas fa-print"></i> Imprimer
+                                </button>
+                                <a href="{% url 'nouveau_rdv' %}?patient={{ prescription.patient.id }}" class="btn btn-outline-success btn-sm">
+                                    <i class="fas fa-calendar-plus"></i> Nouveau RDV
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if prescriptions_list.has_other_pages %}
+            <nav aria-label="Pagination des prescriptions" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if prescriptions_list.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% if patient_filter %}&patient={{ patient_filter }}{% endif %}{% if date_filter != 'all' %}&date={{ date_filter }}{% endif %}">
+                                <i class="fas fa-angle-double-left"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ prescriptions_list.previous_page_number }}{% if patient_filter %}&patient={{ patient_filter }}{% endif %}{% if date_filter != 'all' %}&date={{ date_filter }}{% endif %}">
+                                <i class="fas fa-angle-left"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+
+                    <li class="page-item active">
+                        <span class="page-link">
+                            Page {{ prescriptions_list.number }} sur {{ prescriptions_list.paginator.num_pages }}
+                        </span>
+                    </li>
+
+                    {% if prescriptions_list.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ prescriptions_list.next_page_number }}{% if patient_filter %}&patient={{ patient_filter }}{% endif %}{% if date_filter != 'all' %}&date={{ date_filter }}{% endif %}">
+                                <i class="fas fa-angle-right"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ prescriptions_list.paginator.num_pages }}{% if patient_filter %}&patient={{ patient_filter }}{% endif %}{% if date_filter != 'all' %}&date={{ date_filter }}{% endif %}">
+                                <i class="fas fa-angle-double-right"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+
+    {% else %}
+        <div class="text-center">
+            <i class="fas fa-prescription-bottle-alt fa-3x text-muted mb-3"></i>
+            <h4 class="text-muted">Aucune prescription trouvée</h4>
+            <p>Aucune prescription ne correspond aux critères sélectionnés.</p>
+            <a href="{% url 'nouvelle_prescription' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Créer une prescription
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+function printPrescription(prescriptionId) {
+    // Simple fonction d'impression - peut être améliorée
+    window.print();
+}
+</script>
+
+<style>
+.prescription-content {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+@media print {
+    .card-header, .card-footer, .btn-group, nav {
+        display: none !important;
+    }
+    .card {
+        border: none !important;
+        box-shadow: none !important;
+    }
+}
+</style>
+{% endblock %}

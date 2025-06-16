@@ -1,4 +1,69 @@
 {% extends 'base.html' %}
+
+{% block title %}Nouvelle Prescription - ESCO{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-primary">
+            <i class="fas fa-prescription-bottle-alt me-2"></i>Nouvelle Prescription
+        </h2>
+        <a href="{% url 'dashboard_medecin' %}" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left"></i> Retour
+        </a>
+    </div>
+    
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+    
+    <div class="card">
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="mb-3">
+                    <label for="patient_id" class="form-label">Patient</label>
+                    <select name="patient_id" id="patient_id" class="form-select" required>
+                        <option value="">Choisir un patient</option>
+                        {% for patient in patients %}
+                            <option value="{{ patient.id }}">
+                                {{ patient.get_full_name }} - {{ patient.email }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="medicaments" class="form-label">Médicaments et posologie</label>
+                    <textarea name="medicaments" id="medicaments" class="form-control" rows="6" required
+                        placeholder="Exemple:
+- Paracétamol 1000mg : 1 comprimé 3 fois par jour pendant 5 jours
+- Ibuprofène 400mg : 1 comprimé matin et soir pendant 3 jours"></textarea>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="instructions" class="form-label">Instructions spéciales</label>
+                    <textarea name="instructions" id="instructions" class="form-control" rows="3"
+                        placeholder="Instructions particulières, contre-indications, durée du traitement..."></textarea>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-prescription me-2"></i>Créer la prescription
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% comment %} 
+{% extends 'base.html' %}
 {% load static %}
 
 {% block title %}Nouvelle Prescription - ESCO{% endblock %}
@@ -62,4 +127,4 @@
         </div>
     </div>
 </div>
-{% endblock %}
+{% endblock %} {% endcomment %}

@@ -1,35 +1,36 @@
+
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from .models import CustomUser, RendezVous, Patient, Medecin, Infirmier, Secretaire
+# Dans forms.py - CORRECT ✅
 from .models import Consultation
 
-class ConsultationForm(forms.ModelForm):
-    class Meta:
-        model = Consultation
-        fields = ['symptomes', 'diagnostic', 'traitement', 'observations']
-        widgets = {
-            'symptomes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
-            'diagnostic': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
-            'traitement': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
-            'observations': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
-        }
 
+# class CustomUserCreationForm(UserCreationForm):
+#     email = forms.EmailField(required=True, label="Email")
+#     first_name = forms.CharField(max_length=30, required=True, label="Prénom")
+#     last_name = forms.CharField(max_length=30, required=True, label="Nom")
+#     telephone = forms.CharField(max_length=15, required=False, label="Téléphone")
+#     role = forms.ChoiceField(choices=CustomUser.ROLES, required=True, label="Rôle")
+    
+#     # Champs conditionnels selon le rôle
+#     specialite = forms.CharField(max_length=100, required=False, label="Spécialité")
+#     service = forms.CharField(max_length=100, required=False, label="Service")
+    
+#     class Meta:
+#         model = CustomUser
+#         fields = ('username', 'email', 'first_name', 'last_name', 'telephone', 'role', 'password1', 'password2')
+# Dans forms.py, trouve la ligne avec l'erreur et corrige :
 
 class CustomUserCreationForm(UserCreationForm):
-    email = forms.EmailField(required=True, label="Email")
-    first_name = forms.CharField(max_length=30, required=True, label="Prénom")
-    last_name = forms.CharField(max_length=30, required=True, label="Nom")
-    telephone = forms.CharField(max_length=15, required=False, label="Téléphone")
-    role = forms.ChoiceField(choices=CustomUser.ROLES, required=True, label="Rôle")
+    # 🔧 CORRECTION : utilise ROLE_CHOICES au lieu de ROLES
+    role = forms.ChoiceField(choices=CustomUser.ROLE_CHOICES, required=True, label="Rôle")
+    #                               ^^^^^^^^^^^^^^^^^^^
     
-    # Champs conditionnels selon le rôle
-    specialite = forms.CharField(max_length=100, required=False, label="Spécialité")
-    service = forms.CharField(max_length=100, required=False, label="Service")
-    
-    class Meta:
+    class Meta(UserCreationForm.Meta):
         model = CustomUser
-        fields = ('username', 'email', 'first_name', 'last_name', 'telephone', 'role', 'password1', 'password2')
-    
+        fields = UserCreationForm.Meta.fields + ('email', 'first_name', 'last_name', 'role')
+            
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Supprimer les textes d'aide par défaut
@@ -179,5 +180,71 @@ class ProfileUpdateForm(forms.ModelForm):
             'adresse': 'Adresse',
         }
 
+# Ajoute ça à la fin de ton fichier forms.py
+class ConsultationForm(forms.ModelForm):
+    class Meta:
+        model = Consultation
+        fields = ['symptomes', 'diagnostic', 'traitement', 'observations']
+        widgets = {
+            'symptomes': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Décrivez les symptômes du patient...'}),
+            'diagnostic': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Diagnostic médical...'}),
+            'traitement': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Traitement prescrit...'}),
+            'observations': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Observations complémentaires...'}),
+        }
+        labels = {
+            'symptomes': 'Symptômes',
+            'diagnostic': 'Diagnostic',
+            'traitement': 'Traitement',
+            'observations': 'Observations',
+        }   
+            
+# Dans forms.py, ajoute :
+
+class ProfilMedicalForm(forms.ModelForm):
+    """Formulaire pour le profil médical du patient"""
+    
+    class Meta:
+        model = CustomUser
+        fields = [
+            'date_naissance', 'poids', 'taille', 'tension_systolique', 'tension_diastolique',
+            'groupe_sanguin', 'allergies', 'antecedents_medicaux', 'medicaments_actuels',
+            'personne_urgence_nom', 'personne_urgence_tel'
+        ]
+        widgets = {
+            'date_naissance': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'poids': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.1', 'min': '0', 'placeholder': 'kg'}),
+            'taille': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.1', 'min': '0', 'placeholder': 'cm'}),
+            'tension_systolique': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'placeholder': 'Ex: 120'}),
+            'tension_diastolique': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'placeholder': 'Ex: 80'}),
+            'groupe_sanguin': forms.Select(attrs={'class': 'form-select'}),
+            'allergies': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Indiquez vos allergies connues...'}),
+            'antecedents_medicaux': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Maladies antérieures, opérations...'}),
+            'medicaments_actuels': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Médicaments que vous prenez actuellement...'}),
+            'personne_urgence_nom': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nom de la personne à contacter'}),
+            'personne_urgence_tel': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Numéro de téléphone'}),
+        }
         
+    def clean_poids(self):
+        poids = self.cleaned_data.get('poids')
+        if poids and (poids <= 0 or poids > 300):
+            raise forms.ValidationError("Le poids doit être entre 1 et 300 kg.")
+        return poids
+    
+    def clean_taille(self):
+        taille = self.cleaned_data.get('taille')
+        if taille and (taille <= 0 or taille > 250):
+            raise forms.ValidationError("La taille doit être entre 1 et 250 cm.")
+        return taille
+    
+    def clean_tension_systolique(self):
+        tension = self.cleaned_data.get('tension_systolique')
+        if tension and (tension <= 0 or tension > 300):
+            raise forms.ValidationError("La tension systolique doit être entre 1 et 300.")
+        return tension
+    
+    def clean_tension_diastolique(self):
+        tension = self.cleaned_data.get('tension_diastolique')
+        if tension and (tension <= 0 or tension > 200):
+            raise forms.ValidationError("La tension diastolique doit être entre 1 et 200.")
+        return tension     
      

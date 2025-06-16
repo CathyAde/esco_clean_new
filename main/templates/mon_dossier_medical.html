@@ -1,4 +1,241 @@
 {% extends 'base.html' %}
+
+{% block title %}Mon Dossier Médical - ESCO{% endblock %}
+
+{% block content %}
+<style>
+.dossier-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 2rem;
+    color: white;
+}
+
+.dossier-section {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.btn-download {
+    background: linear-gradient(135deg, #10b981, #059669);
+    border: none;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 25px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.btn-download:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+    color: white;
+    text-decoration: none;
+}
+
+.stat-card {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #fff;
+    margin-bottom: 0.5rem;
+}
+
+.table-transparent {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.table-transparent th {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: none;
+    font-weight: 600;
+}
+
+.table-transparent td {
+    color: rgba(255, 255, 255, 0.9);
+    border: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.table-transparent tr:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+</style>
+
+<div class="dossier-container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-folder-medical me-2"></i>Mon Dossier Médical</h1>
+        <div>
+            <a href="{% url 'download_my_dossier_pdf' %}" class="btn-download me-2">
+                <i class="fas fa-download"></i> Télécharger PDF
+            </a>
+            <a href="{% url 'dashboard_patient' %}" class="btn btn-outline-light">
+                <i class="fas fa-arrow-left"></i> Retour
+            </a>
+        </div>
+    </div>
+    
+    <!-- Informations patient -->
+    <div class="dossier-section">
+        <h3><i class="fas fa-user me-2"></i>Informations Personnelles</h3>
+        <div class="row">
+            <div class="col-md-6">
+                <p><strong>Nom:</strong> {{ user.get_full_name|default:user.username }}</p>
+                <p><strong>Email:</strong> {{ user.email|default:"Non renseigné" }}</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>ID Patient:</strong> ESC-{{ user.id }}-2025</p>
+                <p><strong>Date d'inscription:</strong> {{ user.date_joined|date:"d/m/Y" }}</p>
+            </div>
+        </div>
+        
+        {% if patient_profile %}
+        <div class="row mt-3">
+            <div class="col-md-6">
+                {% if patient_profile.date_naissance %}
+                <p><strong>Date de naissance:</strong> {{ patient_profile.date_naissance|date:"d/m/Y" }}</p>
+                {% endif %}
+                {% if patient_profile.telephone %}
+                <p><strong>Téléphone:</strong> {{ patient_profile.telephone }}</p>
+                {% endif %}
+            </div>
+            <div class="col-md-6">
+                {% if patient_profile.groupe_sanguin %}
+                <p><strong>Groupe sanguin:</strong> {{ patient_profile.groupe_sanguin }}</p>
+                {% endif %}
+                {% if patient_profile.allergies %}
+                <p><strong>Allergies:</strong> {{ patient_profile.allergies }}</p>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Statistiques -->
+    <div class="dossier-section">
+        <h3><i class="fas fa-chart-bar me-2"></i>Résumé Médical</h3>
+        <div class="row">
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-number">{{ stats.total_rdv }}</div>
+                    <p>Rendez-vous Total</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-number">{{ stats.total_consultations }}</div>
+                    <p>Consultations</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-number">{{ stats.total_prescriptions }}</div>
+                    <p>Prescriptions</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-number">{{ stats.prochains_rdv }}</div>
+                    <p>RDV à venir</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Rendez-vous récents -->
+    {% if rdv_list %}
+    <div class="dossier-section">
+        <h3><i class="fas fa-calendar me-2"></i>Rendez-vous Récents</h3>
+        <div class="table-responsive">
+            <table class="table table-transparent">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Médecin</th>
+                        <th>Motif</th>
+                        <th>Statut</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for rdv in rdv_list %}
+                    <tr>
+                        <td>{{ rdv.date_rdv|date:"d/m/Y" }}</td>
+                        <td>Dr. {{ rdv.medecin.get_full_name }}</td>
+                        <td>{{ rdv.motif|truncatechars:40 }}</td>
+                        <td>
+                            <span class="badge bg-success">Programmé</span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="dossier-section">
+        <div class="text-center">
+            <i class="fas fa-calendar-times fa-3x mb-3 opacity-50"></i>
+            <h4>Aucun rendez-vous</h4>
+            <p>Vous n'avez pas encore de rendez-vous enregistrés.</p>
+            <a href="{% url 'nouveau_rdv' %}" class="btn btn-primary">
+                <i class="fas fa-calendar-plus"></i> Prendre un RDV
+            </a>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Consultations récentes -->
+    {% if consultations_list %}
+    <div class="dossier-section">
+        <h3><i class="fas fa-stethoscope me-2"></i>Consultations Récentes</h3>
+        {% for consultation in consultations_list %}
+        <div class="mb-3 p-3" style="background: rgba(255,255,255,0.1); border-radius: 8px;">
+            <div class="d-flex justify-content-between">
+                <strong>{{ consultation.created_at|date:"d/m/Y" }} - Dr. {{ consultation.rdv.medecin.get_full_name }}</strong>
+            </div>
+            <p class="mb-1"><strong>Diagnostic:</strong> {{ consultation.diagnostic }}</p>
+            {% if consultation.traitement %}
+            <p class="mb-0"><strong>Traitement:</strong> {{ consultation.traitement }}</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+        
+        <a href="{% url 'consultations' %}" class="btn btn-outline-light">
+            Voir toutes les consultations
+        </a>
+    </div>
+    {% else %}
+    <div class="dossier-section">
+        <div class="text-center">
+            <i class="fas fa-stethoscope fa-3x mb-3 opacity-50"></i>
+            <h4>Aucune consultation</h4>
+            <p>Vous n'avez pas encore de consultations enregistrées.</p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+
+{% comment %} {% comment %} {% comment %} 
+{% extends 'base.html' %}
 {% load static %}
 
 {% block title %}Mon Dossier Médical - ESCO{% endblock %}
@@ -268,257 +505,4 @@
     {% endif %}
 </div>
 {% endblock %}
-
-{% comment %} {% extends 'base.html' %}
-{% load static %}
-
-{% block title %}Mon Dossier Médical - ESCO{% endblock %}
-
-{% block content %}
-<div class="container-fluid py-4">
-    <!-- Header du dossier -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card border-0 shadow-lg" style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); border-radius: 20px;">
-                <div class="card-body p-4 text-white">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div class="d-flex align-items-center">
-                            <div style="width: 70px; height: 70px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 20px;">
-                                <i class="fas fa-folder-open fa-2x"></i>
-                            </div>
-                            <div>
-                                <h2 style="margin: 0; font-weight: 700;">🏥 CLINIQUE ESCO</h2>
-                                <h3 style="margin: 5px 0; opacity: 0.9;">Mon Dossier Médical</h3>
-                                <p style="margin: 5px 0 0 0; opacity: 0.9;">{{ user.get_full_name|default:user.username }}</p>
-                                <small style="opacity: 0.8;">ID Patient: {{ user.user_id|default:"Non défini" }}</small>
-                            </div>
-                        </div>
-                        <div class="text-end">
-                            <a href="{% url 'download_my_dossier_pdf' %}" class="btn btn-light" style="border-radius: 10px;">
-                                <i class="fas fa-download me-2"></i>Télécharger PDF
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row">
-        <!-- Informations personnelles -->
-        <div class="col-lg-6 mb-4">
-            <div class="card border-0 shadow-sm h-100" style="border-radius: 16px;">
-                <div class="card-header border-0" style="background: #f8fafc; border-radius: 16px 16px 0 0;">
-                    <h5 class="mb-0 d-flex align-items-center">
-                        <i class="fas fa-id-card me-2" style="color: #6366f1;"></i>
-                        Informations Personnelles
-                    </h5>
-                </div>
-                <div class="card-body p-4">
-                    <div class="row">
-                        <div class="col-6 mb-3">
-                            <strong>Nom complet:</strong><br>
-                            <span class="text-muted">{{ user.get_full_name|default:user.username }}</span>
-                        </div>
-                        <div class="col-6 mb-3">
-                            <strong>Email:</strong><br>
-                            <span class="text-muted">{{ user.email|default:"Non renseigné" }}</span>
-                        </div>
-                        <div class="col-6 mb-3">
-                            <strong>Téléphone:</strong><br>
-                            <span class="text-muted">{{ user.telephone|default:"Non renseigné" }}</span>
-                        </div>
-                        <div class="col-6 mb-3">
-                            <strong>Date de naissance:</strong><br>
-                            <span class="text-muted">{{ user.date_naissance|date:"d/m/Y"|default:"Non renseignée" }}</span>
-                        </div>
-                        <div class="col-6 mb-3">
-                            <strong>Profession:</strong><br>
-                            <span class="text-muted">{{ patient.profession|default:"Non renseignée" }}</span>
-                        </div>
-                        <div class="col-6 mb-3">
-                            <strong>Situation familiale:</strong><br>
-                            <span class="text-muted">{{ patient.situation_familiale|default:"Non renseignée" }}</span>
-                        </div>
-                        <div class="col-12 mb-3">
-                            <strong>Adresse:</strong><br>
-                            <span class="text-muted">{{ user.adresse|default:"Non renseignée" }}</span>
-                        </div>
-                        <div class="col-6 mb-3">
-                            <strong>Assurance:</strong><br>
-                            <span class="text-muted">{{ patient.assurance|default:"Non renseignée" }}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Informations médicales -->
-        <div class="col-lg-6 mb-4">
-            <div class="card border-0 shadow-sm h-100" style="border-radius: 16px;">
-                <div class="card-header border-0" style="background: #fef3c7; border-radius: 16px 16px 0 0;">
-                    <h5 class="mb-0 d-flex align-items-center">
-                        <i class="fas fa-heartbeat me-2" style="color: #d97706;"></i>
-                        Informations Médicales
-                    </h5>
-                </div>
-                <div class="card-body p-4">
-                    <div class="row">
-                        <div class="col-6 mb-3">
-                            <strong>Groupe sanguin:</strong><br>
-                            <span class="text-muted">{{ patient.groupe_sanguin|default:"Non défini" }}</span>
-                        </div>
-                        <div class="col-6 mb-3">
-                            <strong>Médecin traitant:</strong><br>
-                            <span class="text-muted">{{ patient.medecin_traitant|default:"Non renseigné" }}</span>
-                        </div>
-                        <div class="col-6 mb-3">
-                            <strong>Poids:</strong><br>
-                            <span class="text-muted">{{ patient.poids|default:"Non renseigné" }}{% if patient.poids %} kg{% endif %}</span>
-                        </div>
-                        <div class="col-6 mb-3">
-                            <strong>Taille:</strong><br>
-                            <span class="text-muted">{{ patient.taille|default:"Non renseigné" }}{% if patient.taille %} cm{% endif %}</span>
-                        </div>
-                        {% if patient.poids and patient.taille %}
-                        <div class="col-12 mb-3">
-                            <strong>IMC:</strong><br>
-                            {% with taille_m=patient.taille|floatformat:0 %}
-                            {% with taille_calc=taille_m|add:0|div:100 %}
-                            {% with imc=patient.poids|div:taille_calc|div:taille_calc %}
-                            <span class="text-muted">{{ imc|floatformat:1 }}</span>
-                            {% endwith %}
-                            {% endwith %}
-                            {% endwith %}
-                        </div>
-                        {% endif %}
-                        <div class="col-12 mb-3">
-                            <strong>Allergies connues:</strong><br>
-                            <span class="text-muted">{{ patient.allergies|default:"Aucune allergie connue" }}</span>
-                        </div>
-                        <div class="col-12 mb-3">
-                            <strong>Antécédents médicaux:</strong><br>
-                            <span class="text-muted">{{ patient.antecedents|default:"Aucun antécédent connu" }}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Contact d'urgence -->
-    {% if patient.personne_contact or patient.tel_contact %}
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card border-0 shadow-sm" style="border-radius: 16px;">
-                <div class="card-header border-0" style="background: #fee2e2; border-radius: 16px 16px 0 0;">
-                    <h5 class="mb-0 d-flex align-items-center">
-                        <i class="fas fa-phone-alt me-2" style="color: #dc2626;"></i>
-                        Contact d'Urgence
-                    </h5>
-                </div>
-                <div class="card-body p-4">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <strong>Personne à contacter:</strong><br>
-                            <span class="text-muted">{{ patient.personne_contact|default:"Non renseigné" }}</span>
-                        </div>
-                        <div class="col-md-6">
-                            <strong>Téléphone d'urgence:</strong><br>
-                            <span class="text-muted">{{ patient.tel_contact|default:"Non renseigné" }}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    {% endif %}
-
-    <!-- Statistiques -->
-    <div class="row mb-4">
-        <div class="col-lg-6 mb-4">
-            <div class="card border-0 shadow-sm" style="border-radius: 16px;">
-                <div class="card-header border-0" style="background: #ecfdf5; border-radius: 16px 16px 0 0;">
-                    <h5 class="mb-0 d-flex align-items-center">
-                        <i class="fas fa-chart-bar me-2" style="color: #059669;"></i>
-                        Statistiques Médicales
-                    </h5>
-                </div>
-                <div class="card-body p-4">
-                    <div class="row text-center">
-                        <div class="col-6">
-                            <h4 class="text-primary">{{ rdv_count }}</h4>
-                            <small class="text-muted">Rendez-vous</small>
-                        </div>
-                        <div class="col-6">
-                            <h4 class="text-success">{{ consultations_count }}</h4>
-                            <small class="text-muted">Consultations</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-lg-6 mb-4">
-            <div class="card border-0 shadow-sm" style="border-radius: 16px;">
-                <div class="card-body p-4 text-center">
-                    <h5 class="mb-3">Actions Rapides</h5>
-                    <div class="d-grid gap-2">
-                        <a href="{% url 'nouveau_rdv' %}" class="btn btn-primary">
-                            <i class="fas fa-calendar-plus me-2"></i>Nouveau RDV
-                        </a>
-                        <a href="{% url 'modifier_profil' %}" class="btn btn-outline-primary">
-                            <i class="fas fa-edit me-2"></i>Modifier mes informations
-                        </a>
-                        <a href="{% url 'mes_rdv' %}" class="btn btn-outline-secondary">
-                            <i class="fas fa-calendar me-2"></i>Mes rendez-vous
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Derniers rendez-vous -->
-    {% if rdv_list %}
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card border-0 shadow-sm" style="border-radius: 16px;">
-                <div class="card-header border-0" style="background: #f8fafc; border-radius: 16px 16px 0 0;">
-                    <h5 class="mb-0 d-flex align-items-center">
-                        <i class="fas fa-calendar me-2" style="color: #6366f1;"></i>
-                        Derniers Rendez-vous
-                    </h5>
-                </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <thead style="background-color: #f8fafc;">
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Médecin</th>
-                                    <th>Motif</th>
-                                    <th>Statut</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for rdv in rdv_list %}
-                                <tr>
-                                    <td>{{ rdv.date_rdv|date:"d/m/Y" }}</td>
-                                    <td>Dr. {{ rdv.medecin.get_full_name|default:rdv.medecin.username }}</td>
-                                    <td>{{ rdv.motif|truncatewords:8 }}</td>
-                                    <td>
-                                        <span class="badge bg-primary">{{ rdv.get_status_display }}</span>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    {% endif %}
-</div>
-{% endblock %} {% endcomment %}
+ {% endcomment %} 

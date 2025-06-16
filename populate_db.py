@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'esco_clean.settings')
 django.setup()
 
-from main.models import CustomUser, Patient, Medecin, Infirmier, Secretaire, RendezVous, Consultation
+from consultations.models import CustomUser, Patient, Medecin, Infirmier, Secretaire, RendezVous, Consultation
 
 def populate_database():
     print("🏥 Création des données de test pour ESCO...")

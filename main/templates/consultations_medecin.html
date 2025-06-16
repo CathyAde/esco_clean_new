@@ -1,108 +1,249 @@
 {% extends 'base.html' %}
-{% load static %}
 
 {% block title %}Mes Consultations - ESCO{% endblock %}
 
 {% block content %}
-<div style="min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 2rem;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-        <h1 style="color: white; font-size: 2rem; font-weight: 700; margin: 0;">
-            <i class="fas fa-calendar-check" style="margin-right: 1rem;"></i>Mes Consultations
-        </h1>
-        <a href="{% url 'dashboard_medecin' %}" style="background: rgba(255, 255, 255, 0.2); color: white; padding: 0.75rem 1.5rem; border-radius: 12px; text-decoration: none; backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.3);">
-            <i class="fas fa-arrow-left"></i> Retour
-        </a>
-    </div>
+<style>
+.consultations-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 2rem;
+    color: white;
+}
 
-    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1.5rem;">
-        {% for rdv in rdv_list %}
-        <div style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(20px); border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.2); padding: 1.5rem; transition: all 0.3s ease;">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; color: rgba(255, 255, 255, 0.8); font-size: 0.9rem;">
-                <div><i class="fas fa-calendar"></i> {{ rdv.date_rdv|date:"d/m/Y" }}</div>
-                <div><i class="fas fa-clock"></i> {{ rdv.heure_rdv|time:"H:i" }}</div>
-            </div>
-            <div>
-                <h3 style="color: white; margin: 0 0 0.5rem 0; font-size: 1.25rem;">{{ rdv.patient.get_full_name }}</h3>
-                <p style="color: rgba(255, 255, 255, 0.9); margin-bottom: 1rem;">{{ rdv.motif }}</p>
-                <span style="background: #3b82f6; color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">
-                    {{ rdv.get_status_display|default:"Programmé" }}
-                </span>
-            </div>
-            <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
-                <button onclick="window.open('/admin/main/patient/{{ rdv.patient.id }}/change/', '_blank')" style="background: #6366f1; color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer;">
-                    <i class="fas fa-eye"></i> Voir patient
-                </button>
-                {% if rdv.id %}
-                <a href="{% url 'ajouter_consultation' rdv.id %}" style="background: #10b981; color: white; padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none;">
-                    <i class="fas fa-plus"></i> Ajouter consultation
-                </a>
-                {% endif %}
-            </div>
+.consultation-card {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+}
+
+.consultation-card:hover {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.patient-info {
+    background: rgba(52, 152, 219, 0.2);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+</style>
+
+<div class="consultations-container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-stethoscope me-2"></i>Mes Consultations</h1>
+        <div>
+            <a href="{% url 'nouvelle_consultation' %}" class="btn btn-success me-2">
+                <i class="fas fa-plus"></i> Nouvelle Consultation
+            </a>
+            <a href="{% url 'dashboard_medecin' %}" class="btn btn-outline-light">
+                <i class="fas fa-arrow-left"></i> Retour
+            </a>
         </div>
-        {% empty %}
-        <div style="grid-column: 1 / -1; text-align: center; color: rgba(255, 255, 255, 0.8); padding: 3rem;">
-            <i class="fas fa-calendar-times" style="font-size: 4rem; margin-bottom: 1rem; opacity: 0.5;"></i>
-            <h3>Aucune consultation</h3>
-            <p>Vous n'avez pas encore de consultations programmées.</p>
+    </div>
+    
+    {% if consultations_list %}
+        <div class="mb-3">
+            <span class="badge bg-info">{{ total_consultations }} consultation{{ total_consultations|pluralize }}</span>
+        </div>
+        
+        {% for consultation in consultations_list %}
+        <div class="consultation-card">
+            <div class="patient-info">
+                <strong><i class="fas fa-user me-2"></i>{{ consultation.rdv.patient.get_full_name }}</strong>
+                <span class="float-end">{{ consultation.created_at|date:"d/m/Y à H:i" }}</span>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <h6><i class="fas fa-calendar me-2"></i>Rendez-vous</h6>
+                    <p class="mb-2">{{ consultation.rdv.date_rdv|date:"d/m/Y" }} à {{ consultation.rdv.heure_rdv|time:"H:i" }}</p>
+                    <p class="mb-3"><strong>Motif:</strong> {{ consultation.rdv.motif }}</p>
+                </div>
+                <div class="col-md-6">
+                    <h6><i class="fas fa-notes-medical me-2"></i>Diagnostic</h6>
+                    <p class="mb-3">{{ consultation.diagnostic|default:"Non renseigné" }}</p>
+                </div>
+            </div>
+            
+            {% if consultation.traitement %}
+            <div class="mb-2">
+                <h6><i class="fas fa-pills me-2"></i>Traitement</h6>
+                <p>{{ consultation.traitement }}</p>
+            </div>
+            {% endif %}
+            
+            {% if consultation.observations %}
+            <div class="mb-2">
+                <h6><i class="fas fa-eye me-2"></i>Observations</h6>
+                <p>{{ consultation.observations }}</p>
+            </div>
+            {% endif %}
         </div>
         {% endfor %}
-    </div>
+        
+        <!-- Pagination -->
+        {% if consultations_list.has_other_pages %}
+        <nav aria-label="Navigation consultations">
+            <ul class="pagination justify-content-center">
+                {% if consultations_list.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ consultations_list.previous_page_number }}">Précédent</a>
+                    </li>
+                {% endif %}
+                
+                {% for num in consultations_list.paginator.page_range %}
+                    {% if consultations_list.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                    {% else %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if consultations_list.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ consultations_list.next_page_number }}">Suivant</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        
+    {% else %}
+        <div class="text-center">
+            <i class="fas fa-stethoscope fa-3x mb-3 opacity-50"></i>
+            <h3>Aucune consultation</h3>
+            <p>Vous n'avez pas encore effectué de consultation.</p>
+            <a href="{% url 'nouvelle_consultation' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Première consultation
+            </a>
+        </div>
+    {% endif %}
 </div>
 {% endblock %}
 
 
 
-
 {% comment %} {% extends 'base.html' %}
-{% load static %}
 
 {% block title %}Mes Consultations - ESCO{% endblock %}
 
 {% block content %}
-<div style="min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 2rem;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-        <h1 style="color: white; font-size: 2rem; font-weight: 700; margin: 0;">
-            <i class="fas fa-calendar-check" style="margin-right: 1rem;"></i>Mes Consultations
-        </h1>
-        <a href="{% url 'dashboard_medecin' %}" style="background: rgba(255, 255, 255, 0.2); color: white; padding: 0.75rem 1.5rem; border-radius: 12px; text-decoration: none; backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.3);">
+<style>
+.consultations-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 2rem;
+    color: white;
+}
+
+.consultation-card {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+}
+
+.consultation-card:hover {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.pagination .page-link {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+}
+
+.pagination .page-link:hover {
+    background: rgba(255, 255, 255, 0.3);
+    color: white;
+}
+
+.pagination .page-item.active .page-link {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border: none;
+}
+</style>
+
+<div class="consultations-container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-stethoscope me-2"></i>Mes Consultations</h1>
+        <a href="{% url 'dashboard_patient' %}" class="btn btn-outline-light">
             <i class="fas fa-arrow-left"></i> Retour
         </a>
-        <a href="{% url 'ajouter_consultation' rdv.id %}" style="background: #3b82f6; color: white; padding: 0.75rem 1.5rem; border-radius: 12px; text-decoration: none; backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.3);">
-            <i class="fas fa-plus"></i> Ajouter Consultation
-        </a>
-        <a href="{% url 'ajouter_consultation' rdv.id %}" class="btn btn-sm btn-outline-light mt-2">
-            <i class="fas fa-plus"></i> Ajouter consultation
-        </a>
-
     </div>
-
-    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1.5rem;">
-        {% for rdv in rdv_list %}
-        <div style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(20px); border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.2); padding: 1.5rem; transition: all 0.3s ease;">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; color: rgba(255, 255, 255, 0.8); font-size: 0.9rem;">
-                <div><i class="fas fa-calendar"></i> {{ rdv.date_rdv|date:"d/m/Y" }}</div>
-                <div><i class="fas fa-clock"></i> {{ rdv.heure_rdv|time:"H:i" }}</div>
+    
+    {% if consultations_list %}
+        {% for consultation in consultations_list %}
+        <div class="consultation-card">
+            <div class="row">
+                <div class="col-md-3">
+                    <strong>Date:</strong><br>
+                    {{ consultation.created_at|date:"d/m/Y à H:i" }}
+                </div>
+                <div class="col-md-3">
+                    <strong>Médecin:</strong><br>
+                    Dr. {{ consultation.rdv.medecin.get_full_name }}
+                </div>
+                <div class="col-md-6">
+                    <strong>Diagnostic:</strong><br>
+                    {{ consultation.diagnostic }}
+                </div>
             </div>
-            <div>
-                <h3 style="color: white; margin: 0 0 0.5rem 0; font-size: 1.25rem;">{{ rdv.patient.get_full_name }}</h3>
-                <p style="color: rgba(255, 255, 255, 0.9); margin-bottom: 1rem;">{{ rdv.motif }}</p>
-                <span style="background: #3b82f6; color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">
-                    {{ rdv.get_status_display|default:"Programmé" }}
-                </span>
+            {% if consultation.traitement %}
+            <div class="mt-2">
+                <strong>Traitement:</strong><br>
+                {{ consultation.traitement }}
             </div>
-            <div style="margin-top: 1rem;">
-                <button onclick="window.open('/admin/main/patient/{{ rdv.patient.id }}/change/', '_blank')" style="background: #6366f1; color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer;">
-                    <i class="fas fa-eye"></i> Voir patient
-                </button>
-            </div>
-        </div>
-        {% empty %}
-        <div style="grid-column: 1 / -1; text-align: center; color: rgba(255, 255, 255, 0.8); padding: 3rem;">
-            <i class="fas fa-calendar-times" style="font-size: 4rem; margin-bottom: 1rem; opacity: 0.5;"></i>
-            <h3>Aucune consultation</h3>
-            <p>Vous n'avez pas encore de consultations programmées.</p>
+            {% endif %}
         </div>
         {% endfor %}
-    </div>
+        
+        <!-- Pagination -->
+        {% if consultations_list.has_other_pages %}
+        <nav>
+            <ul class="pagination justify-content-center">
+                {% if consultations_list.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ consultations_list.previous_page_number }}">Précédent</a>
+                    </li>
+                {% endif %}
+                
+                <li class="page-item active">
+                    <span class="page-link">{{ consultations_list.number }} / {{ consultations_list.paginator.num_pages }}</span>
+                </li>
+                
+                {% if consultations_list.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ consultations_list.next_page_number }}">Suivant</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    {% else %}
+        <div class="text-center">
+            <i class="fas fa-notes-medical fa-3x mb-3 opacity-50"></i>
+            <h3>Aucune consultation</h3>
+            <p>Vous n'avez pas encore de consultations enregistrées.</p>
+            <a href="{% url 'nouveau_rdv' %}" class="btn btn-primary">
+                <i class="fas fa-calendar-plus"></i> Prendre un RDV
+            </a>
+        </div>
+    {% endif %}
 </div>
 {% endblock %} {% endcomment %}
+

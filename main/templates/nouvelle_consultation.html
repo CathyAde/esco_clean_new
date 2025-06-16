@@ -2,283 +2,86 @@
 {% block title %}Nouvelle Consultation - ESCO{% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh;">
-    <!-- Header moderne -->
-    <div class="consultation-header" style="background: rgba(255, 255, 255, 0.95); border-radius: 20px; padding: 2rem; margin-bottom: 2rem; color: #374151; box-shadow: 0 8px 32px rgba(0,0,0,0.1);">
-        <div style="display: flex; align-items: center; gap: 1rem;">
-            <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 15px; display: flex; align-items: center; justify-content: center;">
-                <i class="fas fa-stethoscope" style="font-size: 1.5rem; color: white;"></i>
-            </div>
-            <div>
-                <h2 style="margin: 0; font-weight: 700; color: #1f2937;">Nouvelle Consultation</h2>
-                <p style="margin: 0; color: #6b7280;">Enregistrer une consultation médicale</p>
-            </div>
-        </div>
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-primary">
+            <i class="fas fa-file-medical-alt me-2"></i>Nouvelle Consultation
+        </h2>
+        <a href="{% url 'dashboard_medecin' %}" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left"></i> Retour
+        </a>
     </div>
-    
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
     {% if rdv_list %}
-        <div class="consultation-form" style="background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px); border-radius: 20px; padding: 2rem; box-shadow: 0 8px 32px rgba(0,0,0,0.1);">
-            <form method="post">
-                {% csrf_token %}
-                
-                <div class="mb-4">
-                    <label for="rdv_id" class="form-label" style="font-weight: 600; color: #374151; margin-bottom: 0.5rem; display: block;">
-                        <i class="fas fa-calendar-check me-2" style="color: #667eea;"></i>Sélectionner un rendez-vous :
-                    </label>
-                    <select name="rdv_id" id="rdv_id" class="form-select" required style="border-radius: 12px; border: 2px solid #e5e7eb; padding: 12px; background: white; color: #374151;">
-                        <option value="">-- Choisir un RDV --</option>
-                        {% for rdv in rdv_list %}
-                            <option value="{{ rdv.id }}">
-                                {{ rdv.patient.get_full_name|default:rdv.patient.username }} - {{ rdv.date_rdv|date:"d/m/Y" }} à {{ rdv.heure_rdv|time:"H:i" }}
-                            </option>
-                        {% endfor %}
-                    </select>
-                </div>
-                
-                <div class="mb-4">
-                    <label for="symptomes" class="form-label" style="font-weight: 600; color: #374151; margin-bottom: 0.5rem; display: block;">
-                        <i class="fas fa-thermometer-half me-2" style="color: #667eea;"></i>Symptômes :
-                    </label>
-                    <textarea name="symptomes" id="symptomes" class="form-control" rows="3" placeholder="Décrire les symptômes du patient..." style="border-radius: 12px; border: 2px solid #e5e7eb; padding: 12px; background: white; color: #374151;"></textarea>
-                </div>
-                
-                <div class="mb-4">
-                    <label for="diagnostic" class="form-label" style="font-weight: 600; color: #374151; margin-bottom: 0.5rem; display: block;">
-                        <i class="fas fa-clipboard-check me-2" style="color: #667eea;"></i>Diagnostic :
-                    </label>
-                    <textarea name="diagnostic" id="diagnostic" class="form-control" rows="3" placeholder="Diagnostic médical..." style="border-radius: 12px; border: 2px solid #e5e7eb; padding: 12px; background: white; color: #374151;"></textarea>
-                </div>
-                
-                <div class="mb-4">
-                    <label for="traitement" class="form-label" style="font-weight: 600; color: #374151; margin-bottom: 0.5rem; display: block;">
-                        <i class="fas fa-pills me-2" style="color: #667eea;"></i>Traitement :
-                    </label>
-                    <textarea name="traitement" id="traitement" class="form-control" rows="3" placeholder="Traitement prescrit..." style="border-radius: 12px; border: 2px solid #e5e7eb; padding: 12px; background: white; color: #374151;"></textarea>
-                </div>
-                
-                <div class="mb-4">
-                    <label for="observations" class="form-label" style="font-weight: 600; color: #374151; margin-bottom: 0.5rem; display: block;">
-                        <i class="fas fa-clipboard me-2" style="color: #667eea;"></i>Observations :
-                    </label>
-                    <textarea name="observations" id="observations" class="form-control" rows="2" placeholder="Observations complémentaires..." style="border-radius: 12px; border: 2px solid #e5e7eb; padding: 12px; background: white; color: #374151;"></textarea>
-                </div>
-                
-                <div class="form-actions" style="display: flex; gap: 1rem; margin-top: 2rem;">
-                    <button type="submit" class="btn btn-primary" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; padding: 15px 30px; border-radius: 12px; font-weight: 600; flex: 1; color: white; font-size: 16px;">
-                        <i class="fas fa-save me-2"></i>Enregistrer la consultation
+        <div class="card">
+            <div class="card-header">
+                <h5>Créer une consultation</h5>
+                <small class="text-muted">{{ rdv_count }} rendez-vous en attente de consultation</small>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="rdv_id" class="form-label">Rendez-vous</label>
+                        <select name="rdv_id" id="rdv_id" class="form-select" required>
+                            <option value="">Choisir un rendez-vous</option>
+                            {% for rdv in rdv_list %}
+                                <option value="{{ rdv.id }}">
+                                    {{ rdv.patient.get_full_name }} - {{ rdv.date_rdv|date:"d/m/Y" }} à {{ rdv.heure_rdv|time:"H:i" }} - {{ rdv.motif|truncatechars:50 }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="symptomes" class="form-label">Symptômes</label>
+                        <textarea name="symptomes" id="symptomes" class="form-control" rows="4" 
+                                placeholder="Décrivez les symptômes du patient..."></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="diagnostic" class="form-label">Diagnostic</label>
+                        <textarea name="diagnostic" id="diagnostic" class="form-control" rows="4" 
+                                placeholder="Diagnostic médical..." required></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="traitement" class="form-label">Traitement</label>
+                        <textarea name="traitement" id="traitement" class="form-control" rows="4" 
+                                placeholder="Traitement prescrit..."></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="observations" class="form-label">Observations</label>
+                        <textarea name="observations" id="observations" class="form-control" rows="3" 
+                                placeholder="Observations complémentaires..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-check"></i> Enregistrer la consultation
                     </button>
-                    <a href="{% url 'dashboard_medecin' %}" class="btn btn-secondary" style="background: #6b7280; border: none; padding: 15px 30px; border-radius: 12px; font-weight: 600; text-decoration: none; color: white; display: flex; align-items: center; justify-content: center; font-size: 16px;">
-                        <i class="fas fa-times me-2"></i>Annuler
-                    </a>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     {% else %}
-        <div class="empty-consultation-state" style="text-align: center; padding: 4rem 2rem; background: rgba(255, 255, 255, 0.95); border-radius: 20px; box-shadow: 0 8px 32px rgba(0,0,0,0.1);">
-            <div style="margin-bottom: 2rem;">
-                <i class="fas fa-calendar-times" style="font-size: 4rem; color: #9ca3af; margin-bottom: 1.5rem;"></i>
-                <h4 style="color: #1f2937; margin-bottom: 1rem; font-weight: 600; font-size: 1.5rem;">Aucun rendez-vous en attente</h4>
-                <p style="color: #6b7280; margin-bottom: 2rem; font-size: 1.1rem;">Il n'y a pas de rendez-vous en attente de consultation pour le moment.</p>
-            </div>
-            
-            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-                <button onclick="window.location.href='{% url 'nouveau_rdv' %}'" class="btn btn-primary" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none; padding: 18px 36px; border-radius: 15px; font-weight: 700; color: white; transition: all 0.3s ease; font-size: 16px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);">
-                    <i class="fas fa-calendar-plus me-2"></i>Créer un rendez-vous
-                </button>
-                
-                <button onclick="window.location.href='{% url 'consultations_medecin' %}'" class="btn" style="border: 2px solid #667eea; background: white; padding: 18px 36px; border-radius: 15px; font-weight: 600; color: #667eea; transition: all 0.3s ease; font-size: 16px;">
-                    <i class="fas fa-history me-2"></i>Voir l'historique
-                </button>
-                
-                <button onclick="window.location.href='{% url 'dashboard_medecin' %}'" class="btn" style="border: 2px solid #6b7280; background: white; padding: 18px 36px; border-radius: 15px; font-weight: 600; color: #6b7280; transition: all 0.3s ease; font-size: 16px;">
-                    <i class="fas fa-arrow-left me-2"></i>Retour au dashboard
-                </button>
-            </div>
+        <div class="text-center">
+            <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+            <h4 class="text-muted">Aucun rendez-vous en attente</h4>
+            <p>Tous vos rendez-vous ont déjà une consultation associée ou aucun RDV n'est programmé.</p>
+            <a href="{% url 'nouveau_rdv' %}" class="btn btn-primary">
+                <i class="fas fa-calendar-plus"></i> Programmer un nouveau RDV
+            </a>
         </div>
     {% endif %}
 </div>
-
-<style>
-/* Styles pour les interactions */
-.btn:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.2) !important;
-}
-
-.form-control:focus, .form-select:focus {
-    border-color: #667eea !important;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2) !important;
-    outline: none;
-}
-
-/* Animation d'entrée */
-.consultation-header, .consultation-form, .empty-consultation-state {
-    animation: slideInUp 0.6s ease-out;
-}
-
-@keyframes slideInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .form-actions {
-        flex-direction: column !important;
-    }
-    
-    .empty-consultation-state > div:last-child {
-        flex-direction: column !important;
-    }
-}
-</style>
 {% endblock %}
-
-
-
-
-
-{% comment %} {% extends 'base.html' %}
-{% block title %}Nouvelle Consultation - ESCO{% endblock %}
-
-{% block content %}
-<div class="container-fluid py-4">
-    <!-- Header moderne -->
-    <div class="consultation-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 20px; padding: 2rem; margin-bottom: 2rem; color: white;">
-        <div style="display: flex; align-items: center; gap: 1rem;">
-            <div style="width: 60px; height: 60px; background: rgba(255,255,255,0.2); border-radius: 15px; display: flex; align-items: center; justify-content: center;">
-                <i class="fas fa-stethoscope" style="font-size: 1.5rem;"></i>
-            </div>
-            <div>
-                <h2 style="margin: 0; font-weight: 700;">Nouvelle Consultation</h2>
-                <p style="margin: 0; opacity: 0.9;">Enregistrer une consultation médicale</p>
-            </div>
-        </div>
-    </div>
-    
-    {% if rdv_list %}
-        <div class="consultation-form" style="background: rgba(255,255,255,0.1); backdrop-filter: blur(20px); border-radius: 20px; padding: 2rem; border: 1px solid rgba(255,255,255,0.2);">
-            <form method="post">
-                {% csrf_token %}
-                
-                <div class="mb-4">
-                    <label for="rdv_id" class="form-label" style="font-weight: 600; color: #374151; margin-bottom: 0.5rem;">
-                        <i class="fas fa-calendar-check me-2" style="color: #667eea;"></i>Sélectionner un rendez-vous :
-                    </label>
-                    <select name="rdv_id" id="rdv_id" class="form-select" required style="border-radius: 12px; border: 2px solid #e5e7eb; padding: 12px;">
-                        <option value="">-- Choisir un RDV --</option>
-                        {% for rdv in rdv_list %}
-                            <option value="{{ rdv.id }}">
-                                {{ rdv.patient.get_full_name|default:rdv.patient.username }} - {{ rdv.date_rdv|date:"d/m/Y" }} à {{ rdv.heure_rdv|time:"H:i" }}
-                            </option>
-                        {% endfor %}
-                    </select>
-                </div>
-                
-                <div class="mb-4">
-                    <label for="symptomes" class="form-label" style="font-weight: 600; color: #374151; margin-bottom: 0.5rem;">
-                        <i class="fas fa-symptoms me-2" style="color: #667eea;"></i>Symptômes :
-                    </label>
-                    <textarea name="symptomes" id="symptomes" class="form-control" rows="3" placeholder="Décrire les symptômes du patient..." style="border-radius: 12px; border: 2px solid #e5e7eb; padding: 12px;"></textarea>
-                </div>
-                
-                <div class="mb-4">
-                    <label for="diagnostic" class="form-label" style="font-weight: 600; color: #374151; margin-bottom: 0.5rem;">
-                        <i class="fas fa-diagnoses me-2" style="color: #667eea;"></i>Diagnostic :
-                    </label>
-                    <textarea name="diagnostic" id="diagnostic" class="form-control" rows="3" placeholder="Diagnostic médical..." style="border-radius: 12px; border: 2px solid #e5e7eb; padding: 12px;"></textarea>
-                </div>
-                
-                <div class="mb-4">
-                    <label for="traitement" class="form-label" style="font-weight: 600; color: #374151; margin-bottom: 0.5rem;">
-                        <i class="fas fa-pills me-2" style="color: #667eea;"></i>Traitement :
-                    </label>
-                    <textarea name="traitement" id="traitement" class="form-control" rows="3" placeholder="Traitement prescrit..." style="border-radius: 12px; border: 2px solid #e5e7eb; padding: 12px;"></textarea>
-                </div>
-                
-                <div class="mb-4">
-                    <label for="observations" class="form-label" style="font-weight: 600; color: #374151; margin-bottom: 0.5rem;">
-                        <i class="fas fa-clipboard me-2" style="color: #667eea;"></i>Observations :
-                    </label>
-                    <textarea name="observations" id="observations" class="form-control" rows="2" placeholder="Observations complémentaires..." style="border-radius: 12px; border: 2px solid #e5e7eb; padding: 12px;"></textarea>
-                </div>
-                
-                <div class="form-actions" style="display: flex; gap: 1rem; margin-top: 2rem;">
-                    <button type="submit" class="btn btn-primary" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; padding: 12px 24px; border-radius: 12px; font-weight: 600; flex: 1;">
-                        <i class="fas fa-save me-2"></i>Enregistrer la consultation
-                    </button>
-                    <a href="{% url 'dashboard_medecin' %}" class="btn btn-secondary" style="background: #6b7280; border: none; padding: 12px 24px; border-radius: 12px; font-weight: 600; text-decoration: none; color: white; display: flex; align-items: center; justify-content: center;">
-                        <i class="fas fa-times me-2"></i>Annuler
-                    </a>
-                </div>
-            </form>
-        </div>
-    {% else %}
-        <div class="empty-consultation-state" style="text-align: center; padding: 3rem; background: rgba(255,255,255,0.1); backdrop-filter: blur(20px); border-radius: 20px; border: 1px solid rgba(255,255,255,0.2);">
-            <div style="margin-bottom: 2rem;">
-                <i class="fas fa-calendar-times" style="font-size: 4rem; color: rgba(255,255,255,0.6); margin-bottom: 1rem;"></i>
-                <h4 style="color: white; margin-bottom: 1rem;">Aucun rendez-vous en attente</h4>
-                <p style="color: rgba(255,255,255,0.8); margin-bottom: 2rem;">Il n'y a pas de rendez-vous en attente de consultation pour le moment.</p>
-            </div>
-            
-            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-                <button onclick="window.location.href='{% url 'nouveau_rdv' %}'" class="btn btn-primary" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none; padding: 15px 30px; border-radius: 12px; font-weight: 600; color: white; transition: all 0.3s ease;">
-                    <i class="fas fa-calendar-plus me-2"></i>Créer un rendez-vous
-                </button>
-                
-                <button onclick="window.location.href='{% url 'consultations_medecin' %}'" class="btn btn-outline-light" style="border: 2px solid rgba(255,255,255,0.3); background: transparent; padding: 15px 30px; border-radius: 12px; font-weight: 600; color: white; transition: all 0.3s ease;">
-                    <i class="fas fa-history me-2"></i>Voir l'historique
-                </button>
-                
-                <button onclick="window.location.href='{% url 'dashboard_medecin' %}'" class="btn btn-outline-light" style="border: 2px solid rgba(255,255,255,0.3); background: transparent; padding: 15px 30px; border-radius: 12px; font-weight: 600; color: white; transition: all 0.3s ease;">
-                    <i class="fas fa-arrow-left me-2"></i>Retour au dashboard
-                </button>
-            </div>
-        </div>
-    {% endif %}
-</div>
-
-<style>
-/* Styles pour les interactions */
-.btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-}
-
-.form-control:focus, .form-select:focus {
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-}
-
-.consultation-form {
-    background: white;
-    color: #374151;
-}
-
-/* Animation d'entrée */
-.consultation-header, .consultation-form, .empty-consultation-state {
-    animation: slideInUp 0.6s ease-out;
-}
-
-@keyframes slideInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-</style>
-{% endblock %} {% endcomment %}
-
-
-
-

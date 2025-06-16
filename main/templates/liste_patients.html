@@ -1,198 +1,126 @@
 {% extends 'base.html' %}
-{% load static %}
 
 {% block title %}Mes Patients - ESCO{% endblock %}
 
 {% block content %}
-<div class="modern-container">
-    <div class="content-header">
-        <h1><i class="fas fa-users me-3"></i>Mes Patients</h1>
-        <a href="{% url 'dashboard_medecin' %}" class="btn-back">
-            <i class="fas fa-arrow-left"></i> Retour
-        </a>
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-primary">
+            <i class="fas fa-users me-2"></i>Mes Patients
+        </h2>
+        <div>
+            <a href="{% url 'nouveau_rdv' %}" class="btn btn-success me-2">
+                <i class="fas fa-calendar-plus"></i> Nouveau RDV
+            </a>
+            <a href="{% url 'dashboard_medecin' %}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left"></i> Retour
+            </a>
+        </div>
     </div>
 
-    <div class="patients-grid">
-        {% for patient in patients %}
-        <div class="patient-card">
-            <div class="patient-avatar">
-                <i class="fas fa-user"></i>
-            </div>
-            <div class="patient-info">
-                <h3>{{ patient.get_full_name }}</h3>
-                <p class="patient-details">
-                    <i class="fas fa-envelope"></i> {{ patient.email|default:"Non renseigné" }}
-                </p>
-                <p class="patient-details">
-                    <i class="fas fa-phone"></i> {{ patient.telephone|default:"Non renseigné" }}
-                </p>
-                {% if patient.date_naissance %}
-                <p class="patient-details">
-                    <i class="fas fa-birthday-cake"></i> {{ patient.date_naissance|date:"d/m/Y" }}
-                </p>
-                {% endif %}
-            </div>
-            <div class="patient-actions">
-                <button class="btn-primary" onclick="viewPatient({{ patient.id }})">
-                    <i class="fas fa-eye"></i> Voir dossier
-                </button>
-                <button class="btn-secondary" onclick="newRdv({{ patient.id }})">
-                    <i class="fas fa-calendar-plus"></i> Nouveau RDV
-                </button>
+    <!-- Filtres -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h6>Filtrer les patients :</h6>
+                    <div class="btn-group" role="group">
+                        <a href="?filter=all" class="btn {% if filter_type == 'all' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                            Tous ({{ total_patients }})
+                        </a>
+                        <a href="?filter=avec_historique" class="btn {% if filter_type == 'avec_historique' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                            Avec historique
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-6 text-end">
+                    <small class="text-muted">{{ total_patients }} patient{{ total_patients|pluralize }} trouvé{{ total_patients|pluralize }}</small>
+                </div>
             </div>
         </div>
-        {% empty %}
-        <div class="empty-state">
-            <i class="fas fa-user-times"></i>
-            <h3>Aucun patient</h3>
-            <p>Vous n'avez pas encore de patients assignés.</p>
-        </div>
-        {% endfor %}
     </div>
+
+    <!-- Liste des patients -->
+    {% if patients_with_stats %}
+        <div class="row g-4">
+            {% for item in patients_with_stats %}
+                <div class="col-md-6">
+                    <div class="card {% if item.has_history %}border-primary{% endif %} h-100">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0">
+                                <i class="fas fa-user me-2"></i>
+                                {{ item.patient.get_full_name }}
+                            </h6>
+                            {% if item.has_history %}
+                                <span class="badge bg-primary">Patient suivi</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Nouveau</span>
+                            {% endif %}
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Email :</strong> {{ item.patient.email }}</p>
+                            <p><strong>Téléphone :</strong> {{ item.patient.telephone|default:"Non renseigné" }}</p>
+                            
+                            <hr>
+                            
+                            <div class="row text-center">
+                                <div class="col-4">
+                                    <small class="text-muted">RDV</small>
+                                    <div class="fw-bold text-primary">{{ item.rdv_count }}</div>
+                                </div>
+                                <div class="col-4">
+                                    <small class="text-muted">Dernière consultation</small>
+                                    <div class="fw-bold">
+                                        {% if item.derniere_consultation %}
+                                            {{ item.derniere_consultation.created_at|date:"d/m/Y" }}
+                                        {% else %}
+                                            Aucune
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <small class="text-muted">Prescriptions</small>
+                                    <div class="fw-bold text-success">
+                                        {% if item.derniere_prescription %}
+                                            {{ item.derniere_prescription.date_prescription|date:"d/m/Y" }}
+                                        {% else %}
+                                            Aucune
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {% if item.prochain_rdv %}
+                            <div class="alert alert-info mt-3 mb-0">
+                                <small><i class="fas fa-calendar me-1"></i>Prochain RDV : {{ item.prochain_rdv.date_rdv|date:"d/m/Y" }} à {{ item.prochain_rdv.heure_rdv|time:"H:i" }}</small>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="card-footer">
+                            <div class="btn-group w-100" role="group">
+                                <a href="{% url 'nouveau_rdv' %}?patient={{ item.patient.id }}" class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-calendar-plus"></i> RDV
+                                </a>
+                                {% if item.has_history %}
+                                    <a href="{% url 'dossier_patient' item.patient.id %}" class="btn btn-outline-info btn-sm">
+                                        <i class="fas fa-file-medical"></i> Dossier
+                                    </a>
+                                {% endif %}
+                                <a href="{% url 'nouvelle_prescription' %}?patient={{ item.patient.id }}" class="btn btn-outline-success btn-sm">
+                                    <i class="fas fa-prescription"></i> Prescription
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center">
+            <i class="fas fa-user-friends fa-3x text-muted mb-3"></i>
+            <h4 class="text-muted">Aucun patient trouvé</h4>
+            <p>Aucun patient ne correspond aux critères sélectionnés.</p>
+        </div>
+    {% endif %}
 </div>
-
-<style>
-.modern-container {
-    min-height: 100vh;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    padding: 2rem;
-}
-
-.content-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
-}
-
-.content-header h1 {
-    color: white;
-    font-size: 2rem;
-    font-weight: 700;
-    margin: 0;
-}
-
-.btn-back {
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
-    padding: 0.75rem 1.5rem;
-    border-radius: 12px;
-    text-decoration: none;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    transition: all 0.3s ease;
-}
-
-.btn-back:hover {
-    background: rgba(255, 255, 255, 0.3);
-    color: white;
-}
-
-.patients-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 1.5rem;
-}
-
-.patient-card {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(20px);
-    border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    padding: 1.5rem;
-    transition: all 0.3s ease;
-    text-align: center;
-}
-
-.patient-card:hover {
-    transform: translateY(-5px);
-    background: rgba(255, 255, 255, 0.15);
-}
-
-.patient-avatar {
-    width: 80px;
-    height: 80px;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 1rem auto;
-    font-size: 2rem;
-    color: white;
-}
-
-.patient-info h3 {
-    color: white;
-    margin: 0 0 1rem 0;
-    font-size: 1.25rem;
-}
-
-.patient-details {
-    color: rgba(255, 255, 255, 0.8);
-    margin: 0.5rem 0;
-    font-size: 0.9rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-}
-
-.patient-actions {
-    margin-top: 1.5rem;
-    display: flex;
-    gap: 0.5rem;
-    justify-content: center;
-}
-
-.btn-primary, .btn-secondary {
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 0.85rem;
-}
-
-.btn-primary {
-    background: #6366f1;
-    color: white;
-}
-
-.btn-primary:hover {
-    background: #4f46e5;
-}
-
-.btn-secondary {
-    background: #10b981;
-    color: white;
-}
-
-.btn-secondary:hover {
-    background: #059669;
-}
-
-.empty-state {
-    grid-column: 1 / -1;
-    text-align: center;
-    color: rgba(255, 255, 255, 0.8);
-    padding: 3rem;
-}
-
-.empty-state i {
-    font-size: 4rem;
-    margin-bottom: 1rem;
-    opacity: 0.5;
-}
-</style>
-
-<script>
-function viewPatient(patientId) {
-    window.open(`/admin/main/patient/${patientId}/change/`, '_blank');
-}
-
-function newRdv(patientId) {
-    window.location.href = `{% url 'nouveau_rdv' %}?patient=${patientId}`;
-}
-</script>
 {% endblock %}
